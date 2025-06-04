@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket #{{ ticket.TicketID }} - {{ ticket.Title }}{% endblock %}
+
+{% block content %}
+<div class="ticket-view">
+    <div class="ticket-header">
+        <!-- Erste Zeile: Badges + Datum + ID -->
+        <div class="ticket-header-line">
+            <div class="ticket-meta">
+                <span class="team-badge" style="background-color: {{ ticket.TeamColor }}">{{ ticket.TeamName }}</span>
+                <span class="status-badge" style="background-color: {{ ticket.StatusColor }}">{{ ticket.StatusName }}</span>
+                <span class="priority-badge" style="background-color: {{ ticket.PriorityColor }}">{{ ticket.PriorityName }}</span>
+                <span>Erstellt am: {{ ticket.CreatedAt }}</span>
+            </div>
+            <span class="ticket-id">Ticket-ID: {{ ticket.TicketID }}</span>
+        </div>
+        
+        <!-- Zweite Zeile: Titel -->
+        <h1>{{ ticket.Title }}</h1>
+    </div>
+
+    <div class="ticket-content">
+        <div class="ticket-sidebar">
+            <h3>Kontakt</h3>
+            <div class="contact-info">
+                <p><strong>{{ ticket.ContactName }}</strong></p>
+                {% if ticket.ContactPhone %}
+                <p>Tel: <a href="tel:{{ ticket.ContactPhone }}">{{ ticket.ContactPhone }}</a></p>
+                {% endif %}
+                {% if ticket.ContactEmail %}
+                <p>E-Mail: <a href="mailto:{{ ticket.ContactEmail }}">{{ ticket.ContactEmail }}</a></p>                {% endif %}
+            </div>
+            
+            {% if facility_info or location_info %}
+            <h3>Organisation</h3>
+            <div class="organization-info">
+                {% if facility_info %}
+                <p><strong>Einrichtung:</strong><br>{{ facility_info.Facility }}</p>
+                {% endif %}
+                {% if location_info %}
+                <p><strong>Standort:</strong><br>{{ location_info.Location }}</p>
+                <p>{{ location_info.Street }}, {{ location_info.ZIP }} {{ location_info.Town }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if related_facility %}
+            <h3>Weitere Tickets dieser Einrichtung</h3>
+            <div class="related-tickets">
+                {% for related in related_facility %}
+                <p>
+                    <span class="team-badge small" style="background-color: {{ related.TeamColor }}">
+                        {{ related.TeamName }}
+                    </span>
+
+                    <a href="{{ url_for('view_ticket', ticket_id=related.TicketID) }}">
+                        #{{ related.TicketID }}: {{ related.Title[:40] }}
+                        {% if related.Title|length > 40 %}...{% endif %}
+                    </a>
+                    <em>({{ related.ContactName.split()[0] }})</em>
+                    <small>({{ related.CreatedAt }})</small>
+                </p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if related_location %}
+            <h3>Weitere Tickets an diesem Standort</h3>
+            <div class="related-tickets">
+                {% for related in related_location %}
+                <p>
+                    <span class="team-badge small" style="background-color: {{ related.TeamColor }}">
+                        {{ related.TeamName }}
+                    </span>
+
+                    <a href="{{ url_for('view_ticket', ticket_id=related.TicketID) }}">
+                        #{{ related.TicketID }}: {{ related.Title[:30] }}
+                        {% if related.Title|length > 30 %}...{% endif %}
+                    </a>
+                    <em>({{ related.ContactName.split()[0] }})</em>
+                    <small>({{ related.CreatedAt }})</small>
+                </p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <h3>Zugewiesen an</h3>
+            <div class="assignees">
+                {% if assignees %}
+                <div>
+                    {% for assignee in assignees %}
+                    <p>{{ assignee.AgentName }} ({{ assignee.AssignedAt }})</p>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>Noch keinem Agenten zugewiesen</p>
+                {% endif %}
+            </div>
+            
+            <h3>Anhänge</h3>
+            <div class="attachments">
+                {% if attachments %}
+                {% for attachment in attachments %}
+                <div class="attachment-item">
+                    <div class="attachment-preview">
+                        {% set file_ext = attachment.FileName.split('.')[-1].lower() %}
+                        {% if file_ext in ['jpg', 'jpeg', 'png', 'gif'] %}
+                            <img src="{{ url_for('serve_attachment', filename=attachment.StoragePath) }}" 
+                                alt="{{ attachment.FileName }}">
+                        {% elif file_ext == 'pdf' %}
+                            📄
+                        {% elif file_ext in ['doc', 'docx'] %}
+                            📝
+                        {% elif file_ext == 'txt' %}
+                            📄
+                        {% else %}
+                            📎
+                        {% endif %}
+                    </div>
+                    <div class="attachment-info">
+                        <a href="{{ url_for('serve_attachment', filename=attachment.StoragePath) }}" 
+                        target="_blank" class="attachment-name">{{ attachment.FileName }}</a>
+                        <div class="attachment-meta">
+                            {{ attachment.UploadedAt }} • {{ (attachment.FileSize / 1024) | round(1) }} KB
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>Keine Anhänge vorhanden</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="ticket-details">
+            <h3>Beschreibung</h3>
+
+            <div class="description-bubble">
+                <div class="bubble-content">{{ ticket.Description }}</div>
+            </div>
+
+            <h3>Verlauf</h3>
+            <div class="updates-list">
+                {% if updates %}
+                {% for update in updates %}
+                <div class="update-bubble {% if update.IsSolution %}solution{% endif %}">
+                    <div class="bubble-content">{{ update.UpdateText }}</div>
+                    <div class="bubble-meta">
+                        <span class="bubble-author">{{ update.UpdatedByName }}</span>
+                        <span class="bubble-time">{{ update.UpdatedAt }}</span>
+                        {% if update.IsSolution %}<span class="solution-badge">Lösung</span>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+
+            
+            {% if ticket.StatusName != 'Gelöst' %}
+            <div class="update-form">
+                <form method="POST" action="{{ url_for('update_ticket', ticket_id=ticket.TicketID) }}" 
+                      enctype="multipart/form-data">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="status_id">Status ändern:</label>
+                            <select id="status_id" name="status_id">
+                                <option value="">-- Unverändert --</option>
+                                {% for status in statuses %}
+                                {% if status.StatusName != 'Neu' and status.StatusName != 'Gelöst' %}
+                                <option value="{{ status.StatusID }}" 
+                                        {% if status.StatusID == ticket.StatusID %}selected{% endif %}>
+                                    {{ status.StatusName }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="priority_id">Priorität ändern:</label>
+                            <select id="priority_id" name="priority_id">
+                                <option value="">-- Unverändert --</option>
+                                {% for priority in priorities %}
+                                <option value="{{ priority.PriorityID }}"
+                                        {% if priority.PriorityID == ticket.PriorityID %}selected{% endif %}>
+                                    {{ priority.PriorityName }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assign_agent">Agent zuweisen:</label>
+                        <select id="assign_agent" name="assign_agent">
+                            <option value="">-- Niemanden zuweisen --</option>
+                            {% for agent in agents %}
+                            <option value="{{ agent.AgentID }}">
+                                {{ agent.AgentName }} ({{ agent.TeamName }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="update_text">Kommentar:</label>
+                        <textarea id="update_text" name="update_text" rows="4" 
+                                  placeholder="Update-Kommentar..."></textarea>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="is_solution" name="is_solution">
+                        <label for="is_solution">Als Lösung markieren (setzt Status auf "Gelöst")</label>
+                    </div>
+
+                    
+                    <div class="form-group">
+                        <label for="attachment">Anhang hinzufügen:</label>
+                        <input type="file" id="attachment" name="attachment">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="submit-button">Aktualisieren</button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <div class="ticket-solved">
+                <h3>Ticket gelöst</h3>
+                <p>Kann daher nicht mehr bearbeitet werden.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+$('#is_solution').change(function() {
+    if ($(this).is(':checked')) {
+        $('#status_id').val('3'); // Status "Gelöst" = ID 3
+        $('#status_id').prop('disabled', true);
+    } else {
+        $('#status_id').prop('disabled', false);
+    }
+});
+
+// Status-Dropdown Filter: Nur Vorwärts-Status
+$('#status_id option').each(function() {
+    const currentStatus = {{ ticket.StatusID }};
+    const optionValue = parseInt($(this).val());
+    
+    // Status 1 (Neu) entfernen wenn bereits weiter
+    if (optionValue === 1 && currentStatus > 1) {
+        $(this).remove();
+    }
+    
+    // Status 3 (Gelöst) nur über Checkbox
+    if (optionValue === 3) {
+        $(this).remove();
+    }
+});
+</script>
+
+{% endblock %}

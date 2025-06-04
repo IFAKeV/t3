@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Neues Ticket - IFAK Ticketsystem{% endblock %}
+
+{% block extra_head %}
+<style>
+.contact-details {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 1rem;
+    display: none;
+}
+.autocomplete-item {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+.autocomplete-name {
+    font-weight: bold;
+}
+.autocomplete-email {
+    color: #666;
+    font-size: 0.9em;
+}
+.organization-info {
+    color: #007bff;
+    font-size: 0.85em;
+    margin-top: 2px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ticket-form">
+    <h1>Neues Ticket erstellen</h1>
+    
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="title">Titel*:</label>
+                <input type="text" id="title" name="title" required 
+                       placeholder="Kurze Beschreibung des Problems">
+            </div>
+            
+            <div class="form-group">
+                <label for="priority_id">Priorität*:</label>
+                <select id="priority_id" name="priority_id" required>
+                    {% for priority in priorities %}
+                    <option value="{{ priority.PriorityID }}">{{ priority.PriorityName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="team_id">Team*:</label>
+                <select id="team_id" name="team_id" required>
+                    {% for team in teams %}
+                    <option value="{{ team.TeamID }}" 
+                            {% if team.TeamID == current_agent.TeamID %}selected{% endif %}>
+                        {{ team.TeamName }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="assigned_agent">Zuweisen an:</label>
+                <select id="assigned_agent" name="assigned_agent">
+                    <option value="">-- Nicht zuweisen --</option>
+                    {% for agent in agents %}
+                    <option value="{{ agent.AgentID }}">{{ agent.AgentName }} ({{ agent.TeamName }})</option>
+                    {% endfor %}
+                </select>
+            </div>            
+
+
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Beschreibung*:</label>
+            <textarea id="description" name="description" rows="6" required
+                      placeholder="Detaillierte Beschreibung des Problems..."></textarea>
+        </div>
+        
+        <h3>Kontakt</h3>
+        <div class="form-group">
+            <label for="contact_search">Kontakt suchen:</label>
+            <input type="text" id="contact_search" 
+                   placeholder="Name des Mitarbeiters eingeben...">
+            <small>Mindestens 2 Zeichen eingeben für Suche im Adressbuch</small>
+        </div>
+        
+        <div id="contact_details" class="contact-details">
+            <h4>Ausgewählter Kontakt:</h4>
+            <div id="selected_contact_info"></div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="contact_name">Name*:</label>
+                <input type="text" id="contact_name" name="contact_name" required>
+                <input type="hidden" id="contact_employee_id" name="contact_employee_id">
+                <input type="hidden" id="facility_id" name="facility_id">
+                <input type="hidden" id="location_id" name="location_id">
+                <input type="hidden" id="department_id" name="department_id">
+            </div>
+            
+            <div class="form-group">
+                <label for="contact_phone">Telefon:</label>
+                <input type="tel" id="contact_phone" name="contact_phone">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="contact_email">E-Mail:</label>
+            <input type="email" id="contact_email" name="contact_email">
+        </div>
+        
+        <div class="form-group">
+            <label for="attachment">Anhang:</label>
+            <input type="file" id="attachment" name="attachment">
+            <small>Erlaubte Formate: PNG, JPG, GIF, PDF, DOC, DOCX, TXT (max. 10MB)</small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="submit-button">Ticket erstellen</button>
+            <a href="{{ url_for('dashboard') }}" class="cancel-button">Abbrechen</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Autocomplete für Kontaktsuche
+$(document).ready(function() {
+    $('#contact_search').autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "/api/search_employees",
+                dataType: "json",
+                data: { term: request.term },
+                success: function(data) {
+                    response(data);
+                },
+                error: function() {
+                    response([]);
+                }
+            });
+        },
+        minLength: 2,
+        select: function(event, ui) {
+            // Kontaktdaten übernehmen
+            $('#contact_name').val(ui.item.name);
+            $('#contact_phone').val(ui.item.phone);
+            $('#contact_email').val(ui.item.email);
+            $('#contact_employee_id').val(ui.item.id);
+            
+            // Organisationsdaten übernehmen
+            $('#facility_id').val(ui.item.facility_id || '');
+            $('#location_id').val(ui.item.location_id || '');
+            $('#department_id').val(ui.item.department_id || '');
+            
+            // Kontaktdetails anzeigen
+            const contactInfo = `
+                <p><strong>${ui.item.name}</strong></p>
+                ${ui.item.phone ? `<p>Tel: ${ui.item.phone}</p>` : ''}
+                ${ui.item.email ? `<p>E-Mail: ${ui.item.email}</p>` : ''}
+                ${ui.item.organization_info ? `<p class="organization-info">${ui.item.organization_info}</p>` : ''}
+            `;
+            $('#selected_contact_info').html(contactInfo);
+            $('#contact_details').show();
+            
+            // Suchfeld leeren
+            $(this).val('');
+            return false;
+        }
+    }).autocomplete("instance")._renderItem = function(ul, item) {
+        return $("<li>")
+            .append(`<div class="autocomplete-item">
+                        <div class="autocomplete-name">${item.name}</div>
+                        ${item.email ? `<div class="autocomplete-email">${item.email}</div>` : ''}
+                        ${item.organization_info ? `<div class="organization-info">${item.organization_info}</div>` : ''}
+                     </div>`)
+            .appendTo(ul);
+    };
+});
+</script>
+{% endblock %}

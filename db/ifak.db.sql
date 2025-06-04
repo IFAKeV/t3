@@ -1,0 +1,150 @@
+BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS "Languages" (
+	"LanguageID"	INTEGER NOT NULL UNIQUE,
+	"LanguageNameShort"	TEXT NOT NULL,
+	"LanguageName"	TEXT NOT NULL,
+	PRIMARY KEY("LanguageID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "LanguageLinks" (
+	"LanguageLinkID"	INTEGER NOT NULL UNIQUE,
+	"EmployeeID"	INTEGER NOT NULL,
+	"LanguageID"	INTEGER NOT NULL,
+	"SkillLevel"	TEXT NOT NULL,
+	"zertifiziert"	INTEGER NOT NULL,
+	PRIMARY KEY("LanguageLinkID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "Settings" (
+	"LastEdited"	TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "Locations" (
+	"LocationID"	INTEGER NOT NULL UNIQUE,
+	"Short"	TEXT NOT NULL,
+	"Location"	TEXT NOT NULL,
+	"Long"	TEXT NOT NULL,
+	"SortedLong"	TEXT,
+	"Phone"	TEXT NOT NULL,
+	"Mobile"	TEXT NOT NULL,
+	"Fax"	TEXT NOT NULL,
+	"Mail"	TEXT NOT NULL,
+	"Street"	TEXT NOT NULL,
+	"ZIP"	TEXT NOT NULL,
+	"Town"	TEXT NOT NULL,
+	PRIMARY KEY("LocationID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "Employees" (
+	"EmployeeID"	INTEGER NOT NULL UNIQUE,
+	"LastName"	TEXT NOT NULL,
+	"SortedLastName"	TEXT NOT NULL,
+	"FirstName"	TEXT NOT NULL,
+	"Phone"	TEXT,
+	"Mobile"	TEXT,
+	"Mail"	TEXT,
+	"_id"	INTEGER,
+	PRIMARY KEY("EmployeeID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "temp_addresses" (
+	"ID"	TEXT,
+	"MDNr"	TEXT,
+	"ANNr"	TEXT,
+	"FirstName"	TEXT,
+	"LastName"	TEXT,
+	"Titel"	TEXT,
+	"Eintritt"	TEXT,
+	"Austritt"	TEXT,
+	"Firma"	TEXT,
+	"Beschaeftigungsdauer"	TEXT
+);
+CREATE TABLE IF NOT EXISTS "Facilities" (
+	"FacilityID"	INTEGER NOT NULL UNIQUE,
+	"LocationID"	INTEGER NOT NULL,
+	"Short"	TEXT NOT NULL,
+	"Facility"	TEXT NOT NULL,
+	"Long"	TEXT NOT NULL,
+	"SortedLong"	TEXT NOT NULL,
+	"Phone"	TEXT NOT NULL,
+	"Mobile"	TEXT NOT NULL,
+	"Fax"	TEXT NOT NULL,
+	"Mail"	TEXT NOT NULL,
+	"URL"	TEXT NOT NULL,
+	"DepartmentID"	INTEGER,
+	PRIMARY KEY("FacilityID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "Roles" (
+	"RoleID"	INTEGER NOT NULL UNIQUE,
+	"RoleName"	TEXT NOT NULL,
+	"RoleSign"	TEXT,
+	PRIMARY KEY("RoleID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "FacilityLinks" (
+	"FacilityLinkID"	INTEGER,
+	"EmployeeID"	INTEGER NOT NULL,
+	"FacilityID"	INTEGER NOT NULL,
+	"RoleID"	INTEGER NOT NULL,
+	PRIMARY KEY("FacilityLinkID" AUTOINCREMENT),
+	FOREIGN KEY("EmployeeID") REFERENCES "Employees"("EmployeeID"),
+	FOREIGN KEY("FacilityID") REFERENCES "Facilities"("FacilityID"),
+	FOREIGN KEY("RoleID") REFERENCES "Roles"("RoleID")
+);
+CREATE TABLE IF NOT EXISTS "Departments" (
+	"DepartmentID"	INTEGER NOT NULL UNIQUE,
+	"Short"	TEXT NOT NULL,
+	"Department"	TEXT NOT NULL,
+	"Long"	TEXT NOT NULL,
+	"SortedLong"	TEXT,
+	"color"	TEXT NOT NULL,
+	PRIMARY KEY("DepartmentID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "Permissions" (
+	"PermissionID"	INTEGER,
+	"EmployeeID"	INTEGER NOT NULL,
+	"GroupID"	INTEGER NOT NULL,
+	PRIMARY KEY("PermissionID" AUTOINCREMENT),
+	FOREIGN KEY("EmployeeID") REFERENCES "Employees"("EmployeeID"),
+	FOREIGN KEY("GroupID") REFERENCES "Groups"("GroupID")
+);
+CREATE TABLE IF NOT EXISTS "GroupMembers" (
+	"GroupMemberID"	INTEGER NOT NULL UNIQUE,
+	"GroupID"	INTEGER NOT NULL,
+	"EmployeeID"	INTEGER NOT NULL,
+	PRIMARY KEY("GroupMemberID" AUTOINCREMENT),
+	FOREIGN KEY("GroupID") REFERENCES "Groups"("GroupID")
+);
+CREATE TABLE IF NOT EXISTS "Folders" (
+	"FolderID"	INTEGER NOT NULL UNIQUE,
+	"ParentFolderID"	INTEGER,
+	"FolderName"	TEXT NOT NULL,
+	PRIMARY KEY("FolderID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "FolderPermissions" (
+	"FolderPermissionID"	INTEGER NOT NULL UNIQUE,
+	"GroupID"	INTEGER NOT NULL,
+	"FolderID"	INTEGER NOT NULL,
+	"PermissionLevel"	TEXT NOT NULL,
+	PRIMARY KEY("FolderPermissionID" AUTOINCREMENT),
+	FOREIGN KEY("GroupID") REFERENCES "Groups"("GroupID"),
+	FOREIGN KEY("FolderID") REFERENCES "Folders"("FolderID")
+);
+CREATE TABLE IF NOT EXISTS "Groups" (
+	"GroupID"	INTEGER NOT NULL UNIQUE,
+	"GroupName"	TEXT NOT NULL,
+	PRIMARY KEY("GroupID" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "DirectPermissions" (
+	"DirectPermID"	INTEGER,
+	"EmployeeID"	INTEGER NOT NULL,
+	"FolderID"	INTEGER NOT NULL,
+	"AccessLevel"	CHAR(1) NOT NULL,
+	PRIMARY KEY("DirectPermID" AUTOINCREMENT),
+	FOREIGN KEY("EmployeeID") REFERENCES "Employees"("EmployeeID"),
+	FOREIGN KEY("FolderID") REFERENCES "Folders"("FolderID")
+);
+CREATE TABLE IF NOT EXISTS "GroupFolderAccess" (
+	"GroupFolderID"	INTEGER,
+	"GroupID"	INTEGER NOT NULL,
+	"FolderID"	INTEGER NOT NULL,
+	"AccessLevel"	CHAR(1) NOT NULL,
+	PRIMARY KEY("GroupFolderID" AUTOINCREMENT),
+	FOREIGN KEY("GroupID") REFERENCES "Groups"("GroupID"),
+	FOREIGN KEY("FolderID") REFERENCES "Folders"("FolderID")
+);
+COMMIT;

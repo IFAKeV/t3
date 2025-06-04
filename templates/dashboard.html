@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - IFAK Ticketsystem{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>Ticket-Übersicht</h1>
+        
+        <div class="dashboard-filters">
+            <div class="filter-group">
+                <label>Team:</label>
+                <select id="team-filter" onchange="applyFilters()">
+                    <option value="my_team" {% if current_team_filter == 'my_team' %}selected{% endif %}>
+                        Mein Team ({{ current_agent.TeamName }})
+                    </option>
+                    <option value="all" {% if current_team_filter == 'all' %}selected{% endif %}>
+                        Alle Teams
+                    </option>
+                    {% for team in teams %}
+                    <option value="{{ team.TeamID }}" 
+                            {% if current_team_filter == team.TeamID|string %}selected{% endif %}>
+                        {{ team.TeamName }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Status:</label>
+                <select id="status-filter" onchange="applyFilters()">
+                    <option value="open" {% if current_status_filter == 'open' %}selected{% endif %}>
+                        Alle offenen
+                    </option>
+                    <option value="all" {% if current_status_filter == 'all' %}selected{% endif %}>
+                        Alle
+                    </option>
+                    {% for status in statuses %}
+                    <option value="{{ status.StatusName }}" 
+                            {% if current_status_filter == status.StatusName %}selected{% endif %}>
+                        {{ status.StatusName }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tickets-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Team</th>
+                    <th>Status</th>
+                    <th>Priorität</th>
+                    <th class="title-column">Titel</th>
+                    <th>Kontakt</th>
+                    <th>Zugewiesen an</th>
+                    <th>Erstellt am</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr class="ticket-row" onclick="window.location='{{ url_for('view_ticket', ticket_id=ticket.TicketID) }}'">
+                    <td>{{ ticket.TicketID }}</td>
+                    <td>
+                        <span class="team-badge" style="background-color: {{ ticket.TeamColor }}">
+                            {{ ticket.TeamName }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge" style="background-color: {{ ticket.StatusColor }}">
+                            {{ ticket.StatusName }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="priority-badge" style="background-color: {{ ticket.PriorityColor }}">
+                            {{ ticket.PriorityName }}
+                        </span>
+                    </td>
+                    <td class="title-cell">{{ ticket.Title }}</td>
+                    <td>{{ ticket.ContactName }}</td>
+                    <td>{{ ticket.AssignedAgents or "Nicht zugewiesen" }}</td>
+                    <td>{{ ticket.CreatedAt }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="no-tickets">Keine Tickets gefunden</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function applyFilters() {
+    const teamFilter = document.getElementById('team-filter').value;
+    const statusFilter = document.getElementById('status-filter').value;
+    
+    const url = new URL(window.location);
+    url.searchParams.set('team', teamFilter);
+    url.searchParams.set('status', statusFilter);
+    
+    window.location = url;
+}
+</script>
+{% endblock %}

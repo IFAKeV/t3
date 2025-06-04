@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+
+# Datenbanken  
+db/*.db
+
+# Uploads
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Ignore-Ordner
+ignore/
+
+# macOS
+.DS_Store

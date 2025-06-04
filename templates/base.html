@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IFAK e.V. Ticketsystem{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/ui-lightness/jquery-ui.css">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="{{ url_for('dashboard') }}"><img src="{{ url_for('static', filename='img/ifak-ticket-logo.svg') }}" alt="IFAK Logo" width="300"></a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('new_ticket') }}" class="button">+ Neues Ticket</a></li>
+                {% if current_agent %}
+                <li class="user-info">
+                    <span class="team-badge" style="background-color: {{ current_agent.TeamColor }}">
+                        {{ current_agent.TeamName }}
+                    </span>
+                    <span>{{ current_agent.AgentName }}</span>
+                    <a href="{{ url_for('logout') }}" class="logout">Abmelden</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} - IFAK e.V. Ticketsystem | Adressbuch-Stand: {{ addressbook_date }}</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
