@@ -1,9 +1,3 @@
-
-"""
-IFAK Ticketsystem - Hauptanwendung
-Version 2.0 - Mit Teams und Organisationsebenen
-"""
-
 import os
 import time
 from datetime import datetime
@@ -14,7 +8,7 @@ from PIL import Image
 # Projektinterne Imports
 from config import (
     DATABASE, UPLOAD_FOLDER, ALLOWED_EXTENSIONS, MAX_CONTENT_LENGTH,
-    STATUS_IDS, TEAM_IDS, SECRET_KEY, DEBUG
+    SECRET_KEY, DEBUG
 )
 from database import (
     get_ticket_db, get_address_db, close_db, query_db, insert_db, update_db,
@@ -165,6 +159,8 @@ def dashboard():
 @app.route('/ticket/new', methods=['GET', 'POST'])
 def new_ticket():
     """Neues Ticket erstellen"""
+    statuses = get_all_statuses()
+    new_status_id = statuses[0]['StatusID'] if statuses else 1
     if request.method == 'POST':
         # Basis-Ticket-Daten
         title = request.form.get('title')
@@ -189,7 +185,7 @@ def new_ticket():
             'ContactName', 'ContactPhone', 'ContactEmail', 'ContactEmployeeID',
             'FacilityID', 'LocationID', 'DepartmentID'
         ], [
-            title, description, priority_id, team_id, STATUS_IDS['NEW'],
+            title, description, priority_id, team_id, new_status_id,
             contact_name, contact_phone, contact_email, contact_employee_id,
             facility_id, location_id, department_id
         ])

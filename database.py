@@ -1,13 +1,6 @@
-
-"""
-Database-Abstraktionsschicht für das IFAK Ticketsystem
-Version 2.0 - Mit Teams und Organisationsebenen
-"""
-
 import sqlite3
 from flask import g
 from config import DATABASE
-
 
 def get_ticket_db():
     """Verbindung zur Ticket-Datenbank herstellen"""
