@@ -526,4 +526,5 @@ def init_db_command():
 
 
 if __name__ == '__main__':
-    app.run(debug=DEBUG, host='0.0.0.0', port=5001)
+    app.run(host='0.0.0.0', port=5001, debug=True,
+            ssl_context=('/opt/ifakticket/cert.pem', '/opt/ifakticket/key.pem'))
