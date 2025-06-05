@@ -530,4 +530,4 @@ def init_db_command():
 
 
 if __name__ == '__main__':
-    app.run(debug=DEBUG, host='0.0.0.0', port=5000)
+    app.run(debug=DEBUG, host='0.0.0.0', port=5001)
