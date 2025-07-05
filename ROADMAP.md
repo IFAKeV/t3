@@ -31,7 +31,7 @@
 - [ ] Standard-Filter "Meine offenen Tickets"
 - [ ] "CreatedBy" - Wer hat ein Ticket angelegt?
 - [ ] Angelegt aufgrund einer Mail, eines Anrufs, oder weil man sich auf dem Flur getroffen hat
-- [ ] Suchfunktion für Tickets
+- [x] Suchfunktion für Tickets
 - [ ] Erweiterte verwandte Tickets:
   - [ ] "verwandte Tickets" nur zeigen, wenn nicht gelöst
   - [ ] Gleiche Person

@@ -40,6 +40,7 @@ from database import (
     get_ticket_by_id,
     get_status_by_id,
     get_priority_by_id,
+    search_tickets,
 )
 from addressbook import (
     search_employees,
@@ -168,6 +169,7 @@ def dashboard():
     # Filter aus Query-Parametern
     team_filter = request.args.get("team", "my_team")
     status_filter = request.args.get("status", "open")
+    search_term = request.args.get("q", "").strip()
 
     # Team-ID bestimmen
     if team_filter == "my_team":
@@ -178,7 +180,9 @@ def dashboard():
         team_id = int(team_filter) if team_filter.isdigit() else None
 
     # Tickets laden
-    tickets = get_tickets_with_filters(team_id=team_id, status_filter=status_filter)
+    tickets = get_tickets_with_filters(
+        team_id=team_id, status_filter=status_filter, search_term=search_term or None
+    )
 
     # Teams und Status für Filter laden
     teams = get_all_teams()
@@ -191,6 +195,7 @@ def dashboard():
         statuses=statuses,
         current_team_filter=team_filter,
         current_status_filter=status_filter,
+        search_term=search_term,
     )
 
 
@@ -602,6 +607,17 @@ def api_employee_details(employee_id):
         return jsonify({"error": "Mitarbeiter nicht gefunden"}), 404
 
     return jsonify(employee)
+
+
+@app.route("/api/search_tickets")
+def api_search_tickets():
+    """API: Tickets nach Titel oder ID suchen"""
+    term = request.args.get("term", "")
+    if len(term) < 2:
+        return jsonify([])
+
+    results = search_tickets(term)
+    return jsonify(results)
 
 
 # ==============================================
