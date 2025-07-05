@@ -23,9 +23,9 @@
 
 ### Fixes
 
-- [ ] Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
-- [ ] Upload
-  - [ ] Aktueller Fehler: Meldung über erfolgreichen Upload bei nicht zugelassener Dateiendung
+- [x] Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
+- [x] Upload
+  - [x] Aktueller Fehler: Meldung über erfolgreichen Upload bei nicht zugelassener Dateiendung
 
 ### Features
 - [ ] Standard-Filter "Meine offenen Tickets"
