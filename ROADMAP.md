@@ -54,7 +54,7 @@
 
 
 
-### Regeln:
+### Regeln (für codex):
 - Schreibe alle Änderungen **ausschließlich in den Branch `codex`**.
 - Führe **keine Commits und keinen Merge in `main`** durch.
 - Kommentiere jede Änderung **direkt im Code** (inline), damit Funktion und Grund erkennbar sind.
