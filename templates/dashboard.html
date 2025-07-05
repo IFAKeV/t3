@@ -43,6 +43,21 @@
                     {% endfor %}
                 </select>
             </div>
+
+            <div class="filter-group">
+                <label>Ansicht:</label>
+                <select id="assigned-filter" onchange="applyFilters()">
+                    <option value="me" {% if current_assigned_filter == 'me' %}selected{% endif %}>Meine Tickets</option>
+                    <option value="all" {% if current_assigned_filter == 'all' %}selected{% endif %}>Alle Tickets</option>
+                </select>
+                {# Standard zeigt nur mir zugewiesene Tickets #}
+            </div>
+
+            <div class="filter-group">
+                <label>Suche:</label>
+                <input type="text" id="search-box" placeholder="Stichwort" value="{{ current_search }}" onkeydown="if(event.key==='Enter') applyFilters()">
+                {# sucht in Titel, Kontaktname oder ID #}
+            </div>
         </div>
     </div>
     
@@ -56,7 +71,9 @@
                     <th>Priorität</th>
                     <th class="title-column">Titel</th>
                     <th>Kontakt</th>
+                    <th>Quelle</th> {# Ursprung des Tickets #}
                     <th>Zugewiesen an</th>
+                    <th>Erstellt von</th>
                     <th>Erstellt am</th>
                 </tr>
             </thead>
@@ -81,12 +98,14 @@
                     </td>
                     <td class="title-cell">{{ ticket.Title }}</td>
                     <td>{{ ticket.ContactName }}</td>
+                    <td>{{ ticket.Source or '-' }}</td> {# Anzeigen ob Anruf, E-Mail oder Flur #}
                     <td>{{ ticket.AssignedAgents or "Nicht zugewiesen" }}</td>
+                    <td>{{ ticket.CreatedByName }}</td> {# Agent, der das Ticket angelegt hat #}
                     <td>{{ ticket.CreatedAt }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="8" class="no-tickets">Keine Tickets gefunden</td>
+                    <td colspan="10" class="no-tickets">Keine Tickets gefunden</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -98,11 +117,19 @@
 function applyFilters() {
     const teamFilter = document.getElementById('team-filter').value;
     const statusFilter = document.getElementById('status-filter').value;
-    
+    const assignedFilter = document.getElementById('assigned-filter').value;
+    const searchTerm = document.getElementById('search-box').value;
+
     const url = new URL(window.location);
     url.searchParams.set('team', teamFilter);
     url.searchParams.set('status', statusFilter);
-    
+    url.searchParams.set('assigned', assignedFilter);
+    if (searchTerm) {
+        url.searchParams.set('q', searchTerm);
+    } else {
+        url.searchParams.delete('q');
+    }
+
     window.location = url;
 }
 </script>

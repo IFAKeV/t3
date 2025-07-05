@@ -61,19 +61,15 @@ def insert_db_original(table, fields, values, db_type='ticket'):
 
 
 def insert_db(table, fields, values, db_type='ticket'):
-    """Daten in die Datenbank einfügen - DEBUG-Version"""
+    """Daten in die Datenbank einfügen"""
     if db_type == 'address':
         db = get_address_db()
     else:
         db = get_ticket_db()
-    
+
     placeholders = ', '.join(['?'] * len(values))
     query = f"INSERT INTO {table} ({', '.join(fields)}) VALUES ({placeholders})"
-    
-    # DEBUG: SQL ausgeben
-    print(f"DEBUG SQL: {query}")
-    print(f"DEBUG VALUES: {values}")
-    
+
     cur = db.execute(query, values)
     db.commit()
     return cur.lastrowid
@@ -158,15 +154,16 @@ def get_priority_by_id(priority_id):
     )
 
 # TICKETS
-def get_tickets_with_filters(team_id=None, status_filter='open'):
-    """Erweiterte Ticket-Abfrage mit Team-Filtern und Zuweisungen"""
+def get_tickets_with_filters(team_id=None, status_filter='open', assigned_agent_id=None, search_term=None):
+    """Erweiterte Ticket-Abfrage mit Team-, Zuweisungs- und Such-Filtern"""
     base_query = """
         SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID,
                t.ContactName, t.ContactPhone, t.ContactEmail,
+               t.CreatedByName, t.Source,
                s.StatusName, s.ColorCode as StatusColor,
                p.PriorityName, p.ColorCode as PriorityColor,
                team.TeamName, team.TeamColor,
-               strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt,
+               strftime('%d.%m.%Y %H:%M', t.CreatedAt, 'localtime') as CreatedAt,
                GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents
         FROM Tickets t
         JOIN TicketStatus s ON t.StatusID = s.StatusID
@@ -188,6 +185,18 @@ def get_tickets_with_filters(team_id=None, status_filter='open'):
         conditions.append("s.StatusName = ?")
         params.append(status_filter)
     
+    if assigned_agent_id:
+        conditions.append(
+            "EXISTS (SELECT 1 FROM TicketAssignees ta2 WHERE ta2.TicketID = t.TicketID AND ta2.AgentID = ?)"
+        )
+        params.append(assigned_agent_id)
+
+    if search_term:
+        # nach Titel, Kontaktname oder Ticket-ID filtern
+        conditions.append("(t.Title LIKE ? OR t.ContactName LIKE ? OR t.TicketID = ?)")
+        like = f"%{search_term}%"
+        params.extend([like, like, search_term if search_term.isdigit() else '-1'])
+
     if conditions:
         base_query += " WHERE " + " AND ".join(conditions)
     
@@ -202,10 +211,11 @@ def get_ticket_by_id(ticket_id):
         SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID,
                t.ContactName, t.ContactPhone, t.ContactEmail,
                t.ContactEmployeeID, t.FacilityID, t.LocationID, t.DepartmentID,
+               t.CreatedByName, t.Source,
                s.StatusName, s.ColorCode as StatusColor,
                p.PriorityName, p.ColorCode as PriorityColor,
                team.TeamName, team.TeamColor,
-               strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt
+               strftime('%d.%m.%Y %H:%M', t.CreatedAt, 'localtime') as CreatedAt
         FROM Tickets t
         JOIN TicketStatus s ON t.StatusID = s.StatusID
         JOIN TicketPriorities p ON t.PriorityID = p.PriorityID

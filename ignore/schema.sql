@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS "Tickets" (
     "Title" TEXT NOT NULL,
     "Description" TEXT NOT NULL,
     "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "CreatedByName" TEXT NOT NULL,
+    "Source" TEXT,
     "StatusID" INTEGER NOT NULL,
     "PriorityID" INTEGER NOT NULL,
     "TeamID" INTEGER NOT NULL,

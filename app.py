@@ -132,6 +132,8 @@ def dashboard():
     # Filter aus Query-Parametern
     team_filter = request.args.get('team', 'my_team')
     status_filter = request.args.get('status', 'open')
+    assigned_filter = request.args.get('assigned', 'me')
+    search_term = request.args.get('q', '').strip()
     
     # Team-ID bestimmen
     if team_filter == 'my_team':
@@ -142,7 +144,11 @@ def dashboard():
         team_id = int(team_filter) if team_filter.isdigit() else None
     
     # Tickets laden
-    tickets = get_tickets_with_filters(team_id=team_id, status_filter=status_filter)
+    assigned_agent_id = g.current_agent['AgentID'] if assigned_filter == 'me' else None
+    tickets = get_tickets_with_filters(team_id=team_id,
+                                       status_filter=status_filter,
+                                       assigned_agent_id=assigned_agent_id,
+                                       search_term=search_term)
     
     # Teams und Status für Filter laden
     teams = get_all_teams()
@@ -153,7 +159,9 @@ def dashboard():
                          teams=teams,
                          statuses=statuses,
                          current_team_filter=team_filter,
-                         current_status_filter=status_filter)
+                         current_status_filter=status_filter,
+                         current_assigned_filter=assigned_filter,
+                         current_search=search_term)
 
 
 @app.route('/ticket/new', methods=['GET', 'POST'])
@@ -180,14 +188,18 @@ def new_ticket():
         department_id = request.form.get('department_id') or None
         
         # Ticket erstellen
+        # Quelle (Anruf, E-Mail, Flur) und erzeugender Agent werden gespeichert
+        source = request.form.get('source')
         ticket_id = insert_db('Tickets', [
             'Title', 'Description', 'PriorityID', 'TeamID', 'StatusID',
             'ContactName', 'ContactPhone', 'ContactEmail', 'ContactEmployeeID',
-            'FacilityID', 'LocationID', 'DepartmentID'
+            'FacilityID', 'LocationID', 'DepartmentID',
+            'CreatedByName', 'Source'
         ], [
             title, description, priority_id, team_id, new_status_id,
             contact_name, contact_phone, contact_email, contact_employee_id,
-            facility_id, location_id, department_id
+            facility_id, location_id, department_id,
+            g.current_agent['AgentName'], source
         ])
         
         # Agent-Zuweisung verarbeiten
@@ -342,7 +354,7 @@ def view_ticket(ticket_id):
     # Updates laden
     updates = query_db("""
         SELECT UpdateID, TicketID, UpdatedByName, UpdateText, IsSolution,
-               strftime('%d.%m.%Y %H:%M', UpdatedAt) as UpdatedAt
+               strftime('%d.%m.%Y %H:%M', UpdatedAt, 'localtime') as UpdatedAt
         FROM TicketUpdates
         WHERE TicketID = ?
         ORDER BY UpdatedAt ASC
@@ -351,7 +363,7 @@ def view_ticket(ticket_id):
     # Anhänge laden
     attachments = query_db("""
         SELECT AttachmentID, FileName, StoragePath, FileSize,
-               strftime('%d.%m.%Y %H:%M', UploadedAt) as UploadedAt
+               strftime('%d.%m.%Y %H:%M', UploadedAt, 'localtime') as UploadedAt
         FROM TicketAttachments
         WHERE TicketID = ?
         ORDER BY UploadedAt ASC
@@ -360,13 +372,14 @@ def view_ticket(ticket_id):
     # Zugewiesene Agenten
     assignees = query_db("""
         SELECT AgentID, AgentName,
-               strftime('%d.%m.%Y %H:%M', AssignedAt) as AssignedAt
+               strftime('%d.%m.%Y %H:%M', AssignedAt, 'localtime') as AssignedAt
         FROM TicketAssignees
         WHERE TicketID = ?
         ORDER BY AssignedAt DESC
     """, (ticket_id,))
     
-    # Verwandte Tickets (gleiche Einrichtung/Standort)
+    # Verwandte Tickets (gleiche Person/Einrichtung/Standort)
+    related_person = []
     related_facility = []
     related_location = []
     
@@ -392,7 +405,21 @@ def view_ticket(ticket_id):
     #         ORDER BY t.CreatedAt DESC LIMIT 5
     #     """, (ticket['FacilityID'], ticket_id))
     
-    # Facility-Tickets
+    # Tickets der gleichen Person
+    if ticket.get('ContactEmployeeID'):
+        related_person = query_db("""
+            SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
+                team.TeamName, team.TeamColor,
+                strftime('%d.%m.%Y', t.CreatedAt) as CreatedAt
+            FROM Tickets t
+            JOIN TicketStatus s ON t.StatusID = s.StatusID
+            JOIN Teams team ON t.TeamID = team.TeamID
+            WHERE t.ContactEmployeeID = ? AND t.TicketID != ?
+              AND s.StatusName != 'Gelöst'
+            ORDER BY t.CreatedAt DESC LIMIT 5
+        """, (ticket['ContactEmployeeID'], ticket_id))
+
+    # Facility-Tickets (nur wenn nicht durch Person abgedeckt)
     if ticket.get('FacilityID'):
         related_facility = query_db("""
             SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
@@ -402,6 +429,7 @@ def view_ticket(ticket_id):
             JOIN TicketStatus s ON t.StatusID = s.StatusID
             JOIN Teams team ON t.TeamID = team.TeamID
             WHERE t.FacilityID = ? AND t.TicketID != ?
+              AND s.StatusName != 'Gelöst'
             ORDER BY t.CreatedAt DESC LIMIT 5
         """, (ticket['FacilityID'], ticket_id))
 
@@ -441,9 +469,25 @@ def view_ticket(ticket_id):
             JOIN TicketStatus s ON t.StatusID = s.StatusID
             JOIN Teams team ON t.TeamID = team.TeamID
             WHERE t.LocationID = ? AND t.TicketID != ?
-            AND (t.FacilityID != ? OR t.FacilityID IS NULL)
+              AND (t.FacilityID != ? OR t.FacilityID IS NULL)
+              AND s.StatusName != 'Gelöst'
             ORDER BY t.CreatedAt DESC LIMIT 5
         """, (ticket['LocationID'], ticket_id, ticket['FacilityID'] or 0))
+
+    # Duplikate zwischen den Listen vermeiden und nur offene Tickets zeigen
+    seen_ids = set()
+    def dedupe(list_):
+        """Hilfsfunktion zum Entfernen bereits gesehener Tickets"""
+        unique = []
+        for t in list_:
+            if t['TicketID'] not in seen_ids:
+                unique.append(t)
+                seen_ids.add(t['TicketID'])
+        return unique
+
+    related_person = dedupe([r for r in related_person])
+    related_facility = dedupe([r for r in related_facility])
+    related_location = dedupe([r for r in related_location])
 
 
 
@@ -467,6 +511,7 @@ def view_ticket(ticket_id):
                          updates=updates,
                          attachments=attachments,
                          assignees=assignees,
+                         related_person=related_person,
                          related_facility=related_facility,
                          related_location=related_location,
                          facility_info=facility_info,

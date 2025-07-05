@@ -12,6 +12,9 @@
                 <span class="status-badge" style="background-color: {{ ticket.StatusColor }}">{{ ticket.StatusName }}</span>
                 <span class="priority-badge" style="background-color: {{ ticket.PriorityColor }}">{{ ticket.PriorityName }}</span>
                 <span>Erstellt am: {{ ticket.CreatedAt }}</span>
+                <span>von {{ ticket.CreatedByName }}</span>
+                {# zeigt, woher das Ticket stammt #}
+                {% if ticket.Source %}<span>({{ ticket.Source }})</span>{% endif %}
             </div>
             <span class="ticket-id">Ticket-ID: {{ ticket.TicketID }}</span>
         </div>
@@ -45,6 +48,24 @@
             </div>
             {% endif %}
             
+            {% if related_person %}
+            <h3>Weitere Tickets dieser Person</h3>
+            <div class="related-tickets">
+                {% for related in related_person %}
+                <p>
+                    <span class="team-badge small" style="background-color: {{ related.TeamColor }}">
+                        {{ related.TeamName }}
+                    </span>
+                    <a href="{{ url_for('view_ticket', ticket_id=related.TicketID) }}">
+                        #{{ related.TicketID }}: {{ related.Title[:40] }}{% if related.Title|length > 40 %}...{% endif %}
+                    </a>
+                    <em>({{ related.ContactName.split()[0] }})</em>
+                    <small>({{ related.CreatedAt }})</small>
+                </p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             {% if related_facility %}
             <h3>Weitere Tickets dieser Einrichtung</h3>
             <div class="related-tickets">
