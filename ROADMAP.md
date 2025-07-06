@@ -20,45 +20,33 @@
 ## v0.2.1 📋 **Planned**
 **Produktiv-Rollout Vorbereitung**
 
-### Features
+### Fixes
+
+- Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
+- Aktueller Fehler beim Dateiupload: Meldung über erfolgreichen Upload bei nicht zugelassener Dateiendung
+
+### (new) Features
+
 - Standard-Filter "Meine offenen Tickets"
+- "CreatedBy" - Wer hat ein Ticket angelegt?
+- Angelegt aufgrund: Einer Mail, eines Anrufs, oder weil man sich auf dem Flur getroffen hat
 - Suchfunktion für Tickets
 - Erweiterte verwandte Tickets:
+  - "verwandte Tickets" nur zeigen, wenn nicht gelöst
   - Gleiche Person
   - Gleiche Einrichtung (falls nicht durch Person erfasst)
   - Gleicher Standort (falls nicht durch Person/Einrichtung erfasst)
   - Duplikat-Vermeidung
-
-### Mobile Optimierung
-- Container volle Breite nutzen
-- Buttons/Tags kompakter gestalten
-- Engere Zeilenabstände
-- Mehr Tickets pro Screen sichtbar
-- Weniger verschwendeter Whitespace
-
-**Ziel:** Produktiv-Rollout für alle 5 Agenten
-
----
-
-## v0.2.2 📋 **Planned**
-**Workflow-Verbesserungen**
-- Push-Notifications (Service Worker)
-  - Neue Tickets
+- Push-Notifications bei:
+  - Neuen Tickets
   - Ticket-Zuweisungen
-  - Kritische Prioritäten
-- Warnung bei sehr alten offenen Tickets
+  - Kritischen Prioritäten
+- Warnung/Hinweis bei sehr alten offenen Tickets nach einzustellendem Schwellwert durch farbige hervorhebung im Dashboard
+- Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
 
-**Voraussetzung:** Stabile v0.2.1 und positives Agent-Feedback
-
-### Was in der ersten Nutzungswoche aufgefallen ist
-- Wer hat ein Ticket erzeugt?
-- "verwandte Tickets" sollten noch offen sein
-- Zeitzone
 
 ### Regeln (für codex)
-- Schreibe alle Änderungen **ausschließlich in den Branch `codex`**.
-- Führe **keine Commits und keinen Merge in `main`** durch.
 - Kommentiere jede Änderung **direkt im Code** (inline), damit Funktion und Grund erkennbar sind.
 - Bearbeite die Punkte der Reihe nach, klar getrennt.
 - Verwende vorhandene Felder, Templates und Module, wo sinnvoll.
-- Lege neue Hilfsfunktionen (z.\u200bB. für Mailversand) in separaten Modulen ab (`mailer.py` etc.).
+- Lege neue Hilfsfunktionen (z.B. für Mailversand) in separaten Modulen ab (`mailer.py` etc.).
