@@ -3,6 +3,20 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('IFAK Ticketsystem v2.0 geladen');
+
+    // Service Worker registrieren und Notification-Rechte anfragen
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/js/service-worker.js')
+            .then(function(reg) {
+                console.log('Service Worker registriert');
+            })
+            .catch(function(err) {
+                console.error('Service Worker Registrierung fehlgeschlagen', err);
+            });
+    }
+    if ('Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+    }
     
     // Flash-Messages automatisch ausblenden
     const flashMessages = document.querySelectorAll('.flash-message');

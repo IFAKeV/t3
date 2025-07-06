@@ -168,15 +168,19 @@ def logout():
 def dashboard():
     """Dashboard mit Team-Filter"""
     # Filter aus Query-Parametern
-    team_filter = request.args.get("team", "my_team")
+    team_filter = request.args.get("team", "mine")
     status_filter = request.args.get("status", "open")
     search_term = request.args.get("q", "").strip()
 
     # Team-ID bestimmen
+    agent_filter = None
     if team_filter == "my_team":
         team_id = g.current_agent["TeamID"]
     elif team_filter == "all":
         team_id = None
+    elif team_filter == "mine":
+        team_id = None
+        agent_filter = g.current_agent["AgentID"]
     else:
         team_id = int(team_filter) if team_filter.isdigit() else None
 
@@ -185,6 +189,7 @@ def dashboard():
         team_id=team_id,
         status_filter=status_filter,
         search_term=search_term or None,
+        agent_id=agent_filter,
     )
 
     # Teams und Status für Filter laden
@@ -227,6 +232,7 @@ def new_ticket():
         department_id = request.form.get("department_id") or None
 
         # Ticket erstellen
+        source = request.form.get("source")
         ticket_id = insert_db(
             "Tickets",
             [
@@ -235,6 +241,8 @@ def new_ticket():
                 "PriorityID",
                 "TeamID",
                 "StatusID",
+                "CreatedByAgentID",
+                "Source",
                 "ContactName",
                 "ContactPhone",
                 "ContactEmail",
@@ -249,6 +257,8 @@ def new_ticket():
                 priority_id,
                 team_id,
                 new_status_id,
+                g.current_agent["AgentID"],
+                source,
                 contact_name,
                 contact_phone,
                 contact_email,

@@ -12,6 +12,8 @@
                 <span class="status-badge" style="background-color: {{ ticket.StatusColor }}">{{ ticket.StatusName }}</span>
                 <span class="priority-badge" style="background-color: {{ ticket.PriorityColor }}">{{ ticket.PriorityName }}</span>
                 <span>Erstellt am: {{ ticket.CreatedAt }}</span>
+                <span>von {{ ticket.CreatedByName }}</span>
+                {% if ticket.Source %}<span>via {{ ticket.Source }}</span>{% endif %}
             </div>
             <span class="ticket-id">Ticket-ID: {{ ticket.TicketID }}</span>
         </div>

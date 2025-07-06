@@ -45,6 +45,8 @@ CREATE TABLE IF NOT EXISTS "Tickets" (
     "StatusID" INTEGER NOT NULL,
     "PriorityID" INTEGER NOT NULL,
     "TeamID" INTEGER NOT NULL,
+    "CreatedByAgentID" INTEGER NOT NULL,
+    "Source" TEXT,
     "ContactName" TEXT NOT NULL,
     "ContactPhone" TEXT,
     "ContactEmail" TEXT,
@@ -54,7 +56,8 @@ CREATE TABLE IF NOT EXISTS "Tickets" (
     "DepartmentID" INTEGER,
     FOREIGN KEY("PriorityID") REFERENCES "TicketPriorities"("PriorityID"),
     FOREIGN KEY("StatusID") REFERENCES "TicketStatus"("StatusID"),
-    FOREIGN KEY("TeamID") REFERENCES "Teams"("TeamID")
+    FOREIGN KEY("TeamID") REFERENCES "Teams"("TeamID"),
+    FOREIGN KEY("CreatedByAgentID") REFERENCES "Agents"("AgentID")
 );
 
 -- Weitere Tabellen...
