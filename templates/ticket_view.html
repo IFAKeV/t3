@@ -45,7 +45,24 @@
             </div>
             {% endif %}
             
-            {% if related_facility %}
+            {% if related_person %}
+            <h3>Weitere Tickets dieser Person</h3>
+            <div class="related-tickets">
+                {% for related in related_person %}
+                <p>
+                    <span class="team-badge small" style="background-color: {{ related.TeamColor }}">
+                        {{ related.TeamName }}
+                    </span>
+
+                    <a href="{{ url_for('view_ticket', ticket_id=related.TicketID) }}">
+                        #{{ related.TicketID }}: {{ related.Title[:40] }}
+                        {% if related.Title|length > 40 %}...{% endif %}
+                    </a>
+                    <small>({{ related.CreatedAt }})</small>
+                </p>
+                {% endfor %}
+            </div>
+            {% elif related_facility %}
             <h3>Weitere Tickets dieser Einrichtung</h3>
             <div class="related-tickets">
                 {% for related in related_facility %}
@@ -63,9 +80,7 @@
                 </p>
                 {% endfor %}
             </div>
-            {% endif %}
-            
-            {% if related_location %}
+            {% elif related_location %}
             <h3>Weitere Tickets an diesem Standort</h3>
             <div class="related-tickets">
                 {% for related in related_location %}
@@ -84,6 +99,7 @@
                 {% endfor %}
             </div>
             {% endif %}
+            
             
             <h3>Zugewiesen an</h3>
             <div class="assignees">
