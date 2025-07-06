@@ -463,7 +463,8 @@ def view_ticket(ticket_id):
         (ticket_id,),
     )
 
-    # Verwandte Tickets (gleiche Einrichtung/Standort)
+    # Verwandte Tickets basierend auf Person/Einrichtung/Standort
+    related_person = []
     related_facility = []
     related_location = []
 
@@ -489,18 +490,39 @@ def view_ticket(ticket_id):
     #         ORDER BY t.CreatedAt DESC LIMIT 5
     #     """, (ticket['FacilityID'], ticket_id))
 
-    # Facility-Tickets
-    if ticket.get("FacilityID"):
-        related_facility = query_db(
+    # Gleiche Person (nur offene Tickets)
+    if ticket.get("ContactEmployeeID"):
+        related_person = query_db(
             """
             SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
-                team.TeamName, team.TeamColor,
-                strftime('%d.%m.%Y', t.CreatedAt) as CreatedAt
+                   team.TeamName, team.TeamColor,
+                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
             FROM Tickets t
             JOIN TicketStatus s ON t.StatusID = s.StatusID
             JOIN Teams team ON t.TeamID = team.TeamID
-            WHERE t.FacilityID = ? AND t.TicketID != ?
-            ORDER BY t.CreatedAt DESC LIMIT 5
+            WHERE t.ContactEmployeeID = ?
+              AND t.TicketID != ?
+              AND s.StatusName != 'Gelöst'
+            ORDER BY t.CreatedAt DESC
+            LIMIT 5
+        """,
+            (ticket["ContactEmployeeID"], ticket_id),
+        )
+    # Gleiche Einrichtung (falls keine Person erfasst)
+    elif ticket.get("FacilityID"):
+        related_facility = query_db(
+            """
+            SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
+                   team.TeamName, team.TeamColor,
+                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
+            FROM Tickets t
+            JOIN TicketStatus s ON t.StatusID = s.StatusID
+            JOIN Teams team ON t.TeamID = team.TeamID
+            WHERE t.FacilityID = ?
+              AND t.TicketID != ?
+              AND s.StatusName != 'Gelöst'
+            ORDER BY t.CreatedAt DESC
+            LIMIT 5
         """,
             (ticket["FacilityID"], ticket_id),
         )
@@ -531,21 +553,24 @@ def view_ticket(ticket_id):
     #         ORDER BY t.CreatedAt DESC LIMIT 5
     #     """, (ticket['LocationID'], ticket_id, ticket['FacilityID'] or 0))
 
-    # Location-Tickets
-    if ticket.get("LocationID"):
+    # Gleicher Standort (falls keine Person/Einrichtung erfasst)
+    elif ticket.get("LocationID"):
         related_location = query_db(
             """
             SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
-                team.TeamName, team.TeamColor,
-                strftime('%d.%m.%Y', t.CreatedAt) as CreatedAt
+                   team.TeamName, team.TeamColor,
+                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
             FROM Tickets t
             JOIN TicketStatus s ON t.StatusID = s.StatusID
             JOIN Teams team ON t.TeamID = team.TeamID
-            WHERE t.LocationID = ? AND t.TicketID != ?
-            AND (t.FacilityID != ? OR t.FacilityID IS NULL)
-            ORDER BY t.CreatedAt DESC LIMIT 5
+            WHERE t.LocationID = ?
+              AND t.TicketID != ?
+              AND (t.FacilityID != ? OR t.FacilityID IS NULL)
+              AND s.StatusName != 'Gelöst'
+            ORDER BY t.CreatedAt DESC
+            LIMIT 5
         """,
-            (ticket["LocationID"], ticket_id, ticket["FacilityID"] or 0),
+            (ticket["LocationID"], ticket_id, ticket.get("FacilityID") or 0),
         )
 
     # Facility/Location-Informationen laden
@@ -569,6 +594,7 @@ def view_ticket(ticket_id):
         updates=updates,
         attachments=attachments,
         assignees=assignees,
+        related_person=related_person,
         related_facility=related_facility,
         related_location=related_location,
         facility_info=facility_info,
