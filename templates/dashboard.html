@@ -17,6 +17,7 @@
             <div class="filter-group">
                 <label>Team:</label>
                 <select id="team-filter" onchange="applyFilters()">
+                    <option value="mine" {% if current_team_filter == 'mine' %}selected{% endif %}>Meine Tickets</option>
                     <option value="my_team" {% if current_team_filter == 'my_team' %}selected{% endif %}>
                         Mein Team ({{ current_agent.TeamName }})
                     </option>
@@ -71,6 +72,8 @@
                     <th>Zugewiesen an</th>
                     <th>Erstellt am</th>
                     <th>Alter (Tage)</th>
+                    <th>Erstellt von</th>
+                    <th>Quelle</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,10 +100,12 @@
                     <td>{{ ticket.AssignedAgents or "Nicht zugewiesen" }}</td>
                     <td>{{ ticket.CreatedAt }}</td>
                     <td>{{ ticket.AgeDays }}</td>
+                    <td>{{ ticket.CreatedByName }}</td>
+                    <td>{{ ticket.Source or '' }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="8" class="no-tickets">Keine Tickets gefunden</td>
+                    <td colspan="11" class="no-tickets">Keine Tickets gefunden</td>
                 </tr>
                 {% endfor %}
             </tbody>

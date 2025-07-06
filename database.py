@@ -176,7 +176,9 @@ def get_priority_by_id(priority_id):
 
 
 # TICKETS
-def get_tickets_with_filters(team_id=None, status_filter="open", search_term=None):
+def get_tickets_with_filters(
+    team_id=None, status_filter="open", search_term=None, agent_id=None
+):
     """Erweiterte Ticket-Abfrage mit Team-Filtern und Zuweisungen
 
     Optional kann ein Suchbegriff übergeben werden, um Tickets nach Titel oder
@@ -185,6 +187,7 @@ def get_tickets_with_filters(team_id=None, status_filter="open", search_term=Non
     base_query = """
         SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID,
                t.ContactName, t.ContactPhone, t.ContactEmail,
+               a.AgentName AS CreatedByName, t.Source,
                s.StatusName, s.ColorCode as StatusColor,
                p.PriorityName, p.ColorCode as PriorityColor,
                team.TeamName, team.TeamColor,
@@ -195,6 +198,7 @@ def get_tickets_with_filters(team_id=None, status_filter="open", search_term=Non
         JOIN TicketStatus s ON t.StatusID = s.StatusID
         JOIN TicketPriorities p ON t.PriorityID = p.PriorityID
         JOIN Teams team ON t.TeamID = team.TeamID
+        JOIN Agents a ON t.CreatedByAgentID = a.AgentID
         LEFT JOIN TicketAssignees ta ON t.TicketID = ta.TicketID
     """
 
@@ -216,6 +220,11 @@ def get_tickets_with_filters(team_id=None, status_filter="open", search_term=Non
         params.append(f"%{search_term}%")
         params.append(search_term if str(search_term).isdigit() else -1)
 
+    if agent_id:
+        conditions.append("(ta.AgentID = ? OR t.CreatedByAgentID = ?)")
+        params.append(agent_id)
+        params.append(agent_id)
+
     if conditions:
         base_query += " WHERE " + " AND ".join(conditions)
 
@@ -231,6 +240,7 @@ def get_ticket_by_id(ticket_id):
         SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID,
                t.ContactName, t.ContactPhone, t.ContactEmail,
                t.ContactEmployeeID, t.FacilityID, t.LocationID, t.DepartmentID,
+               a.AgentName AS CreatedByName, t.Source,
                s.StatusName, s.ColorCode as StatusColor,
                p.PriorityName, p.ColorCode as PriorityColor,
                team.TeamName, team.TeamColor,
@@ -240,6 +250,7 @@ def get_ticket_by_id(ticket_id):
         JOIN TicketStatus s ON t.StatusID = s.StatusID
         JOIN TicketPriorities p ON t.PriorityID = p.PriorityID
         JOIN Teams team ON t.TeamID = team.TeamID
+        JOIN Agents a ON t.CreatedByAgentID = a.AgentID
         WHERE t.TicketID = ?
     """,
         (ticket_id,),
