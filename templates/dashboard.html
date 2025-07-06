@@ -48,6 +48,10 @@
                 <label>Suche:</label>
                 <input type="text" id="search-input" value="{{ search_term }}" placeholder="Titel oder ID">
                 <button onclick="applyFilters()">Suchen</button>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="include-closed" {% if include_closed %}checked{% endif %}>
+                    <label for="include-closed" title="Auch gelöste Tickets anzeigen">Abgeschlossene einschließen</label>
+                </div>
             </div>
         </div>
     </div>
@@ -105,6 +109,7 @@ function applyFilters() {
     const teamFilter = document.getElementById('team-filter').value;
     const statusFilter = document.getElementById('status-filter').value;
     const searchValue = document.getElementById('search-input').value;
+    const includeClosed = document.getElementById('include-closed').checked;
 
     const url = new URL(window.location);
     url.searchParams.set('team', teamFilter);
@@ -113,6 +118,11 @@ function applyFilters() {
         url.searchParams.set('q', searchValue);
     } else {
         url.searchParams.delete('q');
+    }
+    if (includeClosed) {
+        url.searchParams.set('include_closed', '1');
+    } else {
+        url.searchParams.delete('include_closed');
     }
 
     window.location = url;
