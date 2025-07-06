@@ -184,6 +184,16 @@ main {
     border-radius: 4px;
     background-color: white;
 }
+
+.search-group .search-bar {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.search-group .search-bar input {
+    flex: 1;
+    width: auto;
+}
 .assigned-agents {
     font-size: 0.9em;
 }
