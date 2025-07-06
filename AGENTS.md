@@ -1,13 +1,20 @@
 # AGENTS.md
 
 ## Code Style
-- Use Black for Python formatting.
+- Format all Python code with **Black**.
 - Avoid abbreviations in variable names.
+- Comment inline when modifying existing code so the purpose is clear.
 
 ## Testing
-- Run pytest tests/ before finalizing a PR.
-- All commits must pass lint checks via flake8.
+- Run `python -m py_compile app.py database.py config.py addressbook.py`.
+- Execute `pytest` and `flake8` if available.
+
+## Workflow
+- Perform changes in branch `codex` only and avoid commits to `main`.
+- Work on the listed tasks sequentially and keep them well separated.
+- Reuse existing fields, templates and modules when possible.
+- Place new helper functions in dedicated modules such as `mailer.py`.
 
 ## PR Instructions
-- Title format: [Fix] Short description
-- Include a one-line summary and a "Testing Done" section
+- Use the title format `[Fix] Short description`.
+- Provide a brief summary and a **Testing Done** section.

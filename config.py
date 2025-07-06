@@ -5,17 +5,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Datenbank-Konfiguration
 DATABASE = {
-    'ticket_db': os.path.join(BASE_DIR, 'db', 'tickets.db'),
-    'address_db': os.path.join(BASE_DIR, 'db', 'ifak.db')
+    "ticket_db": os.path.join(BASE_DIR, "db", "tickets.db"),
+    "address_db": os.path.join(BASE_DIR, "db", "ifak.db"),
 }
 
 # Upload-Konfiguration
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt'}
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf", "doc", "docx", "txt"}
 MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB
 
 # Flask-Konfiguration
-SECRET_KEY = 'your-secret-key-here'  # TODO: In Produktion ändern
+SECRET_KEY = "your-secret-key-here"  # TODO: In Produktion ändern
 DEBUG = True  # TODO: In Produktion auf False setzen
 
 # Session-Konfiguration

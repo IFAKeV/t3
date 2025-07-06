@@ -74,7 +74,16 @@
                     <option value="{{ agent.AgentID }}">{{ agent.AgentName }} ({{ agent.TeamName }})</option>
                     {% endfor %}
                 </select>
-            </div>            
+            </div>
+
+            <div class="form-group">
+                <label for="source">Quelle*:</label>
+                <select id="source" name="source" required>
+                    <option value="Anruf">Anruf</option>
+                    <option value="E-Mail">E-Mail</option>
+                    <option value="Flur">Auf dem Flur</option>
+                </select>
+            </div>
 
 
         </div>
