@@ -11,7 +11,17 @@ DATABASE = {
 
 # Upload-Konfiguration
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "pdf", "doc", "docx", "txt"}
+ALLOWED_EXTENSIONS = {
+    "png",
+    "jpg",
+    "jpeg",
+    "gif",
+    "pdf",
+    "doc",
+    "docx",
+    "txt",
+    "zip",
+}
 MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10MB
 
 # Flask-Konfiguration
