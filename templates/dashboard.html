@@ -51,10 +51,12 @@
                 </select>
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group search-group">
                 <label>Suche:</label>
-                <input type="text" id="search-input" value="{{ search_term }}" placeholder="Titel oder ID">
-                <button onclick="applyFilters()">Suchen</button>
+                <div class="search-bar">
+                    <input type="text" id="search-input" value="{{ search_term }}" placeholder="Titel oder ID">
+                    <button onclick="applyFilters()">Suchen</button>
+                </div>
             </div>
         </div>
     </div>
