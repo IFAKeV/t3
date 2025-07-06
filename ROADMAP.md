@@ -32,18 +32,18 @@
 - [ ] "CreatedBy" - Wer hat ein Ticket angelegt?
 - [ ] Angelegt aufgrund einer Mail, eines Anrufs, oder weil man sich auf dem Flur getroffen hat
 - [x] Suchfunktion für Tickets
-- [ ] Erweiterte verwandte Tickets:
-  - [ ] "verwandte Tickets" nur zeigen, wenn nicht gelöst
-  - [ ] Gleiche Person
-  - [ ] Gleiche Einrichtung (falls nicht durch Person erfasst)
-  - [ ] Gleicher Standort (falls nicht durch Person/Einrichtung erfasst)
-  - [ ] Duplikat-Vermeidung
+- [x] Erweiterte verwandte Tickets:
+  - [x] "verwandte Tickets" nur zeigen, wenn nicht gelöst
+  - [x] Gleiche Person
+  - [x] Gleiche Einrichtung (falls nicht durch Person erfasst)
+  - [x] Gleicher Standort (falls nicht durch Person/Einrichtung erfasst)
+  - [x] Duplikat-Vermeidung
 - [ ] Push-Notifications (Service Worker)
   - [ ] Neue Tickets
   - [ ] Ticket-Zuweisungen
   - [ ] Kritische Prioritäten
-- [ ] Warnung bei sehr alten offenen Tickets nach einzustellendem Schwellwert. 
-- [ ] Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
+- [x] Warnung bei sehr alten offenen Tickets nach einzustellendem Schwellwert. 
+- [x] Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
 
 
 ### Regeln (für codex):
