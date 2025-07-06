@@ -224,6 +224,11 @@ th, td {
     background-color: var(--light-color);
 }
 
+/* Hervorhebung sehr alter offener Tickets */
+.old-ticket {
+    background-color: #fff3cd;
+}
+
 .no-tickets {
     text-align: center;
     padding: 2rem;

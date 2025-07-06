@@ -62,7 +62,9 @@
                 </p>
                 {% endfor %}
             </div>
-            {% elif related_facility %}
+            {% endif %}
+
+            {% if related_facility %}
             <h3>Weitere Tickets dieser Einrichtung</h3>
             <div class="related-tickets">
                 {% for related in related_facility %}
@@ -80,7 +82,9 @@
                 </p>
                 {% endfor %}
             </div>
-            {% elif related_location %}
+            {% endif %}
+
+            {% if related_location %}
             <h3>Weitere Tickets an diesem Standort</h3>
             <div class="related-tickets">
                 {% for related in related_location %}
