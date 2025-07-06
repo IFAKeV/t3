@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS "Tickets" (
     "TicketID" INTEGER PRIMARY KEY AUTOINCREMENT,
     "Title" TEXT NOT NULL,
     "Description" TEXT NOT NULL,
+    "CreatedByName" TEXT NOT NULL, -- Agent der das Ticket angelegt hat
+    "CreatedVia" TEXT, -- Mail, Telefon oder persönliches Gespräch
     "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "StatusID" INTEGER NOT NULL,
     "PriorityID" INTEGER NOT NULL,

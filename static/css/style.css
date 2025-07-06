@@ -106,9 +106,9 @@ nav a.button {
 main {
     flex: 1;
     padding: 2rem;
-    max-width: 1200px;
+    max-width: none; /* volle Breite auf allen Geräten */
     width: 100%;
-    margin: 0 auto;
+    margin: 0;
 }
 
 /* ==============================================
@@ -222,6 +222,11 @@ th, td {
 
 .ticket-row:hover {
     background-color: var(--light-color);
+}
+
+.old-ticket {
+    /* Warnfarbe für sehr alte offene Tickets */
+    background-color: #fff3cd;
 }
 
 .no-tickets {

@@ -11,7 +11,12 @@
                 <span class="team-badge" style="background-color: {{ ticket.TeamColor }}">{{ ticket.TeamName }}</span>
                 <span class="status-badge" style="background-color: {{ ticket.StatusColor }}">{{ ticket.StatusName }}</span>
                 <span class="priority-badge" style="background-color: {{ ticket.PriorityColor }}">{{ ticket.PriorityName }}</span>
-                <span>Erstellt am: {{ ticket.CreatedAt }}</span>
+                <span>
+                    Erstellt am: {{ ticket.CreatedAt }} von {{ ticket.CreatedByName }}
+                    {% if ticket.CreatedVia %}({{ ticket.CreatedVia }}){% endif %}
+                    <!-- Alter in Tagen zur schnellen Übersicht -->
+                    • Alter: {{ ticket.AgeDays }} Tage
+                </span>
             </div>
             <span class="ticket-id">Ticket-ID: {{ ticket.TicketID }}</span>
         </div>
@@ -45,10 +50,10 @@
             </div>
             {% endif %}
             
-            {% if related_facility %}
-            <h3>Weitere Tickets dieser Einrichtung</h3>
+            {% if related_tickets %}
+            <h3>Verwandte Tickets</h3>
             <div class="related-tickets">
-                {% for related in related_facility %}
+                {% for related in related_tickets %}
                 <p>
                     <span class="team-badge small" style="background-color: {{ related.TeamColor }}">
                         {{ related.TeamName }}
@@ -57,26 +62,6 @@
                     <a href="{{ url_for('view_ticket', ticket_id=related.TicketID) }}">
                         #{{ related.TicketID }}: {{ related.Title[:40] }}
                         {% if related.Title|length > 40 %}...{% endif %}
-                    </a>
-                    <em>({{ related.ContactName.split()[0] }})</em>
-                    <small>({{ related.CreatedAt }})</small>
-                </p>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            {% if related_location %}
-            <h3>Weitere Tickets an diesem Standort</h3>
-            <div class="related-tickets">
-                {% for related in related_location %}
-                <p>
-                    <span class="team-badge small" style="background-color: {{ related.TeamColor }}">
-                        {{ related.TeamName }}
-                    </span>
-
-                    <a href="{{ url_for('view_ticket', ticket_id=related.TicketID) }}">
-                        #{{ related.TicketID }}: {{ related.Title[:30] }}
-                        {% if related.Title|length > 30 %}...{% endif %}
                     </a>
                     <em>({{ related.ContactName.split()[0] }})</em>
                     <small>({{ related.CreatedAt }})</small>

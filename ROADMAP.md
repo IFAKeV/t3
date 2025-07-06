@@ -23,30 +23,30 @@
 
 ### Fixes
 
-- [ ] Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
-- [ ] Upload
-  - [ ] Aktueller Fehler: Meldung über erfolgreichen Upload bei nicht zugelassener Dateiendung
+- [x] Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
+- [x] Upload
+  - [x] Aktueller Fehler: Meldung über erfolgreichen Upload bei nicht zugelassener Dateiendung
 
-### Features
-- [ ] Standard-Filter "Meine offenen Tickets"
-- [ ] "CreatedBy" - Wer hat ein Ticket angelegt?
-- [ ] Angelegt aufgrund einer Mail, eines Anrufs, oder weil man sich auf dem Flur getroffen hat
-- [ ] Suchfunktion für Tickets
-- [ ] Erweiterte verwandte Tickets:
-  - [ ] "verwandte Tickets" nur zeigen, wenn nicht gelöst
-  - [ ] Gleiche Person
-  - [ ] Gleiche Einrichtung (falls nicht durch Person erfasst)
-  - [ ] Gleicher Standort (falls nicht durch Person/Einrichtung erfasst)
-  - [ ] Duplikat-Vermeidung
-- [ ] Push-Notifications (Service Worker)
+-### Features
+- [x] Standard-Filter "Meine offenen Tickets"
+- [x] "CreatedBy" - Wer hat ein Ticket angelegt?
+- [x] Angelegt aufgrund einer Mail, eines Anrufs, oder weil man sich auf dem Flur getroffen hat
+- [x] Suchfunktion für Tickets
+- [x] Erweiterte verwandte Tickets:
+  - [x] "verwandte Tickets" nur zeigen, wenn nicht gelöst
+  - [x] Gleiche Person
+  - [x] Gleiche Einrichtung (falls nicht durch Person erfasst)
+  - [x] Gleicher Standort (falls nicht durch Person/Einrichtung erfasst)
+  - [x] Duplikat-Vermeidung
+- [x] Push-Notifications (Service Worker)
   - [ ] Neue Tickets
   - [ ] Ticket-Zuweisungen
   - [ ] Kritische Prioritäten
-- [ ] Warnung bei sehr alten offenen Tickets nach einzustellendem Schwellwert. 
-- [ ] Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
+- [x] Warnung bei sehr alten offenen Tickets nach einzustellendem Schwellwert.
+- [x] Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
 
 ### Mobile Optimierung
-- [ ] Container volle Breite nutzen
+ - [x] Container volle Breite nutzen
 - [ ] Buttons/Tags kompakter gestalten
 - [ ] Engere Zeilenabstände
 - [ ] Mehr Tickets pro Screen sichtbar

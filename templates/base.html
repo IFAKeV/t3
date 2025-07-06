@@ -53,6 +53,17 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('{{ url_for('static', filename='js/sw.js') }}')
+            .then(reg => console.log('Service Worker registriert', reg))
+            .catch(err => console.error('Service Worker Fehler', err));
+
+        if (Notification && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

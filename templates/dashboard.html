@@ -25,7 +25,7 @@
                     {% endfor %}
                 </select>
             </div>
-            
+
             <div class="filter-group">
                 <label>Status:</label>
                 <select id="status-filter" onchange="applyFilters()">
@@ -43,6 +43,20 @@
                     {% endfor %}
                 </select>
             </div>
+
+            <div class="filter-group">
+                <label>Zuweisung:</label>
+                <select id="assignment-filter" onchange="applyFilters()">
+                    <option value="mine" {% if current_assignment_filter == 'mine' %}selected{% endif %}>Meine</option>
+                    <option value="all" {% if current_assignment_filter == 'all' %}selected{% endif %}>Alle</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Suche:</label>
+                <input type="text" id="search-input" value="{{ search_term }}" placeholder="Titel oder ID">
+                <button onclick="applyFilters()">Suchen</button>
+            </div>
         </div>
     </div>
     
@@ -58,11 +72,13 @@
                     <th>Kontakt</th>
                     <th>Zugewiesen an</th>
                     <th>Erstellt am</th>
+                    <th>Alter (Tage)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for ticket in tickets %}
-                <tr class="ticket-row" onclick="window.location='{{ url_for('view_ticket', ticket_id=ticket.TicketID) }}'">
+                {# alte Tickets farblich hervorheben #}
+                <tr class="ticket-row {% if ticket.AgeDays > 30 %}old-ticket{% endif %}" onclick="window.location='{{ url_for('view_ticket', ticket_id=ticket.TicketID) }}'">
                     <td>{{ ticket.TicketID }}</td>
                     <td>
                         <span class="team-badge" style="background-color: {{ ticket.TeamColor }}">
@@ -83,6 +99,7 @@
                     <td>{{ ticket.ContactName }}</td>
                     <td>{{ ticket.AssignedAgents or "Nicht zugewiesen" }}</td>
                     <td>{{ ticket.CreatedAt }}</td>
+                    <td>{{ ticket.AgeDays }}</td>
                 </tr>
                 {% else %}
                 <tr>
@@ -98,11 +115,19 @@
 function applyFilters() {
     const teamFilter = document.getElementById('team-filter').value;
     const statusFilter = document.getElementById('status-filter').value;
-    
+    const assignmentFilter = document.getElementById('assignment-filter').value;
+    const searchValue = document.getElementById('search-input').value;
+
     const url = new URL(window.location);
     url.searchParams.set('team', teamFilter);
     url.searchParams.set('status', statusFilter);
-    
+    url.searchParams.set('assign', assignmentFilter);
+    if (searchValue) {
+        url.searchParams.set('q', searchValue);
+    } else {
+        url.searchParams.delete('q');
+    }
+
     window.location = url;
 }
 </script>
