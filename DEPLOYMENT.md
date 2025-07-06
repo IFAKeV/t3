@@ -1,5 +1,7 @@
 # Deployment-Dokumentation Ticket-System
 
+Wild und unkonventionell
+
 ## Übersicht
 Dokumentation für das Deployment von Code-Änderungen und Datenbank-Updates auf das Produktivsystem.
 
