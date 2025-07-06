@@ -41,6 +41,7 @@ from database import (
     get_status_by_id,
     get_priority_by_id,
     search_tickets,
+    get_related_open_tickets,
 )
 from addressbook import (
     search_employees,
@@ -493,48 +494,23 @@ def view_ticket(ticket_id):
 
     # Gleiche Person (nur offene Tickets)
     if ticket.get("ContactEmployeeID"):
-        person_rows = query_db(
-            """
-            SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
-                   team.TeamName, team.TeamColor,
-                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
-            FROM Tickets t
-            JOIN TicketStatus s ON t.StatusID = s.StatusID
-            JOIN Teams team ON t.TeamID = team.TeamID
-            WHERE t.ContactEmployeeID = ?
-              AND t.TicketID != ?
-              AND s.StatusName != 'Gelöst'
-            ORDER BY t.CreatedAt DESC
-            LIMIT 5
-        """,
-            (ticket["ContactEmployeeID"], ticket_id),
+        # Offene Tickets der gleichen Person abrufen
+        related_person = get_related_open_tickets(
+            "ContactEmployeeID",
+            ticket["ContactEmployeeID"],
+            exclude_ticket_ids=[ticket_id],
         )
-        for row in person_rows:
-            related_person.append(row)
-            seen_ticket_ids.add(row["TicketID"])
+        seen_ticket_ids.update(r["TicketID"] for r in related_person)
 
     # Gleiche Einrichtung
     if ticket.get("FacilityID"):
-        facility_rows = query_db(
-            """
-            SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
-                   team.TeamName, team.TeamColor,
-                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
-            FROM Tickets t
-            JOIN TicketStatus s ON t.StatusID = s.StatusID
-            JOIN Teams team ON t.TeamID = team.TeamID
-            WHERE t.FacilityID = ?
-              AND t.TicketID != ?
-              AND s.StatusName != 'Gelöst'
-            ORDER BY t.CreatedAt DESC
-            LIMIT 5
-        """,
-            (ticket["FacilityID"], ticket_id),
+        # Tickets dieser Einrichtung, die nicht bereits durch Person erfasst sind
+        related_facility = get_related_open_tickets(
+            "FacilityID",
+            ticket["FacilityID"],
+            exclude_ticket_ids=[ticket_id, *seen_ticket_ids],
         )
-        for row in facility_rows:
-            if row["TicketID"] not in seen_ticket_ids:
-                related_facility.append(row)
-                seen_ticket_ids.add(row["TicketID"])
+        seen_ticket_ids.update(r["TicketID"] for r in related_facility)
 
     # if ticket.get('LocationID'):
     #     related_location = query_db("""
@@ -564,27 +540,14 @@ def view_ticket(ticket_id):
 
     # Gleicher Standort
     if ticket.get("LocationID"):
-        location_rows = query_db(
-            """
-            SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
-                   team.TeamName, team.TeamColor,
-                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
-            FROM Tickets t
-            JOIN TicketStatus s ON t.StatusID = s.StatusID
-            JOIN Teams team ON t.TeamID = team.TeamID
-            WHERE t.LocationID = ?
-              AND t.TicketID != ?
-              AND (t.FacilityID != ? OR t.FacilityID IS NULL)
-              AND s.StatusName != 'Gelöst'
-            ORDER BY t.CreatedAt DESC
-            LIMIT 5
-        """,
-            (ticket["LocationID"], ticket_id, ticket.get("FacilityID") or 0),
+        # Standort-Tickets ohne bereits erfasste Einrichtungs-/Person-Tickets
+        related_location = get_related_open_tickets(
+            "LocationID",
+            ticket["LocationID"],
+            exclude_ticket_ids=[ticket_id, *seen_ticket_ids],
+            exclude_facility_id=ticket.get("FacilityID"),
         )
-        for row in location_rows:
-            if row["TicketID"] not in seen_ticket_ids:
-                related_location.append(row)
-                seen_ticket_ids.add(row["TicketID"])
+        seen_ticket_ids.update(r["TicketID"] for r in related_location)
 
     # Facility/Location-Informationen laden
     facility_info = None

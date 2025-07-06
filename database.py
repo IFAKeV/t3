@@ -259,6 +259,48 @@ def search_tickets(search_term, limit=10):
     )
 
 
+def get_related_open_tickets(
+    field_name,
+    field_value,
+    exclude_ticket_ids=None,
+    exclude_facility_id=None,
+    limit=5,
+):
+    """Tickets nach Feld filtern und nur ungelöste Treffer liefern."""
+
+    if not field_value:
+        return []
+
+    if field_name not in {"ContactEmployeeID", "FacilityID", "LocationID"}:
+        raise ValueError("Ungültiges Feld")
+
+    query = f"""
+        SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
+               team.TeamName, team.TeamColor,
+               strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
+        FROM Tickets t
+        JOIN TicketStatus s ON t.StatusID = s.StatusID
+        JOIN Teams team ON t.TeamID = team.TeamID
+        WHERE t.{field_name} = ?
+          AND s.StatusName != 'Gelöst'
+    """
+    params = [field_value]
+
+    if exclude_ticket_ids:
+        placeholders = ", ".join("?" for _ in exclude_ticket_ids)
+        query += f" AND t.TicketID NOT IN ({placeholders})"
+        params.extend(exclude_ticket_ids)
+
+    if exclude_facility_id is not None:
+        query += " AND (t.FacilityID != ? OR t.FacilityID IS NULL)"
+        params.append(exclude_facility_id)
+
+    query += " ORDER BY t.CreatedAt DESC LIMIT ?"
+    params.append(limit)
+
+    return query_db(query, params)
+
+
 # ADRESSBUCH
 def search_employees(search_term):
     """Mitarbeiter im Adressbuch suchen"""
