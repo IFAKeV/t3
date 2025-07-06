@@ -176,12 +176,7 @@ def get_priority_by_id(priority_id):
 
 
 # TICKETS
-def get_tickets_with_filters(
-    team_id=None,
-    status_filter="open",
-    search_term=None,
-    include_closed=False,
-):
+def get_tickets_with_filters(team_id=None, status_filter="open", search_term=None):
     """Erweiterte Ticket-Abfrage mit Team-Filtern und Zuweisungen
 
     Optional kann ein Suchbegriff übergeben werden, um Tickets nach Titel oder
@@ -209,7 +204,7 @@ def get_tickets_with_filters(
         conditions.append("t.TeamID = ?")
         params.append(team_id)
 
-    if status_filter == "open" and not include_closed:
+    if status_filter == "open":
         conditions.append("s.StatusName != 'Gelöst'")
     elif status_filter != "all":
         conditions.append("s.StatusName = ?")

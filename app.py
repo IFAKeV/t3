@@ -170,7 +170,6 @@ def dashboard():
     team_filter = request.args.get("team", "my_team")
     status_filter = request.args.get("status", "open")
     search_term = request.args.get("q", "").strip()
-    include_closed = request.args.get("include_closed") == "1"
 
     # Team-ID bestimmen
     if team_filter == "my_team":
@@ -185,7 +184,6 @@ def dashboard():
         team_id=team_id,
         status_filter=status_filter,
         search_term=search_term or None,
-        include_closed=include_closed,
     )
 
     # Teams und Status für Filter laden
@@ -200,7 +198,6 @@ def dashboard():
         current_team_filter=team_filter,
         current_status_filter=status_filter,
         search_term=search_term,
-        include_closed=include_closed,
     )
 
 
