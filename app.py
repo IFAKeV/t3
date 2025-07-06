@@ -463,9 +463,11 @@ def view_ticket(ticket_id):
         (ticket_id,),
     )
 
-    # Verwandte Tickets (gleiche Einrichtung/Standort)
+    # Verwandte Tickets basierend auf Person/Einrichtung/Standort
+    related_person = []
     related_facility = []
     related_location = []
+    seen_ticket_ids = set()
 
     # if ticket.get('FacilityID'):
     #     related_facility = query_db("""
@@ -489,21 +491,50 @@ def view_ticket(ticket_id):
     #         ORDER BY t.CreatedAt DESC LIMIT 5
     #     """, (ticket['FacilityID'], ticket_id))
 
-    # Facility-Tickets
-    if ticket.get("FacilityID"):
-        related_facility = query_db(
+    # Gleiche Person (nur offene Tickets)
+    if ticket.get("ContactEmployeeID"):
+        person_rows = query_db(
             """
             SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
-                team.TeamName, team.TeamColor,
-                strftime('%d.%m.%Y', t.CreatedAt) as CreatedAt
+                   team.TeamName, team.TeamColor,
+                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
             FROM Tickets t
             JOIN TicketStatus s ON t.StatusID = s.StatusID
             JOIN Teams team ON t.TeamID = team.TeamID
-            WHERE t.FacilityID = ? AND t.TicketID != ?
-            ORDER BY t.CreatedAt DESC LIMIT 5
+            WHERE t.ContactEmployeeID = ?
+              AND t.TicketID != ?
+              AND s.StatusName != 'Gelöst'
+            ORDER BY t.CreatedAt DESC
+            LIMIT 5
+        """,
+            (ticket["ContactEmployeeID"], ticket_id),
+        )
+        for row in person_rows:
+            related_person.append(row)
+            seen_ticket_ids.add(row["TicketID"])
+
+    # Gleiche Einrichtung
+    if ticket.get("FacilityID"):
+        facility_rows = query_db(
+            """
+            SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
+                   team.TeamName, team.TeamColor,
+                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
+            FROM Tickets t
+            JOIN TicketStatus s ON t.StatusID = s.StatusID
+            JOIN Teams team ON t.TeamID = team.TeamID
+            WHERE t.FacilityID = ?
+              AND t.TicketID != ?
+              AND s.StatusName != 'Gelöst'
+            ORDER BY t.CreatedAt DESC
+            LIMIT 5
         """,
             (ticket["FacilityID"], ticket_id),
         )
+        for row in facility_rows:
+            if row["TicketID"] not in seen_ticket_ids:
+                related_facility.append(row)
+                seen_ticket_ids.add(row["TicketID"])
 
     # if ticket.get('LocationID'):
     #     related_location = query_db("""
@@ -531,22 +562,29 @@ def view_ticket(ticket_id):
     #         ORDER BY t.CreatedAt DESC LIMIT 5
     #     """, (ticket['LocationID'], ticket_id, ticket['FacilityID'] or 0))
 
-    # Location-Tickets
+    # Gleicher Standort
     if ticket.get("LocationID"):
-        related_location = query_db(
+        location_rows = query_db(
             """
             SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
-                team.TeamName, team.TeamColor,
-                strftime('%d.%m.%Y', t.CreatedAt) as CreatedAt
+                   team.TeamName, team.TeamColor,
+                   strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt
             FROM Tickets t
             JOIN TicketStatus s ON t.StatusID = s.StatusID
             JOIN Teams team ON t.TeamID = team.TeamID
-            WHERE t.LocationID = ? AND t.TicketID != ?
-            AND (t.FacilityID != ? OR t.FacilityID IS NULL)
-            ORDER BY t.CreatedAt DESC LIMIT 5
+            WHERE t.LocationID = ?
+              AND t.TicketID != ?
+              AND (t.FacilityID != ? OR t.FacilityID IS NULL)
+              AND s.StatusName != 'Gelöst'
+            ORDER BY t.CreatedAt DESC
+            LIMIT 5
         """,
-            (ticket["LocationID"], ticket_id, ticket["FacilityID"] or 0),
+            (ticket["LocationID"], ticket_id, ticket.get("FacilityID") or 0),
         )
+        for row in location_rows:
+            if row["TicketID"] not in seen_ticket_ids:
+                related_location.append(row)
+                seen_ticket_ids.add(row["TicketID"])
 
     # Facility/Location-Informationen laden
     facility_info = None
@@ -569,6 +607,7 @@ def view_ticket(ticket_id):
         updates=updates,
         attachments=attachments,
         assignees=assignees,
+        related_person=related_person,
         related_facility=related_facility,
         related_location=related_location,
         facility_info=facility_info,
