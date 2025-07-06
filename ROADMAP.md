@@ -45,20 +45,9 @@
 - [ ] Warnung bei sehr alten offenen Tickets nach einzustellendem Schwellwert. 
 - [ ] Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
 
-### Mobile Optimierung
-- [ ] Container volle Breite nutzen
-- [ ] Buttons/Tags kompakter gestalten
-- [ ] Engere Zeilenabstände
-- [ ] Mehr Tickets pro Screen sichtbar
-- [ ] Weniger verschwendeter Whitespace
-
-
 
 ### Regeln (für codex):
-- Schreibe alle Änderungen **ausschließlich in den Branch `codex`**.
-- Führe **keine Commits und keinen Merge in `main`** durch.
 - Kommentiere jede Änderung **direkt im Code** (inline), damit Funktion und Grund erkennbar sind.
 - Bearbeite die Punkte der Reihe nach, klar getrennt.
 - Verwende vorhandene Felder, Templates und Module, wo sinnvoll.
 - Lege neue Hilfsfunktionen (z. B. für Mailversand) in separaten Modulen ab (`mailer.py` etc.).
-
