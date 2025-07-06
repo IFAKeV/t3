@@ -23,6 +23,7 @@ from config import (
     MAX_CONTENT_LENGTH,
     SECRET_KEY,
     DEBUG,
+    OLD_TICKET_THRESHOLD_DAYS,
 )
 from database import (
     get_ticket_db,
@@ -198,6 +199,7 @@ def dashboard():
         current_team_filter=team_filter,
         current_status_filter=status_filter,
         search_term=search_term,
+        old_ticket_threshold=OLD_TICKET_THRESHOLD_DAYS,
     )
 
 
@@ -467,6 +469,7 @@ def view_ticket(ticket_id):
     related_person = []
     related_facility = []
     related_location = []
+    seen_ids = set()
 
     # if ticket.get('FacilityID'):
     #     related_facility = query_db("""
@@ -508,9 +511,11 @@ def view_ticket(ticket_id):
         """,
             (ticket["ContactEmployeeID"], ticket_id),
         )
-    # Gleiche Einrichtung (falls keine Person erfasst)
-    elif ticket.get("FacilityID"):
-        related_facility = query_db(
+        seen_ids.update([r["TicketID"] for r in related_person])
+
+    # Gleiche Einrichtung
+    if ticket.get("FacilityID"):
+        facility_results = query_db(
             """
             SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
                    team.TeamName, team.TeamColor,
@@ -526,6 +531,10 @@ def view_ticket(ticket_id):
         """,
             (ticket["FacilityID"], ticket_id),
         )
+        for row in facility_results:
+            if row["TicketID"] not in seen_ids:
+                related_facility.append(row)
+                seen_ids.add(row["TicketID"])
 
     # if ticket.get('LocationID'):
     #     related_location = query_db("""
@@ -553,9 +562,9 @@ def view_ticket(ticket_id):
     #         ORDER BY t.CreatedAt DESC LIMIT 5
     #     """, (ticket['LocationID'], ticket_id, ticket['FacilityID'] or 0))
 
-    # Gleicher Standort (falls keine Person/Einrichtung erfasst)
-    elif ticket.get("LocationID"):
-        related_location = query_db(
+    # Gleicher Standort
+    if ticket.get("LocationID"):
+        location_results = query_db(
             """
             SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode,
                    team.TeamName, team.TeamColor,
@@ -572,6 +581,10 @@ def view_ticket(ticket_id):
         """,
             (ticket["LocationID"], ticket_id, ticket.get("FacilityID") or 0),
         )
+        for row in location_results:
+            if row["TicketID"] not in seen_ids:
+                related_location.append(row)
+                seen_ids.add(row["TicketID"])
 
     # Facility/Location-Informationen laden
     facility_info = None

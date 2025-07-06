@@ -189,6 +189,7 @@ def get_tickets_with_filters(team_id=None, status_filter="open", search_term=Non
                p.PriorityName, p.ColorCode as PriorityColor,
                team.TeamName, team.TeamColor,
                strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt,
+               CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays,
                GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents
         FROM Tickets t
         JOIN TicketStatus s ON t.StatusID = s.StatusID
@@ -233,7 +234,8 @@ def get_ticket_by_id(ticket_id):
                s.StatusName, s.ColorCode as StatusColor,
                p.PriorityName, p.ColorCode as PriorityColor,
                team.TeamName, team.TeamColor,
-               strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt
+               strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt,
+               CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays
         FROM Tickets t
         JOIN TicketStatus s ON t.StatusID = s.StatusID
         JOIN TicketPriorities p ON t.PriorityID = p.PriorityID

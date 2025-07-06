@@ -70,11 +70,12 @@
                     <th>Kontakt</th>
                     <th>Zugewiesen an</th>
                     <th>Erstellt am</th>
+                    <th>Alter (Tage)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for ticket in tickets %}
-                <tr class="ticket-row" onclick="window.location='{{ url_for('view_ticket', ticket_id=ticket.TicketID) }}'">
+                <tr class="ticket-row {% if ticket.AgeDays > old_ticket_threshold and ticket.StatusName != 'Gelöst' %}old-ticket{% endif %}" onclick="window.location='{{ url_for('view_ticket', ticket_id=ticket.TicketID) }}'">
                     <td>{{ ticket.TicketID }}</td>
                     <td>
                         <span class="team-badge" style="background-color: {{ ticket.TeamColor }}">
@@ -95,6 +96,7 @@
                     <td>{{ ticket.ContactName }}</td>
                     <td>{{ ticket.AssignedAgents or "Nicht zugewiesen" }}</td>
                     <td>{{ ticket.CreatedAt }}</td>
+                    <td>{{ ticket.AgeDays }}</td>
                 </tr>
                 {% else %}
                 <tr>
