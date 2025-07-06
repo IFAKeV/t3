@@ -493,7 +493,7 @@ def view_ticket(ticket_id):
     #     """, (ticket['FacilityID'], ticket_id))
 
     # Gleiche Person (nur offene Tickets)
-    if ticket.get("ContactEmployeeID"):
+    if ticket.get("ContactEmployeeID") is not None:
         # Offene Tickets der gleichen Person abrufen
         related_person = get_related_open_tickets(
             "ContactEmployeeID",
@@ -503,7 +503,7 @@ def view_ticket(ticket_id):
         seen_ticket_ids.update(r["TicketID"] for r in related_person)
 
     # Gleiche Einrichtung
-    if ticket.get("FacilityID"):
+    if ticket.get("FacilityID") is not None:
         # Tickets dieser Einrichtung, die nicht bereits durch Person erfasst sind
         related_facility = get_related_open_tickets(
             "FacilityID",
@@ -539,7 +539,7 @@ def view_ticket(ticket_id):
     #     """, (ticket['LocationID'], ticket_id, ticket['FacilityID'] or 0))
 
     # Gleicher Standort
-    if ticket.get("LocationID"):
+    if ticket.get("LocationID") is not None:
         # Standort-Tickets ohne bereits erfasste Einrichtungs-/Person-Tickets
         related_location = get_related_open_tickets(
             "LocationID",
