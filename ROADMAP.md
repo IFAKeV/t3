@@ -43,6 +43,7 @@
 ### To-Do
 
 - "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
+- Tickets die anderen Agenten zugewiesen sind müssen auch anzeigbar sein.
 - Chronologische Reihenfolge der Kommentare zu einem Ticket. Neuste oben!
 - Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
 - Push-Notifications bei:
