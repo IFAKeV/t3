@@ -221,7 +221,7 @@ def get_tickets_with_filters(
         params.append(search_term if str(search_term).isdigit() else -1)
 
     if agent_id:
-        conditions.append("(ta.AgentID = ? OR t.CreatedByAgentID = ?)")
+        conditions.append("(ta.AgentID = ?)")
         params.append(agent_id)
         params.append(agent_id)
 
