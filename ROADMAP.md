@@ -1,7 +1,7 @@
 # Roadmap - IFAK Ticket-System
 
 ## Aktueller Status
-- **Version:** v0.2 (deployed)
+- **Version:** v0.2.1 (deployed)
 - **Status:** Public Beta
 
 ---
@@ -17,7 +17,7 @@
 
 ---
 
-## v0.2.1 **Deployed** (06.07.2025)
+## v0.2.1 ✅ **Deployed** (06.07.2025)
 
 ### Fixes
 
