@@ -229,7 +229,7 @@ def get_tickets_with_filters(
             conditions.append("ta.AgentID = ?")
             params.append(agent_id)
         else:
-            conditions.append("(ta.AgentID = ? OR t.CreatedByAgentID = ?)")
+            conditions.append("(ta.AgentID = ?)")
             params.append(agent_id)
             params.append(agent_id)
 
