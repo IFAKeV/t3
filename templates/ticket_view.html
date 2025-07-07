@@ -144,7 +144,7 @@
                         <a href="{{ url_for('serve_attachment', filename=attachment.StoragePath) }}" 
                         target="_blank" class="attachment-name">{{ attachment.FileName }}</a>
                         <div class="attachment-meta">
-                            {{ attachment.UploadedAt }} • {{ (attachment.FileSize / 1024) | round(1) }} KB
+                            {{ attachment.FormattedUploadedAt }} • {{ (attachment.FileSize / 1024) | round(1) }} KB
                         </div>
                     </div>
                 </div>
@@ -170,7 +170,7 @@
                     <div class="bubble-content">{{ update.UpdateText }}</div>
                     <div class="bubble-meta">
                         <span class="bubble-author">{{ update.UpdatedByName }}</span>
-                        <span class="bubble-time">{{ update.UpdatedAt }}</span>
+                        <span class="bubble-time">{{ update.FormattedUpdatedAt }}</span>
                         {% if update.IsSolution %}<span class="solution-badge">Lösung</span>{% endif %}
                     </div>
                 </div>

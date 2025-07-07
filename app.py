@@ -452,8 +452,14 @@ def view_ticket(ticket_id):
     # Updates laden
     updates = query_db(
         """
-        SELECT UpdateID, TicketID, UpdatedByName, UpdateText, IsSolution,
-               strftime('%d.%m.%Y %H:%M', UpdatedAt) as UpdatedAt
+        SELECT
+            UpdateID,
+            TicketID,
+            UpdatedByName,
+            UpdateText,
+            IsSolution,
+            UpdatedAt,
+            strftime('%d.%m.%Y %H:%M', UpdatedAt) AS FormattedUpdatedAt
         FROM TicketUpdates
         WHERE TicketID = ?
         ORDER BY UpdatedAt ASC
@@ -464,8 +470,13 @@ def view_ticket(ticket_id):
     # Anhänge laden
     attachments = query_db(
         """
-        SELECT AttachmentID, FileName, StoragePath, FileSize,
-               strftime('%d.%m.%Y %H:%M', UploadedAt) as UploadedAt
+        SELECT
+            AttachmentID,
+            FileName,
+            StoragePath,
+            FileSize,
+            UploadedAt,
+            strftime('%d.%m.%Y %H:%M', UploadedAt) AS FormattedUploadedAt
         FROM TicketAttachments
         WHERE TicketID = ?
         ORDER BY UploadedAt ASC
