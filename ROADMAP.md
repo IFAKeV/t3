@@ -38,8 +38,11 @@
 - Warnung/Hinweis bei sehr alten offenen Tickets nach einzustellendem Schwellwert durch farbige hervorhebung im Dashboard
 - Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
 
+---
+
 ### To-Do
 
+- Chronologische Reihenfolge der Kommentare zu einem Ticket. Neuste oben!
 - Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
 - Push-Notifications bei:
   - Neuen Tickets
