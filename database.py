@@ -177,7 +177,11 @@ def get_priority_by_id(priority_id):
 
 # TICKETS
 def get_tickets_with_filters(
-    team_id=None, status_filter="open", search_term=None, agent_id=None
+    team_id=None,
+    status_filter="open",
+    search_term=None,
+    agent_id=None,
+    assigned_only=False,
 ):
     """Erweiterte Ticket-Abfrage mit Team-Filtern und Zuweisungen
 
@@ -221,9 +225,13 @@ def get_tickets_with_filters(
         params.append(search_term if str(search_term).isdigit() else -1)
 
     if agent_id:
-        conditions.append("(ta.AgentID = ?)")
-        params.append(agent_id)
-        params.append(agent_id)
+        if assigned_only:
+            conditions.append("ta.AgentID = ?")
+            params.append(agent_id)
+        else:
+            conditions.append("(ta.AgentID = ?)")
+            params.append(agent_id)
+            params.append(agent_id)
 
     if conditions:
         base_query += " WHERE " + " AND ".join(conditions)

@@ -51,6 +51,16 @@
                 </select>
             </div>
 
+            <div class="filter-group">
+                <label>Agent:</label>
+                <select id="agent-filter" onchange="applyFilters()">
+                    <option value="" {% if not current_agent_filter %}selected{% endif %}>Alle</option>
+                    {% for agent in agents %}
+                    <option value="{{ agent.AgentID }}" {% if current_agent_filter == agent.AgentID|string %}selected{% endif %}>{{ agent.AgentName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div class="filter-group search-group">
                 <label>Suche:</label>
                 <div class="search-bar">
@@ -119,11 +129,17 @@
 function applyFilters() {
     const teamFilter = document.getElementById('team-filter').value;
     const statusFilter = document.getElementById('status-filter').value;
+    const agentFilter = document.getElementById('agent-filter').value;
     const searchValue = document.getElementById('search-input').value;
 
     const url = new URL(window.location);
     url.searchParams.set('team', teamFilter);
     url.searchParams.set('status', statusFilter);
+    if (agentFilter) {
+        url.searchParams.set('agent', agentFilter);
+    } else {
+        url.searchParams.delete('agent');
+    }
     if (searchValue) {
         url.searchParams.set('q', searchValue);
     } else {

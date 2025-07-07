@@ -166,14 +166,16 @@ def logout():
 
 @app.route("/")
 def dashboard():
-    """Dashboard mit Team-Filter"""
+    """Dashboard mit Team- und Agent-Filtern"""
     # Filter aus Query-Parametern
     team_filter = request.args.get("team", "mine")
     status_filter = request.args.get("status", "open")
     search_term = request.args.get("q", "").strip()
+    agent_filter_param = request.args.get("agent")
 
     # Team-ID bestimmen
     agent_filter = None
+    assigned_only = False
     if team_filter == "my_team":
         team_id = g.current_agent["TeamID"]
     elif team_filter == "all":
@@ -184,17 +186,23 @@ def dashboard():
     else:
         team_id = int(team_filter) if team_filter.isdigit() else None
 
+    if agent_filter_param:
+        agent_filter = int(agent_filter_param)
+        assigned_only = True
+
     # Tickets laden
     tickets = get_tickets_with_filters(
         team_id=team_id,
         status_filter=status_filter,
         search_term=search_term or None,
         agent_id=agent_filter,
+        assigned_only=assigned_only,
     )
 
     # Teams und Status für Filter laden
     teams = get_all_teams()
     statuses = get_all_statuses()
+    agents = load_agents()
 
     return render_template(
         "dashboard.html",
@@ -205,6 +213,8 @@ def dashboard():
         current_status_filter=status_filter,
         search_term=search_term,
         old_ticket_threshold=OLD_TICKET_THRESHOLD_DAYS,
+        agents=agents,
+        current_agent_filter=agent_filter_param,
     )
 
 
