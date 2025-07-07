@@ -17,12 +17,10 @@
 
 ---
 
-## v0.2.1 📋 **Planned**
-**Produktiv-Rollout Vorbereitung**
+## v0.2.1 **Deployed** (06.07.2025)
 
 ### Fixes
 
-- Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
 - Aktueller Fehler beim Dateiupload: Meldung über erfolgreichen Upload bei nicht zugelassener Dateiendung
 
 ### (new) Features
@@ -37,13 +35,20 @@
   - Gleiche Einrichtung (falls nicht durch Person erfasst)
   - Gleicher Standort (falls nicht durch Person/Einrichtung erfasst)
   - Duplikat-Vermeidung
+- Warnung/Hinweis bei sehr alten offenen Tickets nach einzustellendem Schwellwert durch farbige hervorhebung im Dashboard
+- Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
+
+### To-Do
+
+- Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
 - Push-Notifications bei:
   - Neuen Tickets
   - Ticket-Zuweisungen
   - Kritischen Prioritäten
-- Warnung/Hinweis bei sehr alten offenen Tickets nach einzustellendem Schwellwert durch farbige hervorhebung im Dashboard
-- Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
+ 
+### Wünsche
 
+- Adil: Mehr als eine Kontaktperson
 
 ### Regeln (für codex)
 - Kommentiere jede Änderung **direkt im Code** (inline), damit Funktion und Grund erkennbar sind.
