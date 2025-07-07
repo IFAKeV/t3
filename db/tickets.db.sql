@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS "Tickets" (
     "TicketID" INTEGER PRIMARY KEY AUTOINCREMENT,
     "Title" TEXT NOT NULL,
     "Description" TEXT NOT NULL,
-    "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "CreatedAt" TIMESTAMP NOT NULL DEFAULT (DATETIME('now','localtime')),
     "StatusID" INTEGER NOT NULL,
     "PriorityID" INTEGER NOT NULL,
     "TeamID" INTEGER NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS "Tickets" (
 CREATE TABLE IF NOT EXISTS "TicketUpdates" (
     "UpdateID" INTEGER PRIMARY KEY AUTOINCREMENT,
     "TicketID" INTEGER NOT NULL,
-    "UpdatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "UpdatedAt" TIMESTAMP NOT NULL DEFAULT (DATETIME('now','localtime')),
     "UpdatedByName" TEXT NOT NULL,
     "UpdateText" TEXT NOT NULL,
     "IsSolution" INTEGER DEFAULT 0,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS "TicketAttachments" (
     "FileName" TEXT NOT NULL,
     "StoragePath" TEXT NOT NULL,
     "FileSize" INTEGER NOT NULL,
-    "UploadedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "UploadedAt" TIMESTAMP NOT NULL DEFAULT (DATETIME('now','localtime')),
     FOREIGN KEY("TicketID") REFERENCES "Tickets"("TicketID"),
     FOREIGN KEY("UpdateID") REFERENCES "TicketUpdates"("UpdateID")
 );
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS "TicketAssignees" (
     "TicketID" INTEGER NOT NULL,
     "AgentID" INTEGER NOT NULL,
     "AgentName" TEXT NOT NULL,
-    "AssignedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "AssignedAt" TIMESTAMP NOT NULL DEFAULT (DATETIME('now','localtime')),
     FOREIGN KEY("TicketID") REFERENCES "Tickets"("TicketID"),
     FOREIGN KEY("AgentID") REFERENCES "Agents"("AgentID")
 );
