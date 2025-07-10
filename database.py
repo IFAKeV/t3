@@ -54,9 +54,7 @@ def insert_db_original(table, fields, values, db_type="ticket"):
         db = get_ticket_db()
 
     placeholders = ", ".join(["?"] * len(values))
-    query = (
-        f"INSERT INTO {table} ({', '.join(fields)}) VALUES ({placeholders})"
-    )
+    query = f"INSERT INTO {table} ({', '.join(fields)}) VALUES ({placeholders})"
 
     cur = db.execute(query, values)
     db.commit()
@@ -71,9 +69,7 @@ def insert_db(table, fields, values, db_type="ticket"):
         db = get_ticket_db()
 
     placeholders = ", ".join(["?"] * len(values))
-    query = (
-        f"INSERT INTO {table} ({', '.join(fields)}) VALUES ({placeholders})"
-    )
+    query = f"INSERT INTO {table} ({', '.join(fields)}) VALUES ({placeholders})"
 
     # DEBUG: SQL ausgeben
     print(f"DEBUG SQL: {query}")
