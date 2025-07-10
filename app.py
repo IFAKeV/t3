@@ -1,6 +1,7 @@
 import os
 import time
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from flask import (
     Flask,
     render_template,
@@ -102,6 +103,11 @@ def optimize_image(file_path, max_size=(800, 800)):
             img.save(file_path, optimize=True, quality=85)
     except Exception as e:
         print(f"Fehler bei der Bildoptimierung: {e}")
+
+
+def get_local_timestamp():
+    """Aktuellen Zeitstempel für Europe/Berlin liefern."""
+    return datetime.now(ZoneInfo("Europe/Berlin")).strftime("%Y-%m-%d %H:%M:%S")
 
 
 # ==============================================
@@ -243,6 +249,7 @@ def new_ticket():
 
         # Ticket erstellen
         source = request.form.get("source")
+        current_time = get_local_timestamp()
         ticket_id = insert_db(
             "Tickets",
             [
@@ -251,6 +258,7 @@ def new_ticket():
                 "PriorityID",
                 "TeamID",
                 "StatusID",
+                "CreatedAt",
                 "CreatedByAgentID",
                 "Source",
                 "ContactName",
@@ -267,6 +275,7 @@ def new_ticket():
                 priority_id,
                 team_id,
                 new_status_id,
+                current_time,
                 g.current_agent["AgentID"],
                 source,
                 contact_name,
@@ -288,10 +297,16 @@ def new_ticket():
                 one=True,
             )
             if assigned_agent:
+                assigned_time = get_local_timestamp()
                 insert_db(
                     "TicketAssignees",
-                    ["TicketID", "AgentID", "AgentName"],
-                    [ticket_id, assigned_agent_id, assigned_agent["AgentName"]],
+                    ["TicketID", "AgentID", "AgentName", "AssignedAt"],
+                    [
+                        ticket_id,
+                        assigned_agent_id,
+                        assigned_agent["AgentName"],
+                        assigned_time,
+                    ],
                 )
 
         # Anhang verarbeiten
@@ -314,8 +329,20 @@ def new_ticket():
                     file_size = os.path.getsize(file_path)
                     insert_db(
                         "TicketAttachments",
-                        ["TicketID", "FileName", "StoragePath", "FileSize"],
-                        [ticket_id, filename, save_filename, file_size],
+                        [
+                            "TicketID",
+                            "FileName",
+                            "StoragePath",
+                            "FileSize",
+                            "UploadedAt",
+                        ],
+                        [
+                            ticket_id,
+                            filename,
+                            save_filename,
+                            file_size,
+                            get_local_timestamp(),
+                        ],
                     )
                 else:
                     # Fehlermeldung bei unzulässiger Dateiendung
@@ -376,7 +403,9 @@ def update_ticket(ticket_id):
     # Agent zuweisen
     if assign_agent:
         assigned_agent = query_db(
-            "SELECT AgentName FROM Agents WHERE AgentID = ?", (assign_agent,), one=True
+            "SELECT AgentName FROM Agents WHERE AgentID = ?",
+            (assign_agent,),
+            one=True,
         )
         if assigned_agent:
             # Prüfen ob bereits zugewiesen
@@ -388,8 +417,13 @@ def update_ticket(ticket_id):
             if not existing:
                 insert_db(
                     "TicketAssignees",
-                    ["TicketID", "AgentID", "AgentName"],
-                    [ticket_id, assign_agent, assigned_agent["AgentName"]],
+                    ["TicketID", "AgentID", "AgentName", "AssignedAt"],
+                    [
+                        ticket_id,
+                        assign_agent,
+                        assigned_agent["AgentName"],
+                        get_local_timestamp(),
+                    ],
                 )
                 updates_made.append(f"Zugewiesen an: {assigned_agent['AgentName']}")
 
@@ -405,8 +439,14 @@ def update_ticket(ticket_id):
 
         insert_db(
             "TicketUpdates",
-            ["TicketID", "UpdatedByName", "UpdateText", "IsSolution"],
-            [ticket_id, g.current_agent["AgentName"], full_update_text, is_solution],
+            ["TicketID", "UpdatedByName", "UpdateText", "IsSolution", "UpdatedAt"],
+            [
+                ticket_id,
+                g.current_agent["AgentName"],
+                full_update_text,
+                is_solution,
+                get_local_timestamp(),
+            ],
         )
 
     # Anhang verarbeiten
@@ -429,8 +469,14 @@ def update_ticket(ticket_id):
                 file_size = os.path.getsize(file_path)
                 insert_db(
                     "TicketAttachments",
-                    ["TicketID", "FileName", "StoragePath", "FileSize"],
-                    [ticket_id, filename, save_filename, file_size],
+                    ["TicketID", "FileName", "StoragePath", "FileSize", "UploadedAt"],
+                    [
+                        ticket_id,
+                        filename,
+                        save_filename,
+                        file_size,
+                        get_local_timestamp(),
+                    ],
                 )
             else:
                 # Fehlermeldung bei unzulässiger Dateiendung
@@ -452,14 +498,8 @@ def view_ticket(ticket_id):
     # Updates laden
     updates = query_db(
         """
-        SELECT
-            UpdateID,
-            TicketID,
-            UpdatedByName,
-            UpdateText,
-            IsSolution,
-            UpdatedAt,
-            strftime('%d.%m.%Y %H:%M', UpdatedAt) AS FormattedUpdatedAt
+        SELECT UpdateID, TicketID, UpdatedByName, UpdateText, IsSolution,
+                strftime('%d.%m.%Y %H:%M', UpdatedAt, 'localtime') as UpdatedAt
         FROM TicketUpdates
         WHERE TicketID = ?
         ORDER BY UpdatedAt ASC
@@ -470,13 +510,8 @@ def view_ticket(ticket_id):
     # Anhänge laden
     attachments = query_db(
         """
-        SELECT
-            AttachmentID,
-            FileName,
-            StoragePath,
-            FileSize,
-            UploadedAt,
-            strftime('%d.%m.%Y %H:%M', UploadedAt) AS FormattedUploadedAt
+        SELECT AttachmentID, FileName, StoragePath, FileSize,
+                strftime('%d.%m.%Y %H:%M', UploadedAt, 'localtime') as UploadedAt
         FROM TicketAttachments
         WHERE TicketID = ?
         ORDER BY UploadedAt ASC
@@ -488,7 +523,7 @@ def view_ticket(ticket_id):
     assignees = query_db(
         """
         SELECT AgentID, AgentName,
-               strftime('%d.%m.%Y %H:%M', AssignedAt) as AssignedAt
+                strftime('%d.%m.%Y %H:%M', AssignedAt, 'localtime') as AssignedAt
         FROM TicketAssignees
         WHERE TicketID = ?
         ORDER BY AssignedAt DESC
