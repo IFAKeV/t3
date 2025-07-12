@@ -58,4 +58,27 @@ function search_tickets($term, $limit = 10) {
     $query = "SELECT TicketID, Title FROM Tickets WHERE Title LIKE ? OR CAST(TicketID AS TEXT) LIKE ? ORDER BY CreatedAt DESC LIMIT ?";
     return query_db($query, ["%$term%", "%$term%", $limit]);
 }
+
+function get_status_by_id($status_id) {
+    return query_db("SELECT StatusID, StatusName, ColorCode FROM TicketStatus WHERE StatusID = ?", [$status_id], true);
+}
+
+function get_priority_by_id($priority_id) {
+    return query_db("SELECT PriorityID, PriorityName, ColorCode FROM TicketPriorities WHERE PriorityID = ?", [$priority_id], true);
+}
+
+function get_ticket_updates($ticket_id) {
+    $query = "SELECT UpdateID, TicketID, UpdatedByName, UpdateText, IsSolution, strftime('%d.%m.%Y %H:%M', UpdatedAt, 'localtime') as FormattedUpdatedAt FROM TicketUpdates WHERE TicketID = ? ORDER BY UpdatedAt ASC";
+    return query_db($query, [$ticket_id]);
+}
+
+function get_ticket_attachments($ticket_id) {
+    $query = "SELECT AttachmentID, FileName, StoragePath, FileSize, strftime('%d.%m.%Y %H:%M', UploadedAt, 'localtime') as FormattedUploadedAt FROM TicketAttachments WHERE TicketID = ? ORDER BY UploadedAt ASC";
+    return query_db($query, [$ticket_id]);
+}
+
+function get_ticket_assignees($ticket_id) {
+    $query = "SELECT AgentID, AgentName, strftime('%d.%m.%Y %H:%M', AssignedAt, 'localtime') as AssignedAt FROM TicketAssignees WHERE TicketID = ? ORDER BY AssignedAt DESC";
+    return query_db($query, [$ticket_id]);
+}
 ?>
