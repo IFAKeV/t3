@@ -7,13 +7,13 @@ if (!isset($title)) { $title = 'IFAK Ticketsystem'; }
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title); ?></title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="../static/css/style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/ui-lightness/jquery-ui.css">
 </head>
 <body>
 <header>
     <div class="logo">
-        <a href="index.php"><img src="/static/img/ifak-ticket-logo.svg" alt="IFAK Logo" width="300"></a>
+        <a href="index.php"><img src="../static/img/ifak-ticket-logo.svg" alt="IFAK Logo" width="300"></a>
     </div>
     <nav>
         <ul>
