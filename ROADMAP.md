@@ -50,13 +50,19 @@
   - Neuen Tickets
   - Ticket-Zuweisungen
   - Kritischen Prioritäten
- 
-### Wünsche
 
-- Adil: Mehr als eine Kontaktperson
+---
+
+# Wichtig
+
+Wir frieren die Entwicklung der python-Version vorerst ein und arbeiten an einer php-Version im Ordner php.
+Wir verwenden Vanilla php und JavaScript und verwenden keinerlei Libraries. Ich möchte hier keine Abhängigkeiten erzeugen. Die App soll mit Vanilla-php bei jedem Hoster einsetzbar sein.
+Erstes Ziel: Erreichen des gleichen Funktionsumfangs und Implemetierung der schon gelisteten neuen Features.
+
+---
 
 ### Regeln (für codex)
 - Kommentiere jede Änderung **direkt im Code** (inline), damit Funktion und Grund erkennbar sind.
 - Bearbeite die Punkte der Reihe nach, klar getrennt.
 - Verwende vorhandene Felder, Templates und Module, wo sinnvoll.
-- Lege neue Hilfsfunktionen (z.B. für Mailversand) in separaten Modulen ab (`mailer.py` etc.).
+- Lege neue Hilfsfunktionen (z.B. für Mailversand) in separaten Modulen ab
