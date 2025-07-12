@@ -184,6 +184,11 @@ main {
     border-radius: 4px;
     background-color: white;
 }
+/* 'Alle offenen' Filteroption im Dashboard wie die anderen Badges einfärben */
+#status-filter option[value="open"] {
+    background-color: var(--secondary-color);
+    color: white;
+}
 .assigned-agents {
     font-size: 0.9em;
 }
