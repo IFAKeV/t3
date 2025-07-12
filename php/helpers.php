@@ -29,4 +29,19 @@ function optimize_image($file_path) {
         }
     }
 }
+
+function get_addressbook_date() {
+    global $DATABASE;
+    $path = $DATABASE['address_db'];
+    try {
+        if (file_exists($path)) {
+            $mod_time = filemtime($path);
+            return date('d.m.Y H:i', $mod_time);
+        }
+        return 'Datei nicht gefunden';
+    } catch (Exception $e) {
+        error_log('Fehler beim Abrufen des Adressbuch-Datums: ' . $e->getMessage());
+        return 'Nicht verfügbar';
+    }
+}
 ?>
