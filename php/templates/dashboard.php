@@ -29,7 +29,13 @@
                     <td><span class="priority-badge" style="background-color: <?php echo htmlspecialchars($ticket['PriorityColor']); ?>;"><?php echo htmlspecialchars($ticket['PriorityName']); ?></span></td>
                     <td><?php echo htmlspecialchars($ticket['Title']); ?></td>
                     <td><?php echo htmlspecialchars($ticket['ContactName']); ?></td>
-                    <td><?php echo htmlspecialchars($ticket['AssignedAgents']); ?></td>
+                    <td>
+                        <?php if (!empty($ticket['AssignedAgents'])): ?>
+                            <?php echo htmlspecialchars($ticket['AssignedAgents']); ?>
+                        <?php else: ?>
+                            <span class="unassigned-badge">Offen: <?php echo $ticket['AgeDays']; ?>d</span>
+                        <?php endif; ?>
+                    </td>
                     <td><?php echo $ticket['CreatedAt']; ?></td>
                     <td><?php echo $ticket['AgeDays']; ?></td>
                     <td><?php echo htmlspecialchars($ticket['CreatedByName']); ?></td>
