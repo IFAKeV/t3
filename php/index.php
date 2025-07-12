@@ -29,7 +29,7 @@ if ($action === 'login') {
             header('Location: index.php');
             exit;
         } else {
-            $flash = 'Ung\xC3\xBCltiges Token';
+            $flash = 'Ungültiges Token';
         }
     }
     include 'templates/login.php';

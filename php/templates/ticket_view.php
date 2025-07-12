@@ -1,6 +1,6 @@
 <?php $title = 'Ticket #' . $ticket['TicketID']; include 'templates/header.php'; ?>
 <h2>Ticket #<?php echo $ticket['TicketID']; ?> - <?php echo htmlspecialchars($ticket['Title']); ?></h2>
-<p>Status: <?php echo htmlspecialchars($ticket['StatusName']); ?> | Priorit\xC3\xA4t: <?php echo htmlspecialchars($ticket['PriorityName']); ?></p>
+<p>Status: <?php echo htmlspecialchars($ticket['StatusName']); ?> | Priorität: <?php echo htmlspecialchars($ticket['PriorityName']); ?></p>
 <p><?php echo nl2br(htmlspecialchars($ticket['Description'])); ?></p>
 <p>Kontakt: <?php echo htmlspecialchars($ticket['ContactName']); ?></p>
 <?php if ($attachments): ?>

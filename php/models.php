@@ -28,7 +28,7 @@ function get_tickets_with_filters($team_id = null, $status_filter = 'open', $sea
     $params = [];
     if ($team_id) { $conditions[] = 't.TeamID = ?'; $params[] = $team_id; }
     if ($status_filter === 'open') {
-        $conditions[] = "s.StatusName != 'Gel\xC3\xB6st'"; // Gelöst
+        $conditions[] = "s.StatusName != 'Gelöst'"; // Gelöst
     } elseif ($status_filter !== 'all') {
         $conditions[] = 's.StatusName = ?'; $params[] = $status_filter; }
     if ($search_term) {

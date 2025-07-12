@@ -9,7 +9,7 @@
         <textarea name="description" id="description" required></textarea>
     </div>
     <div class="form-group">
-        <label for="priority">Priorit\xC3\xA4t:</label>
+        <label for="priority">Priorität:</label>
         <select name="priority_id" id="priority">
             <?php foreach ($priorities as $p): ?>
             <option value="<?php echo $p['PriorityID']; ?>"><?php echo htmlspecialchars($p['PriorityName']); ?></option>

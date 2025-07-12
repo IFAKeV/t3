@@ -1,7 +1,7 @@
 <?php $title = 'Dashboard - IFAK Ticketsystem'; include 'templates/header.php'; ?>
 <div class="dashboard">
     <div class="dashboard-header">
-        <h1>Ticket-\xC3\x9Cbersicht</h1>
+        <h1>Ticket-Übersicht</h1>
     </div>
     <div class="dashboard-table">
         <table>
@@ -10,7 +10,7 @@
                     <th>ID</th>
                     <th>Titel</th>
                     <th>Status</th>
-                    <th>Priorit\xC3\xA4t</th>
+                    <th>Priorität</th>
                     <th>Team</th>
                     <th>Erstellt am</th>
                 </tr>
