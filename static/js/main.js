@@ -33,6 +33,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const ticketRows = document.querySelectorAll('.ticket-row');
     ticketRows.forEach(function(row) {
         row.style.cursor = 'pointer';
+        row.addEventListener('click', function() {
+            const href = row.getAttribute('data-href');
+            if (href) {
+                window.location = href;
+            }
+        });
     });
     
     // Formulare: Required-Felder markieren
