@@ -530,6 +530,15 @@ button:hover {
     margin-left: auto;
 }
 
+.unassigned-badge {
+    background-color: var(--danger-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
 /* ==============================================
    ATTACHMENTS
    ============================================== */
