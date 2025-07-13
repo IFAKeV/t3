@@ -1,5 +1,7 @@
 <?php
 if (!isset($title)) { $title = 'IFAK Ticketsystem'; }
+$base_url = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/');
+$php_base = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -7,12 +9,12 @@ if (!isset($title)) { $title = 'IFAK Ticketsystem'; }
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title); ?></title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/static/css/style.css">
 </head>
 <body>
 <header>
     <div class="logo">
-        <a href="index.php"><img src="../static/img/ifak-ticket-logo.svg" alt="IFAK Logo" width="300"></a>
+        <a href="index.php"><img src="<?php echo $base_url; ?>/static/img/ifak-ticket-logo.svg" alt="IFAK Logo" width="300"></a>
     </div>
     <?php if (!empty($agents_overview)): ?>
     <div class="agent-overview">
