@@ -182,6 +182,15 @@ if ($action === 'view_ticket') {
             }
         }
     }
+
+    $facility_info = null;
+    $location_info = null;
+    if ($ticket && $ticket['FacilityID']) {
+        $facility_info = get_facility_info($ticket['FacilityID']);
+    }
+    if ($ticket && $ticket['LocationID']) {
+        $location_info = get_location_info($ticket['LocationID']);
+    }
     $statuses = get_all_statuses();
     $priorities = get_all_priorities();
     $agents = load_agents();

@@ -28,6 +28,19 @@
                 <?php endif; ?>
             </div>
 
+            <?php if ($facility_info || $location_info): ?>
+            <h3>Organisation</h3>
+            <div class="organization-info">
+                <?php if ($facility_info): ?>
+                <p><strong>Einrichtung:</strong><br><?php echo htmlspecialchars($facility_info['Facility']); ?></p>
+                <?php endif; ?>
+                <?php if ($location_info): ?>
+                <p><strong>Standort:</strong><br><?php echo htmlspecialchars($location_info['Location']); ?></p>
+                <p><?php echo htmlspecialchars($location_info['Street']); ?>, <?php echo htmlspecialchars($location_info['ZIP']); ?> <?php echo htmlspecialchars($location_info['Town']); ?></p>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
             <?php if ($related_person): ?>
             <h3>Weitere Tickets dieser Person</h3>
             <div class="related-tickets">

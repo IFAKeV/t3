@@ -72,6 +72,87 @@ function search_tickets($term, $limit = 10) {
     return query_db($query, ["%$term%", "%$term%", $limit]);
 }
 
+// ----------------------------------------------------------------------
+// Address book helpers
+// ----------------------------------------------------------------------
+
+function search_employees($search_term) {
+    $query = "SELECT DISTINCT e.EmployeeID, e.FirstName, e.LastName, e.Phone, e.Mobile, e.Mail, " .
+             "f.FacilityID, f.Facility, f.LocationID, f.DepartmentID, " .
+             "l.Location, d.Department " .
+             "FROM Employees e " .
+             "LEFT JOIN FacilityLinks fl ON e.EmployeeID = fl.EmployeeID " .
+             "LEFT JOIN Facilities f ON fl.FacilityID = f.FacilityID " .
+             "LEFT JOIN Locations l ON f.LocationID = l.LocationID " .
+             "LEFT JOIN Departments d ON f.DepartmentID = d.DepartmentID " .
+             "WHERE e.FirstName LIKE ? OR e.LastName LIKE ? " .
+             "ORDER BY e.LastName, e.FirstName LIMIT 10";
+    $rows = query_db($query, ["%$search_term%", "%$search_term%"], false, 'address');
+
+    $results = [];
+    foreach ($rows as $row) {
+        $results[] = format_contact_info($row);
+    }
+    return $results;
+}
+
+function get_employee_details($employee_id) {
+    $query = "SELECT e.EmployeeID, e.FirstName, e.LastName, e.Phone, e.Mobile, e.Mail, " .
+             "f.FacilityID, f.Facility, f.LocationID, f.DepartmentID, " .
+             "l.Location, d.Department " .
+             "FROM Employees e " .
+             "LEFT JOIN FacilityLinks fl ON e.EmployeeID = fl.EmployeeID " .
+             "LEFT JOIN Facilities f ON fl.FacilityID = f.FacilityID " .
+             "LEFT JOIN Locations l ON f.LocationID = l.LocationID " .
+             "LEFT JOIN Departments d ON f.DepartmentID = d.DepartmentID " .
+             "WHERE e.EmployeeID = ? LIMIT 1";
+    $row = query_db($query, [$employee_id], true, 'address');
+    return $row ? format_contact_info($row) : null;
+}
+
+function format_contact_info($row) {
+    if (!$row) return null;
+    $phone = !empty($row['Mobile']) ? $row['Mobile'] : ($row['Phone'] ?? '');
+    $full_name = trim(($row['FirstName'] ?? '') . ' ' . ($row['LastName'] ?? ''));
+    $facility = $row['Facility'] ?? '';
+    $location = $row['Location'] ?? '';
+    $department = $row['Department'] ?? '';
+    $org_info = '';
+    if ($facility && $location) {
+        $org_info = $facility . ' (' . $location . ')';
+    } else {
+        $org_info = $facility ?: $location;
+    }
+    return [
+        'id' => $row['EmployeeID'] ?? null,
+        'name' => $full_name,
+        'phone' => $phone,
+        'email' => $row['Mail'] ?? '',
+        'facility_id' => $row['FacilityID'] ?? null,
+        'facility_name' => $facility,
+        'location_id' => $row['LocationID'] ?? null,
+        'location_name' => $location,
+        'department_id' => $row['DepartmentID'] ?? null,
+        'department_name' => $department,
+        'organization_info' => $org_info,
+    ];
+}
+
+function get_facility_info($facility_id) {
+    $query = "SELECT f.FacilityID, f.Facility, f.LocationID, f.DepartmentID, " .
+             "l.Location, d.Department " .
+             "FROM Facilities f " .
+             "LEFT JOIN Locations l ON f.LocationID = l.LocationID " .
+             "LEFT JOIN Departments d ON f.DepartmentID = d.DepartmentID " .
+             "WHERE f.FacilityID = ?";
+    return query_db($query, [$facility_id], true, 'address');
+}
+
+function get_location_info($location_id) {
+    $query = "SELECT LocationID, Location, Short, Phone, Street, ZIP, Town FROM Locations WHERE LocationID = ?";
+    return query_db($query, [$location_id], true, 'address');
+}
+
 function get_status_by_id($status_id) {
     return query_db("SELECT StatusID, StatusName, ColorCode FROM TicketStatus WHERE StatusID = ?", [$status_id], true);
 }

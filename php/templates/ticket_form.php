@@ -33,9 +33,24 @@
             <?php endforeach; ?>
         </select>
     </div>
+    <h3>Kontakt</h3>
     <div class="form-group">
-        <label for="contact">Kontaktname:</label>
-        <input type="text" name="contact_name" id="contact">
+        <label for="contact_search">Kontakt suchen:</label>
+        <input type="text" id="contact_search" placeholder="Name des Mitarbeiters eingeben...">
+        <small>Mindestens 2 Zeichen eingeben für Suche im Adressbuch</small>
+    </div>
+    <div id="contact_details" class="contact-details" style="display:none;">
+        <h4>Ausgewählter Kontakt:</h4>
+        <div id="selected_contact_info"></div>
+    </div>
+
+    <div class="form-group">
+        <label for="contact_name">Name:</label>
+        <input type="text" name="contact_name" id="contact_name">
+        <input type="hidden" name="contact_employee_id" id="contact_employee_id">
+        <input type="hidden" name="facility_id" id="facility_id">
+        <input type="hidden" name="location_id" id="location_id">
+        <input type="hidden" name="department_id" id="department_id">
     </div>
     <div class="form-group">
         <label for="contact_phone">Telefon:</label>
@@ -45,10 +60,6 @@
         <label for="contact_email">E-Mail:</label>
         <input type="email" name="contact_email" id="contact_email">
     </div>
-    <input type="hidden" name="contact_employee_id" id="contact_employee_id">
-    <input type="hidden" name="facility_id" id="facility_id">
-    <input type="hidden" name="location_id" id="location_id">
-    <input type="hidden" name="department_id" id="department_id">
     <div class="form-group">
         <label for="source">Ticketquelle:</label>
         <select name="source" id="source">

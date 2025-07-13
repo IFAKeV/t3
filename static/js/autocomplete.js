@@ -35,27 +35,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Bei Auswahl eines Kontakts
         select: function(event, ui) {
-            // Ausgewählten Kontakt in die Felder einfügen
             $('#contact_name').val(ui.item.name);
             $('#contact_phone').val(ui.item.phone);
             $('#contact_email').val(ui.item.email);
-            
-            // Kontaktdetails anzeigen
+            $('#contact_employee_id').val(ui.item.id || '');
+            $('#facility_id').val(ui.item.facility_id || '');
+            $('#location_id').val(ui.item.location_id || '');
+            $('#department_id').val(ui.item.department_id || '');
+
+            const contactInfo = `
+                <p><strong>${ui.item.name}</strong></p>
+                ${ui.item.phone ? `<p>Tel: ${ui.item.phone}</p>` : ''}
+                ${ui.item.email ? `<p>E-Mail: ${ui.item.email}</p>` : ''}
+                ${ui.item.organization_info ? `<p class="organization-info">${ui.item.organization_info}</p>` : ''}
+            `;
+            $('#selected_contact_info').html(contactInfo);
             $('#contact_details').show();
-            
-            // Autocomplete-Input leeren aber Suche beenden
+
             $(this).val('');
             return false;
         }
     })
-    
+
     // Anpassung der Darstellung der Suchergebnisse
     .autocomplete("instance")._renderItem = function(ul, item) {
         return $("<li>")
-            .append("<div class='autocomplete-item'>" + 
-                    "<div class='autocomplete-name'>" + item.name + "</div>" +
-                    (item.email ? "<div class='autocomplete-email'>" + item.email + "</div>" : "") +
-                    "</div>")
+            .append(`<div class="autocomplete-item">
+                        <div class="autocomplete-name">${item.name}</div>
+                        ${item.email ? `<div class="autocomplete-email">${item.email}</div>` : ''}
+                        ${item.organization_info ? `<div class="organization-info">${item.organization_info}</div>` : ''}
+                     </div>`)
             .appendTo(ul);
     };
     

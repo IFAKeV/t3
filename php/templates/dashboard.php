@@ -68,7 +68,7 @@ if (!isset($current_agent_filter)) $current_agent_filter = '';
             </thead>
             <tbody>
                 <?php foreach ($tickets as $ticket): ?>
-                <tr class="ticket-row" data-href="index.php?action=view_ticket&id=<?php echo $ticket['TicketID']; ?>" onclick="window.location='index.php?action=view_ticket&id=<?php echo $ticket['TicketID']; ?>'">
+                <tr class="ticket-row<?php if ($ticket['AgeDays'] > $OLD_TICKET_THRESHOLD_DAYS && $ticket['StatusName'] != 'Gelöst') echo ' old-ticket'; ?>" data-href="index.php?action=view_ticket&id=<?php echo $ticket['TicketID']; ?>" onclick="window.location='index.php?action=view_ticket&id=<?php echo $ticket['TicketID']; ?>'">
                     <td><?php echo $ticket['TicketID']; ?></td>
                     <td><span class="team-badge" style="background-color: <?php echo htmlspecialchars($ticket['TeamColor']); ?>;"><?php echo htmlspecialchars($ticket['TeamName']); ?></span></td>
                     <td><span class="status-badge" style="background-color: <?php echo htmlspecialchars($ticket['StatusColor']); ?>;"><?php echo htmlspecialchars($ticket['StatusName']); ?></span></td>
