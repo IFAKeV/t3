@@ -6,6 +6,7 @@ session_start();
 $action = $_GET['action'] ?? 'dashboard';
 $flash = '';
 $agent = null;
+$agents_overview = [];
 
 if ($action !== 'login') {
     $token = $_COOKIE['agent_token'] ?? null;
@@ -18,6 +19,7 @@ if ($action !== 'login') {
         header('Location: index.php?action=login');
         exit;
     }
+    $agents_overview = get_agents_with_ticket_counts();
 }
 
 if ($action === 'login') {
@@ -49,10 +51,25 @@ if ($action === 'new_ticket') {
         $priority_id = $_POST['priority_id'];
         $team_id = $_POST['team_id'];
         $contact_name = $_POST['contact_name'];
+        $contact_phone = $_POST['contact_phone'] ?? null;
+        $contact_email = $_POST['contact_email'] ?? null;
+        $contact_employee_id = $_POST['contact_employee_id'] ?? null;
+        $facility_id = $_POST['facility_id'] ?? null;
+        $location_id = $_POST['location_id'] ?? null;
+        $department_id = $_POST['department_id'] ?? null;
+        $source = $_POST['source'] ?? null;
         $ticket_id = insert_db('Tickets',
-            ['Title','Description','PriorityID','TeamID','StatusID','CreatedAt','CreatedByAgentID','ContactName'],
-            [$title,$description,$priority_id,$team_id,1,get_local_timestamp(),$agent['AgentID'],$contact_name]
+            ['Title','Description','PriorityID','TeamID','StatusID','CreatedAt','CreatedByAgentID','Source','ContactName','ContactPhone','ContactEmail','ContactEmployeeID','FacilityID','LocationID','DepartmentID'],
+            [$title,$description,$priority_id,$team_id,1,get_local_timestamp(),$agent['AgentID'],$source,$contact_name,$contact_phone,$contact_email,$contact_employee_id,$facility_id,$location_id,$department_id]
         );
+
+        $assigned_agent = $_POST['assigned_agent'] ?? '';
+        if ($assigned_agent) {
+            $info = query_db('SELECT AgentName FROM Agents WHERE AgentID = ?', [$assigned_agent], true);
+            if ($info) {
+                insert_db('TicketAssignees', ['TicketID','AgentID','AgentName','AssignedAt'], [$ticket_id,$assigned_agent,$info['AgentName'],get_local_timestamp()]);
+            }
+        }
         if (!empty($_FILES['attachment']['name']) && allowed_file($_FILES['attachment']['name'])) {
             $filename = basename($_FILES['attachment']['name']);
             $save_name = time() . '_' . $filename;
@@ -70,6 +87,7 @@ if ($action === 'new_ticket') {
     }
     $priorities = get_all_priorities();
     $teams = get_all_teams();
+    $agents = load_agents();
     include 'templates/ticket_form.php';
     exit;
 }
@@ -140,7 +158,37 @@ if ($action === 'view_ticket') {
     exit;
 }
 
-// default dashboard
+// default dashboard with filters
+$team_filter = $_GET['team'] ?? 'mine';
+$status_filter = $_GET['status'] ?? 'open';
+$search_value = trim($_GET['q'] ?? '');
+$agent_filter_param = $_GET['agent'] ?? null;
+
 $team_id = null;
-$tickets = get_tickets_with_filters($team_id, 'open', null, $agent['AgentID']);
+$filter_agent = null;
+$assigned_only = false;
+
+if ($team_filter === 'my_team') {
+    $team_id = $agent['TeamID'];
+} elseif ($team_filter === 'all') {
+    $team_id = null;
+} elseif ($team_filter === 'mine') {
+    $filter_agent = $agent['AgentID'];
+} elseif (ctype_digit($team_filter)) {
+    $team_id = intval($team_filter);
+}
+
+if ($agent_filter_param) {
+    $filter_agent = intval($agent_filter_param);
+    $assigned_only = true;
+}
+
+$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only);
+$teams = get_all_teams();
+$statuses = get_all_statuses();
+$agents = load_agents();
+$current_team_filter = $team_filter;
+$current_status_filter = $status_filter;
+$current_agent_filter = $agent_filter_param;
+$search_term = $search_value;
 include 'templates/dashboard.php';

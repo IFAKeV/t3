@@ -22,6 +22,19 @@ function get_agent_by_token($token) {
     return query_db("SELECT a.AgentID, a.AgentName, a.AgentEmail, a.Token, a.Active, a.TeamID, t.TeamName, t.TeamColor FROM Agents a JOIN Teams t ON a.TeamID = t.TeamID WHERE a.Token = ? AND a.Active = 1", [$token], true);
 }
 
+function get_agents_with_ticket_counts() {
+    $query = "SELECT a.AgentID, a.AgentName, a.TeamID, t.TeamName, " .
+             "COUNT(CASE WHEN s.StatusName != 'Gelöst' THEN 1 END) AS OpenTickets " .
+             "FROM Agents a " .
+             "JOIN Teams t ON a.TeamID = t.TeamID " .
+             "LEFT JOIN TicketAssignees ta ON a.AgentID = ta.AgentID " .
+             "LEFT JOIN Tickets tk ON tk.TicketID = ta.TicketID " .
+             "LEFT JOIN TicketStatus s ON tk.StatusID = s.StatusID " .
+             "WHERE a.Active = 1 " .
+             "GROUP BY a.AgentID ORDER BY a.AgentName";
+    return query_db($query);
+}
+
 function get_tickets_with_filters($team_id = null, $status_filter = 'open', $search_term = null, $agent_id = null, $assigned_only = false) {
     $base_query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt, 'localtime') as CreatedAt, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays, GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID LEFT JOIN TicketAssignees ta ON t.TicketID = ta.TicketID";
     $conditions = [];
