@@ -15,4 +15,11 @@ $SECRET_KEY = 'your-secret-key-here'; // TODO: change in production
 $DEBUG = true;
 
 $OLD_TICKET_THRESHOLD_DAYS = 30;
+
+// Thresholds (in hours) for highlighting unassigned tickets by priority
+$UNASSIGNED_WARNING_HOURS = [
+    3 => 1, // Hoch
+    2 => 4, // Mittel
+    1 => 8  // Niedrig
+];
 ?>

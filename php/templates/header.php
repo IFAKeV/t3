@@ -2,6 +2,7 @@
 if (!isset($title)) { $title = 'IFAK Ticketsystem'; }
 $base_url = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/');
 $php_base = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+$css_version = filemtime(__DIR__ . '/../../static/css/style.css');
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -9,7 +10,7 @@ $php_base = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($title); ?></title>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>/static/css/style.css">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>/static/css/style.css?v=<?php echo $css_version; ?>">
 </head>
 <body>
 <header>
