@@ -8,7 +8,13 @@ if (!isset($current_agent_filter)) $current_agent_filter = '';
 ?>
 <div class="dashboard">
     <div class="dashboard-header">
-        <h1>Ticket-Übersicht</h1>
+        <h1>
+            <?php if (!empty($search_term)): ?>
+                Tickets mit Suchbegriff "<?php echo htmlspecialchars($search_term); ?>"
+            <?php else: ?>
+                Ticket-Übersicht
+            <?php endif; ?>
+        </h1>
         <div class="dashboard-filters">
             <div class="filter-group">
                 <label>Team:</label>
@@ -106,5 +112,11 @@ function applyFilters() {
     if (search) { url.searchParams.set('q', search); } else { url.searchParams.delete('q'); }
     window.location = url;
 }
+document.getElementById('search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        applyFilters();
+    }
+});
 </script>
 <?php include 'templates/footer.php'; ?>

@@ -45,9 +45,10 @@ function get_tickets_with_filters($team_id = null, $status_filter = 'open', $sea
     } elseif ($status_filter !== 'all') {
         $conditions[] = 's.StatusName = ?'; $params[] = $status_filter; }
     if ($search_term) {
-        $conditions[] = '(t.Title LIKE ? OR t.TicketID = ?)';
+        $conditions[] = '(t.Title LIKE ? OR t.TicketID = ? OR t.ContactName LIKE ?)';
         $params[] = "%$search_term%";
         $params[] = ctype_digit($search_term) ? $search_term : -1;
+        $params[] = "%$search_term%";
     }
     if ($agent_id) {
         if ($assigned_only) {
@@ -68,8 +69,8 @@ function get_ticket_by_id($ticket_id) {
 }
 
 function search_tickets($term, $limit = 10) {
-    $query = "SELECT TicketID, Title FROM Tickets WHERE Title LIKE ? OR CAST(TicketID AS TEXT) LIKE ? ORDER BY CreatedAt DESC LIMIT ?";
-    return query_db($query, ["%$term%", "%$term%", $limit]);
+    $query = "SELECT TicketID, Title FROM Tickets WHERE Title LIKE ? OR CAST(TicketID AS TEXT) LIKE ? OR ContactName LIKE ? ORDER BY CreatedAt DESC LIMIT ?";
+    return query_db($query, ["%$term%", "%$term%", "%$term%", $limit]);
 }
 
 // ----------------------------------------------------------------------
