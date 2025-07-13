@@ -256,6 +256,20 @@ th, td {
     background-color: #fff3cd;
 }
 
+.contact-details {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.organization-info {
+    color: #007bff;
+    font-size: 0.85em;
+    margin-top: 2px;
+}
+
 .no-tickets {
     text-align: center;
     padding: 2rem;
