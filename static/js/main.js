@@ -86,6 +86,11 @@ document.addEventListener('DOMContentLoaded', function() {
     lightbox.appendChild(img);
     document.body.appendChild(lightbox);
 
+    // Tooltip für Bildanhänge
+    document.querySelectorAll('.attachment-preview img').forEach(function(imgEl) {
+        imgEl.setAttribute('title', 'Klick zum Vergrößern');
+    });
+
     document.addEventListener('click', function(e) {
         if (e.target.matches('.attachment-preview img')) {
             e.preventDefault();

@@ -608,6 +608,7 @@ button:hover {
     height: 40px;
     border-radius: 4px;
     object-fit: cover;
+    position: relative;
     background-color: #6c757d;
     display: flex;
     align-items: center;
@@ -615,6 +616,24 @@ button:hover {
     color: white;
     font-size: 0.8rem;
     font-weight: bold;
+}
+
+.attachment-preview::after {
+    content: '\1F50D'; /* magnifying glass */
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border-radius: 2px;
+    padding: 1px;
+    font-size: 0.7rem;
+    display: none;
+    pointer-events: none;
+}
+
+.attachment-preview:hover::after {
+    display: block;
 }
 
 .attachment-preview img {
