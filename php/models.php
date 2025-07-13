@@ -36,7 +36,7 @@ function get_agents_with_ticket_counts() {
 }
 
 function get_tickets_with_filters($team_id = null, $status_filter = 'open', $search_term = null, $agent_id = null, $assigned_only = false) {
-    $base_query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt, 'localtime') as CreatedAt, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays, GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID LEFT JOIN TicketAssignees ta ON t.TicketID = ta.TicketID";
+    $base_query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays, GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID LEFT JOIN TicketAssignees ta ON t.TicketID = ta.TicketID";
     $conditions = [];
     $params = [];
     if ($team_id) { $conditions[] = 't.TeamID = ?'; $params[] = $team_id; }
@@ -63,7 +63,7 @@ function get_tickets_with_filters($team_id = null, $status_filter = 'open', $sea
 }
 
 function get_ticket_by_id($ticket_id) {
-    $query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, t.ContactEmployeeID, t.FacilityID, t.LocationID, t.DepartmentID, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt, 'localtime') as CreatedAt, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID WHERE t.TicketID = ?";
+    $query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, t.ContactEmployeeID, t.FacilityID, t.LocationID, t.DepartmentID, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID WHERE t.TicketID = ?";
     return query_db($query, [$ticket_id], true);
 }
 
@@ -162,17 +162,17 @@ function get_priority_by_id($priority_id) {
 }
 
 function get_ticket_updates($ticket_id) {
-    $query = "SELECT UpdateID, TicketID, UpdatedByName, UpdateText, IsSolution, strftime('%d.%m.%Y %H:%M', UpdatedAt, 'localtime') as FormattedUpdatedAt FROM TicketUpdates WHERE TicketID = ? ORDER BY UpdatedAt ASC";
+    $query = "SELECT UpdateID, TicketID, UpdatedByName, UpdateText, IsSolution, strftime('%d.%m.%Y %H:%M', UpdatedAt) as FormattedUpdatedAt FROM TicketUpdates WHERE TicketID = ? ORDER BY UpdatedAt ASC";
     return query_db($query, [$ticket_id]);
 }
 
 function get_ticket_attachments($ticket_id) {
-    $query = "SELECT AttachmentID, FileName, StoragePath, FileSize, strftime('%d.%m.%Y %H:%M', UploadedAt, 'localtime') as FormattedUploadedAt FROM TicketAttachments WHERE TicketID = ? ORDER BY UploadedAt ASC";
+    $query = "SELECT AttachmentID, FileName, StoragePath, FileSize, strftime('%d.%m.%Y %H:%M', UploadedAt) as FormattedUploadedAt FROM TicketAttachments WHERE TicketID = ? ORDER BY UploadedAt ASC";
     return query_db($query, [$ticket_id]);
 }
 
 function get_ticket_assignees($ticket_id) {
-    $query = "SELECT AgentID, AgentName, strftime('%d.%m.%Y %H:%M', AssignedAt, 'localtime') as AssignedAt FROM TicketAssignees WHERE TicketID = ? ORDER BY AssignedAt DESC";
+    $query = "SELECT AgentID, AgentName, strftime('%d.%m.%Y %H:%M', AssignedAt) as AssignedAt FROM TicketAssignees WHERE TicketID = ? ORDER BY AssignedAt DESC";
     return query_db($query, [$ticket_id]);
 }
 
@@ -183,7 +183,7 @@ function get_ticket_assignees($ticket_id) {
 function get_related_tickets_by_person($employee_id, $exclude_id) {
     $query = "SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode, " .
              "team.TeamName, team.TeamColor, " .
-             "strftime('%d.%m.%Y', t.CreatedAt, 'localtime') AS CreatedAt " .
+             "strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt " .
              "FROM Tickets t " .
              "JOIN TicketStatus s ON t.StatusID = s.StatusID " .
              "JOIN Teams team ON t.TeamID = team.TeamID " .
@@ -195,7 +195,7 @@ function get_related_tickets_by_person($employee_id, $exclude_id) {
 function get_related_tickets_by_facility($facility_id, $exclude_id) {
     $query = "SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode, " .
              "team.TeamName, team.TeamColor, " .
-             "strftime('%d.%m.%Y', t.CreatedAt, 'localtime') AS CreatedAt " .
+             "strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt " .
              "FROM Tickets t " .
              "JOIN TicketStatus s ON t.StatusID = s.StatusID " .
              "JOIN Teams team ON t.TeamID = team.TeamID " .
@@ -207,7 +207,7 @@ function get_related_tickets_by_facility($facility_id, $exclude_id) {
 function get_related_tickets_by_location($location_id, $exclude_id, $facility_id = null) {
     $query = "SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode, " .
              "team.TeamName, team.TeamColor, " .
-             "strftime('%d.%m.%Y', t.CreatedAt, 'localtime') AS CreatedAt " .
+             "strftime('%d.%m.%Y', t.CreatedAt) AS CreatedAt " .
              "FROM Tickets t " .
              "JOIN TicketStatus s ON t.StatusID = s.StatusID " .
              "JOIN Teams team ON t.TeamID = team.TeamID " .
