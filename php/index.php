@@ -227,17 +227,16 @@ $tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: n
 
 // mark unassigned tickets that exceed configured thresholds based on priority
 foreach ($tickets as &$t) {
+    $created = new DateTime($t['CreatedAtTS']);
+    $now = new DateTime('now', new DateTimeZone('Europe/Berlin'));
+    $hours_total = ($now->getTimestamp() - $created->getTimestamp()) / 3600;
+    $t['AgeHours'] = (int) floor($hours_total);
     $t['Delayed'] = false;
     if (empty($t['AssignedAgents'])) {
         $prio = $t['PriorityID'];
         $threshold = $UNASSIGNED_WARNING_HOURS[$prio] ?? null;
-        if ($threshold !== null) {
-            $created = new DateTime($t['CreatedAtTS']);
-            $now = new DateTime('now', new DateTimeZone('Europe/Berlin'));
-            $hours = ($now->getTimestamp() - $created->getTimestamp()) / 3600;
-            if ($hours > $threshold) {
-                $t['Delayed'] = true;
-            }
+        if ($threshold !== null && $t['AgeHours'] > $threshold) {
+            $t['Delayed'] = true;
         }
     }
 }
