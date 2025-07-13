@@ -69,31 +69,36 @@ window.IFAK = {
 };
 
 // Lightbox für Bilder
-$(document).ready(function() {
-    // Lightbox-HTML einmalig erstellen
-    $('body').append(`
-        <div class="lightbox" id="lightbox">
-            <span class="lightbox-close">&times;</span>
-            <img class="lightbox-content" id="lightbox-img">
-        </div>
-    `);
-    
-    // Click-Event für Attachment-Bilder
-    $(document).on('click', '.attachment-preview img', function(e) {
-        e.preventDefault();
-        $('#lightbox-img').attr('src', $(this).attr('src'));
-        $('#lightbox').fadeIn(300);
+document.addEventListener('DOMContentLoaded', function() {
+    const lightbox = document.createElement('div');
+    lightbox.id = 'lightbox';
+    lightbox.className = 'lightbox';
+
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'lightbox-close';
+    closeBtn.textContent = '\u00d7';
+
+    const img = document.createElement('img');
+    img.id = 'lightbox-img';
+    img.className = 'lightbox-content';
+
+    lightbox.appendChild(closeBtn);
+    lightbox.appendChild(img);
+    document.body.appendChild(lightbox);
+
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.attachment-preview img')) {
+            e.preventDefault();
+            img.src = e.target.src;
+            lightbox.style.display = 'block';
+        } else if (e.target === lightbox || e.target === closeBtn) {
+            lightbox.style.display = 'none';
+        }
     });
-    
-    // Lightbox schließen
-    $('#lightbox, .lightbox-close').click(function() {
-        $('#lightbox').fadeOut(300);
-    });
-    
-    // ESC-Taste schließt Lightbox
-    $(document).keyup(function(e) {
-        if (e.keyCode === 27) {
-            $('#lightbox').fadeOut(300);
+
+    document.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+            lightbox.style.display = 'none';
         }
     });
 });

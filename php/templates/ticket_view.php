@@ -215,19 +215,27 @@
     </div>
 </div>
 <script>
-$('#is_solution').change(function(){
-    if($(this).is(':checked')){
-        $('#status_id').val('3');
-        $('#status_id').prop('disabled', true);
-    } else {
-        $('#status_id').prop('disabled', false);
+document.addEventListener('DOMContentLoaded', function() {
+    const isSolution = document.getElementById('is_solution');
+    const statusSelect = document.getElementById('status_id');
+    if (isSolution && statusSelect) {
+        isSolution.addEventListener('change', function() {
+            if (isSolution.checked) {
+                statusSelect.value = '3';
+                statusSelect.disabled = true;
+            } else {
+                statusSelect.disabled = false;
+            }
+        });
+
+        const currentStatus = <?php echo $ticket['StatusID']; ?>;
+        Array.from(statusSelect.options).forEach(function(opt) {
+            const val = parseInt(opt.value);
+            if ((val === 1 && currentStatus > 1) || val === 3) {
+                opt.remove();
+            }
+        });
     }
-});
-$('#status_id option').each(function(){
-    const currentStatus = <?php echo $ticket['StatusID']; ?>;
-    const optionValue = parseInt($(this).val());
-    if(optionValue === 1 && currentStatus > 1){ $(this).remove(); }
-    if(optionValue === 3){ $(this).remove(); }
 });
 </script>
 <?php include 'templates/footer.php'; ?>
