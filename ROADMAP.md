@@ -75,3 +75,4 @@
 - Auswertungen
 - Reports
 - Wissensmanagement durch aus gelösten Tickets abgeleitete FAQs
+- additional_contacts
