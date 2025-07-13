@@ -128,7 +128,7 @@
                     </div>
                     <div class="form-group checkbox-group">
                         <input type="checkbox" id="is_solution" name="is_solution">
-                        <label for="is_solution">Als Lösung markieren (setzt Status auf \"Gelöst\")</label>
+                        <label for="is_solution">Als Lösung markieren. Lösung ist Lösung! Das Ticket kann danach nicht mehr bearbeitet werden.</label>                    
                     </div>
                     <div class="form-group">
                         <label for="attachment">Anhang hinzufügen:</label>
