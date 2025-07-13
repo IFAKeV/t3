@@ -30,6 +30,16 @@ if (!isset($title)) { $title = 'IFAK Ticketsystem'; }
             <?php endif; ?>
         </ul>
     </nav>
+    <?php if (!empty($agents_overview)): ?>
+    <div class="agent-overview">
+        <?php foreach ($agents_overview as $ov): ?>
+            <a href="index.php?agent=<?php echo $ov['AgentID']; ?>" class="agent-link">
+                <?php echo htmlspecialchars($ov['AgentName']); ?>
+                (<?php echo $ov['OpenTickets']; ?>)
+            </a>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 </header>
 <main>
 <?php if (!empty($flash)) { echo '<div class="flash-message">' . htmlspecialchars($flash) . '</div>'; }
