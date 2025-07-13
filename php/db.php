@@ -5,8 +5,8 @@ function get_db($type = 'ticket') {
     global $DATABASE;
     static $connections = [];
     if (!isset($connections[$type])) {
-        SQLite3::enableExceptions(true);
         $db = new SQLite3($DATABASE[$type . '_db']);
+        $db->enableExceptions(true);
         $db->busyTimeout(5000);
         $connections[$type] = $db;
     }
