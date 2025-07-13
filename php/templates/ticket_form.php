@@ -70,7 +70,8 @@
     </div>
     <div class="form-group">
         <label for="attachment">Anhang:</label>
-        <input type="file" name="attachment" id="attachment">
+        <input type="file" name="attachment" id="attachment" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip">
+        <small class="form-hint">Erlaubte Dateiformate: jpg, jpeg, png, gif, pdf, doc, docx, txt, zip</small>
     </div>
     <button type="submit">Ticket erstellen</button>
 </form>
