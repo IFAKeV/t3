@@ -85,7 +85,7 @@ if (!isset($current_agent_filter)) $current_agent_filter = '';
                         <?php if (!empty($ticket['AssignedAgents'])): ?>
                             <?php echo htmlspecialchars($ticket['AssignedAgents']); ?>
                         <?php else: ?>
-                            <span class="unassigned-badge<?php if (!empty($ticket['Delayed'])) echo ' overdue'; ?>">Offen: <?php echo $ticket['AgeDays']; ?>d</span>
+                            <span class="unassigned-badge<?php if (!empty($ticket['Delayed'])) echo ' overdue'; ?>">Offen: <?php echo $ticket['AgeDays'] > 0 ? $ticket['AgeDays'] . 'd' : $ticket['AgeHours'] . 'h'; ?></span>
                         <?php endif; ?>
                     </td>
                     <td><?php echo $ticket['CreatedAt']; ?></td>
