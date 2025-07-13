@@ -15,6 +15,16 @@ if (!isset($title)) { $title = 'IFAK Ticketsystem'; }
     <div class="logo">
         <a href="index.php"><img src="../static/img/ifak-ticket-logo.svg" alt="IFAK Logo" width="300"></a>
     </div>
+    <?php if (!empty($agents_overview)): ?>
+    <div class="agent-overview">
+        <?php foreach ($agents_overview as $ov): ?>
+            <a href="index.php?agent=<?php echo $ov['AgentID']; ?>" class="agent-link">
+                <?php echo htmlspecialchars($ov['AgentName']); ?>
+                (<?php echo $ov['OpenTickets']; ?>)
+            </a>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
     <nav>
         <ul>
             <li><a href="index.php">Dashboard</a></li>
@@ -30,16 +40,6 @@ if (!isset($title)) { $title = 'IFAK Ticketsystem'; }
             <?php endif; ?>
         </ul>
     </nav>
-    <?php if (!empty($agents_overview)): ?>
-    <div class="agent-overview">
-        <?php foreach ($agents_overview as $ov): ?>
-            <a href="index.php?agent=<?php echo $ov['AgentID']; ?>" class="agent-link">
-                <?php echo htmlspecialchars($ov['AgentName']); ?>
-                (<?php echo $ov['OpenTickets']; ?>)
-            </a>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
 </header>
 <main>
 <?php if (!empty($flash)) { echo '<div class="flash-message">' . htmlspecialchars($flash) . '</div>'; }

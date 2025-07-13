@@ -81,10 +81,12 @@ nav a.button {
 }
 
 .agent-overview {
-    margin-top: 0.5rem;
+    margin-top: 0;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    flex: 1;
+    justify-content: center;
 }
 
 .agent-overview .agent-link {
