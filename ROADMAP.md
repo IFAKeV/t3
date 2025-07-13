@@ -1,68 +1,77 @@
 # Roadmap - IFAK Ticket-System
 
-## Aktueller Status
-- **Version:** v0.2.1 (deployed)
-- **Status:** Public Beta
+## Phase 0: Ausgangsbasis
+- Vorhandenes Ticketsystem, implementiert mit Python (Flask)
+- SQLite-Datenbank
+- REST-API-Endpunkte:
+  - Ticketverwaltung (CRUD)
+  - Kommentare & Status-Updates
+  - Agentenverwaltung (rudimentär)
+- Lokale Test- und Entwicklungsumgebung
+
+## Phase 1: Migration auf PHP
+- Ziel: Vollständiger Umstieg von Python/Flask auf Plain PHP
+- Keine PHP-Frameworks (z.B. Laravel, Symfony)
+- Keine Javascript Frameworks und Erweiterungen (z.B. jquery, vue)
+- Fokus auf einfache, modulare Struktur mit klarer Trennung von:
+  - API-Handlern 
+  - Datenbankzugriffen
+  - Reiner Serverlogik
+- REST-Logik bleibt gleich
+- API-Struktur übernehmen
+- Neue PHP-Funktionen analog zu bestehenden Endpunkten implementieren
+
+## Phase 2: Web-Frontend
+- Umsetzung eines responsiven Frontends
 
 ---
 
-## v0.2 ✅ **Deployed** (06.06.2025)
-**Basis-Funktionalität etabliert**
+## Features
+
 - Dashboard mit Team-/Status-Filtern
 - Ticket-Erstellung mit Adressbuch-Integration
-- Verwandte Tickets (Einrichtung/Standort)
-- Anhang-Support
-- SSL-Setup und Systemd-Service
-- Public Beta gestartet
-
----
-
-## v0.2.1 ✅ **Deployed** (06.07.2025)
-
-### Fixes
-
-- Aktueller Fehler beim Dateiupload: Meldung über erfolgreichen Upload bei nicht zugelassener Dateiendung
-
-### (new) Features
-
-- Standard-Filter "Meine offenen Tickets"
-- "CreatedBy" - Wer hat ein Ticket angelegt?
-- Angelegt aufgrund: Einer Mail, eines Anrufs, oder weil man sich auf dem Flur getroffen hat
-- Suchfunktion für Tickets
-- Erweiterte verwandte Tickets:
+- "Verwandte" Tickets (Ticket der gleichen Person/Einrichtung/Standort)
   - "verwandte Tickets" nur zeigen, wenn nicht gelöst
   - Gleiche Person
   - Gleiche Einrichtung (falls nicht durch Person erfasst)
   - Gleicher Standort (falls nicht durch Person/Einrichtung erfasst)
   - Duplikat-Vermeidung
-- Warnung/Hinweis bei sehr alten offenen Tickets nach einzustellendem Schwellwert durch farbige hervorhebung im Dashboard
-- Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen
+- Anhang-Support
+- Standard-Filter "Meine offenen Tickets"
+- "CreatedBy" - Wer hat ein Ticket angelegt?
+- Angelegt aufgrund: Einer Mail, eines Anrufs, oder weil man sich auf dem Flur getroffen hat
+- Suchfunktion für Tickets
+  - Volltext
+  - Alle Tickets einer Person/Einrichtung/Standort - Wie "verwandte" Tickets
+- Warnung/Hinweis bei sehr alten offenen Tickets nach einzustellendem Schwellwert durch farbige Hervorhebung der Zeile im Dashboard
+- Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen. Auch hier eine farbige Hervorhebung bei erreichen eines zu definierenden Schwellwerts
 
 ---
 
-### To-Do
+## To-Do
 
 - "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
-- Tickets die anderen Agenten zugewiesen sind müssen auch anzeigbar sein.
+- Tickets die anderen Agenten zugewiesen sind müssen gezielt anzeigbar sein. Durch Klick auf den Agentennamen im Header
 - Chronologische Reihenfolge der Kommentare zu einem Ticket. Neuste oben!
-- Das System hat noch einen Zeitzonenfehler. Die Uhrzeit liegt zwei Stunden vor der tatsächlichen Ortszeit. Wir sind Europe/Berlin.
-- Push-Notifications bei:
-  - Neuen Tickets
-  - Ticket-Zuweisungen
-  - Kritischen Prioritäten
+- Benachrichtigung der Agenten bei:
+  - Neuen Tickets (Funktions-Postfach helpdesk@ifak-sozial.de)
+  - Ticket-Zuweisungen (individuelle Mail)
 
 ---
 
-# Wichtig
+# Wichtig /  Hinweise für Codex
 
-Wir frieren die Entwicklung der python-Version vorerst ein und arbeiten an einer php-Version im Ordner php.
-Wir verwenden Vanilla php und JavaScript und verwenden keinerlei Libraries. Ich möchte hier keine Abhängigkeiten erzeugen. Die App soll mit Vanilla-php bei jedem Hoster einsetzbar sein.
-Erstes Ziel: Erreichen des gleichen Funktionsumfangs und Implemetierung der schon gelisteten neuen Features.
+- Code wird ab sofort ausschließlich in **Plain PHP** (nicht Flask/Python) erzeugt
+- Keine Verwendung von Frameworks
+- Die App soll bei jedem Hoster in einem Standard Webspace durch einfaches kopieren/hochladen einsetzbar sein.
+- Bestehende Python-Logik kann als semantisches Referenzmodell genutzt werden
+- Wir verwenden zwei SQLite Datenbanken. Eine für die Tickets und die Adressbuch-Datenbank als Grundlage für die Suche nach der aufgebenden Person. Nur wer bei uns beschäftigt ist kann ein Ticket aufgeben. Daher nutzen wir hier das Adressbuch als seperate Ressource
+- Erstes Ziel: Erreichen des gleichen Funktionsumfangs und Implemetierung der schon gelisteten neuen Features.
 
 ---
 
-### Regeln (für codex)
-- Kommentiere jede Änderung **direkt im Code** (inline), damit Funktion und Grund erkennbar sind.
-- Bearbeite die Punkte der Reihe nach, klar getrennt.
-- Verwende vorhandene Felder, Templates und Module, wo sinnvoll.
-- Lege neue Hilfsfunktionen (z.B. für Mailversand) in separaten Modulen ab
+## Langfristig:
+- Einsatz der App nicht nur im IT Team, sondern auch für andere interne Supportbereiche, wie z.b. die Haustechnik
+- Auswertungen
+- Reports
+- Wissensmanagement durch aus gelösten Tickets abgeleitete FAQs
