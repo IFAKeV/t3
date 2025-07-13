@@ -151,6 +151,37 @@ if ($action === 'view_ticket') {
     $attachments = get_ticket_attachments($ticket_id);
     $updates = get_ticket_updates($ticket_id);
     $assignees = get_ticket_assignees($ticket_id);
+    $related_person = [];
+    $related_facility = [];
+    $related_location = [];
+    $seen_ids = [];
+
+    if ($ticket && $ticket['ContactEmployeeID']) {
+        $related_person = get_related_tickets_by_person($ticket['ContactEmployeeID'], $ticket_id);
+        foreach ($related_person as $rp) {
+            $seen_ids[$rp['TicketID']] = true;
+        }
+    }
+
+    if ($ticket && $ticket['FacilityID']) {
+        $temp = get_related_tickets_by_facility($ticket['FacilityID'], $ticket_id);
+        foreach ($temp as $row) {
+            if (!isset($seen_ids[$row['TicketID']])) {
+                $related_facility[] = $row;
+                $seen_ids[$row['TicketID']] = true;
+            }
+        }
+    }
+
+    if ($ticket && $ticket['LocationID']) {
+        $temp = get_related_tickets_by_location($ticket['LocationID'], $ticket_id, $ticket['FacilityID'] ?? null);
+        foreach ($temp as $row) {
+            if (!isset($seen_ids[$row['TicketID']])) {
+                $related_location[] = $row;
+                $seen_ids[$row['TicketID']] = true;
+            }
+        }
+    }
     $statuses = get_all_statuses();
     $priorities = get_all_priorities();
     $agents = load_agents();
