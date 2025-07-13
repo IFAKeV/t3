@@ -115,7 +115,7 @@
                     <div class="attachment-preview">
                         <?php $ext = strtolower(pathinfo($a['FileName'], PATHINFO_EXTENSION)); ?>
                         <?php if (in_array($ext, ['jpg','jpeg','png','gif'])): ?>
-                            <img src="/static/uploads/<?php echo $a['StoragePath']; ?>" alt="<?php echo htmlspecialchars($a['FileName']); ?>">
+                            <img src="../static/uploads/<?php echo $a['StoragePath']; ?>" alt="<?php echo htmlspecialchars($a['FileName']); ?>">
                         <?php elseif ($ext == 'pdf'): ?>
                             📄
                         <?php elseif (in_array($ext, ['doc','docx'])): ?>
@@ -125,7 +125,7 @@
                         <?php endif; ?>
                     </div>
                     <div class="attachment-info">
-                        <a href="/static/uploads/<?php echo $a['StoragePath']; ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
+                        <a href="../static/uploads/<?php echo $a['StoragePath']; ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
                         <div class="attachment-meta"><?php echo $a['FormattedUploadedAt']; ?> • <?php echo round($a['FileSize']/1024,1); ?> KB</div>
                     </div>
                 </div>
