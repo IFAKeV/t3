@@ -10,5 +10,8 @@ Schwenk zu einer php-Version
 ## Inhalt
 Inhalt folgt.
 
+## Bildvorschau
+Vorschaubilder von Anhängen lassen sich anklicken. Ein Klick öffnet die Datei in einer Lightbox und zeigt das Bild vergrößert an.
+
 ## Kontakt
 IFAK e.V. - IT-Abteilung
