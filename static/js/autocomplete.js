@@ -1,94 +1,71 @@
-// Erweiterte Funktionalität für die Kontaktsuche mit Autocomplete
+// Erweiterte Funktionalität für die Kontaktsuche ohne jQuery
 document.addEventListener('DOMContentLoaded', function() {
-    // Prüfen, ob das Suchfeld vorhanden ist
-    const contactSearch = document.getElementById('contact_search');
-    if (!contactSearch) return;
-    
-    // Prüfen, ob jQuery und jQuery UI vorhanden sind
-    if (typeof jQuery === 'undefined' || typeof jQuery.ui === 'undefined') {
-        console.error('jQuery oder jQuery UI ist nicht geladen!');
-        return;
+    const searchInput = document.getElementById('contact_search');
+    if (!searchInput) return;
+
+    const list = document.createElement('ul');
+    list.className = 'autocomplete-list';
+    searchInput.parentNode.style.position = 'relative';
+    searchInput.parentNode.appendChild(list);
+
+    function hideList() {
+        list.style.display = 'none';
     }
-    
-    // Autocomplete-Funktion für das Suchfeld
-    $(contactSearch).autocomplete({
-        source: function(request, response) {
-            // API-Anfrage an den Server
-            $.ajax({
-                url: "/api/search_employees",
-                dataType: "json",
-                data: {
-                    term: request.term
-                },
-                success: function(data) {
-                    // Ergebnisformat:
-                    // [ { id: 123, name: "Max Mustermann", phone: "...", email: "..." }, ... ]
-                    response(data);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Fehler bei der Suche:", error);
-                    response([]);
-                }
-            });
-        },
-        minLength: 2,  // Mindestens 2 Zeichen für die Suche
-        
-        // Bei Auswahl eines Kontakts
-        select: function(event, ui) {
-            $('#contact_name').val(ui.item.name);
-            $('#contact_phone').val(ui.item.phone);
-            $('#contact_email').val(ui.item.email);
-            $('#contact_employee_id').val(ui.item.id || '');
-            $('#facility_id').val(ui.item.facility_id || '');
-            $('#location_id').val(ui.item.location_id || '');
-            $('#department_id').val(ui.item.department_id || '');
 
-            const contactInfo = `
-                <p><strong>${ui.item.name}</strong></p>
-                ${ui.item.phone ? `<p>Tel: ${ui.item.phone}</p>` : ''}
-                ${ui.item.email ? `<p>E-Mail: ${ui.item.email}</p>` : ''}
-                ${ui.item.organization_info ? `<p class="organization-info">${ui.item.organization_info}</p>` : ''}
-            `;
-            $('#selected_contact_info').html(contactInfo);
-            $('#contact_details').show();
+    function showList(items) {
+        list.innerHTML = '';
+        items.forEach(function(item) {
+            const li = document.createElement('li');
+            li.className = 'autocomplete-item';
+            li.innerHTML =
+                '<div class="autocomplete-name">' + item.name + '</div>' +
+                (item.email ? '<div class="autocomplete-email">' + item.email + '</div>' : '') +
+                (item.organization_info ? '<div class="organization-info">' + item.organization_info + '</div>' : '');
+            li.dataset.item = JSON.stringify(item);
+            list.appendChild(li);
+        });
+        list.style.display = items.length ? 'block' : 'none';
+    }
 
-            $(this).val('');
-            return false;
+    searchInput.addEventListener('input', function() {
+        const term = searchInput.value.trim();
+        if (term.length < 2) {
+            hideList();
+            return;
         }
-    })
+        fetch('/api/search_employees?term=' + encodeURIComponent(term))
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) { showList(data); })
+            .catch(function(err) { console.error('Fehler bei der Suche:', err); hideList(); });
+    });
 
-    // Anpassung der Darstellung der Suchergebnisse
-    .autocomplete("instance")._renderItem = function(ul, item) {
-        return $("<li>")
-            .append(`<div class="autocomplete-item">
-                        <div class="autocomplete-name">${item.name}</div>
-                        ${item.email ? `<div class="autocomplete-email">${item.email}</div>` : ''}
-                        ${item.organization_info ? `<div class="organization-info">${item.organization_info}</div>` : ''}
-                     </div>`)
-            .appendTo(ul);
-    };
-    
-    // Styling für die Autocomplete-Liste
-    $("<style>")
-        .prop("type", "text/css")
-        .html(`
-            .ui-autocomplete {
-                max-height: 300px;
-                overflow-y: auto;
-                overflow-x: hidden;
-                border: 1px solid #ddd;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .autocomplete-item {
-                padding: 5px;
-            }
-            .autocomplete-name {
-                font-weight: bold;
-            }
-            .autocomplete-email {
-                font-size: 0.9em;
-                color: #666;
-            }
-        `)
-        .appendTo("head");
+    list.addEventListener('click', function(e) {
+        const li = e.target.closest('li');
+        if (!li) return;
+        const item = JSON.parse(li.dataset.item);
+        document.getElementById('contact_name').value = item.name;
+        document.getElementById('contact_phone').value = item.phone || '';
+        document.getElementById('contact_email').value = item.email || '';
+        document.getElementById('contact_employee_id').value = item.id || '';
+        document.getElementById('facility_id').value = item.facility_id || '';
+        document.getElementById('location_id').value = item.location_id || '';
+        document.getElementById('department_id').value = item.department_id || '';
+
+        const info =
+            '<p><strong>' + item.name + '</strong></p>' +
+            (item.phone ? '<p>Tel: ' + item.phone + '</p>' : '') +
+            (item.email ? '<p>E-Mail: ' + item.email + '</p>' : '') +
+            (item.organization_info ? '<p class="organization-info">' + item.organization_info + '</p>' : '');
+        document.getElementById('selected_contact_info').innerHTML = info;
+        document.getElementById('contact_details').style.display = 'block';
+
+        searchInput.value = '';
+        hideList();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!list.contains(e.target) && e.target !== searchInput) {
+            hideList();
+        }
+    });
 });
