@@ -28,6 +28,59 @@
                 <?php endif; ?>
             </div>
 
+            <?php if ($related_person): ?>
+            <h3>Weitere Tickets dieser Person</h3>
+            <div class="related-tickets">
+                <?php foreach ($related_person as $rel): ?>
+                <p>
+                    <span class="team-badge small" style="background-color: <?php echo htmlspecialchars($rel['TeamColor']); ?>">
+                        <?php echo htmlspecialchars($rel['TeamName']); ?>
+                    </span>
+                    <a href="index.php?action=view_ticket&id=<?php echo $rel['TicketID']; ?>">
+                        #<?php echo $rel['TicketID']; ?>: <?php echo htmlspecialchars(mb_strimwidth($rel['Title'],0,40,'...')); ?>
+                    </a>
+                    <small>(<?php echo $rel['CreatedAt']; ?>)</small>
+                </p>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($related_facility): ?>
+            <h3>Weitere Tickets dieser Einrichtung</h3>
+            <div class="related-tickets">
+                <?php foreach ($related_facility as $rel): ?>
+                <p>
+                    <span class="team-badge small" style="background-color: <?php echo htmlspecialchars($rel['TeamColor']); ?>">
+                        <?php echo htmlspecialchars($rel['TeamName']); ?>
+                    </span>
+                    <a href="index.php?action=view_ticket&id=<?php echo $rel['TicketID']; ?>">
+                        #<?php echo $rel['TicketID']; ?>: <?php echo htmlspecialchars(mb_strimwidth($rel['Title'],0,40,'...')); ?>
+                    </a>
+                    <em>(<?php echo htmlspecialchars(explode(' ', trim($rel['ContactName']))[0]); ?>)</em>
+                    <small>(<?php echo $rel['CreatedAt']; ?>)</small>
+                </p>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($related_location): ?>
+            <h3>Weitere Tickets an diesem Standort</h3>
+            <div class="related-tickets">
+                <?php foreach ($related_location as $rel): ?>
+                <p>
+                    <span class="team-badge small" style="background-color: <?php echo htmlspecialchars($rel['TeamColor']); ?>">
+                        <?php echo htmlspecialchars($rel['TeamName']); ?>
+                    </span>
+                    <a href="index.php?action=view_ticket&id=<?php echo $rel['TicketID']; ?>">
+                        #<?php echo $rel['TicketID']; ?>: <?php echo htmlspecialchars(mb_strimwidth($rel['Title'],0,30,'...')); ?>
+                    </a>
+                    <em>(<?php echo htmlspecialchars(explode(' ', trim($rel['ContactName']))[0]); ?>)</em>
+                    <small>(<?php echo $rel['CreatedAt']; ?>)</small>
+                </p>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+
             <h3>Zugewiesen an</h3>
             <div class="assignees">
                 <?php if ($assignees): ?>

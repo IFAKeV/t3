@@ -94,4 +94,47 @@ function get_ticket_assignees($ticket_id) {
     $query = "SELECT AgentID, AgentName, strftime('%d.%m.%Y %H:%M', AssignedAt, 'localtime') as AssignedAt FROM TicketAssignees WHERE TicketID = ? ORDER BY AssignedAt DESC";
     return query_db($query, [$ticket_id]);
 }
+
+// ----------------------------------------------------------------------
+// Verwandte Tickets
+// ----------------------------------------------------------------------
+
+function get_related_tickets_by_person($employee_id, $exclude_id) {
+    $query = "SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode, " .
+             "team.TeamName, team.TeamColor, " .
+             "strftime('%d.%m.%Y', t.CreatedAt, 'localtime') AS CreatedAt " .
+             "FROM Tickets t " .
+             "JOIN TicketStatus s ON t.StatusID = s.StatusID " .
+             "JOIN Teams team ON t.TeamID = team.TeamID " .
+             "WHERE t.ContactEmployeeID = ? AND t.TicketID != ? AND s.StatusName != 'Gelöst' " .
+             "ORDER BY t.CreatedAt DESC LIMIT 5";
+    return query_db($query, [$employee_id, $exclude_id]);
+}
+
+function get_related_tickets_by_facility($facility_id, $exclude_id) {
+    $query = "SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode, " .
+             "team.TeamName, team.TeamColor, " .
+             "strftime('%d.%m.%Y', t.CreatedAt, 'localtime') AS CreatedAt " .
+             "FROM Tickets t " .
+             "JOIN TicketStatus s ON t.StatusID = s.StatusID " .
+             "JOIN Teams team ON t.TeamID = team.TeamID " .
+             "WHERE t.FacilityID = ? AND t.TicketID != ? AND s.StatusName != 'Gelöst' " .
+             "ORDER BY t.CreatedAt DESC LIMIT 5";
+    return query_db($query, [$facility_id, $exclude_id]);
+}
+
+function get_related_tickets_by_location($location_id, $exclude_id, $facility_id = null) {
+    $query = "SELECT t.TicketID, t.Title, t.ContactName, s.StatusName, s.ColorCode, " .
+             "team.TeamName, team.TeamColor, " .
+             "strftime('%d.%m.%Y', t.CreatedAt, 'localtime') AS CreatedAt " .
+             "FROM Tickets t " .
+             "JOIN TicketStatus s ON t.StatusID = s.StatusID " .
+             "JOIN Teams team ON t.TeamID = team.TeamID " .
+             "WHERE t.LocationID = ? AND t.TicketID != ? " .
+             "AND (t.FacilityID != ? OR t.FacilityID IS NULL) " .
+             "AND s.StatusName != 'Gelöst' " .
+             "ORDER BY t.CreatedAt DESC LIMIT 5";
+    $fid = $facility_id ? $facility_id : 0;
+    return query_db($query, [$location_id, $exclude_id, $fid]);
+}
 ?>
