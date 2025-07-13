@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
             hideList();
             return;
         }
-        fetch('api/search_employees.php?term=' + encodeURIComponent(term))
+        const apiBase = window.PHP_BASE ? window.PHP_BASE : '';
+        fetch(apiBase + '/api/search_employees.php?term=' + encodeURIComponent(term))
             .then(function(resp) { return resp.json(); })
             .then(function(data) { showList(data); })
             .catch(function(err) { console.error('Fehler bei der Suche:', err); hideList(); });

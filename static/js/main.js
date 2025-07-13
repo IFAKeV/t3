@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('IFAK Ticketsystem v2.0 geladen');
 
     // Service Worker registrieren und Notification-Rechte anfragen
+    const baseUrl = window.BASE_URL || '';
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/static/js/service-worker.js')
             .then(function(reg) {
