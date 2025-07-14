@@ -3,7 +3,7 @@ self.addEventListener('push', function(event) {
     const title = data.title || 'IFAK Ticketsystem';
     const options = {
         body: data.body || '',
-        icon: '/static/img/ifak-ticket-logo.svg'
+        icon: '../img/ifak-ticket-logo.svg'
     };
     event.waitUntil(self.registration.showNotification(title, options));
 });

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Service Worker registrieren und Notification-Rechte anfragen
     const baseUrl = window.BASE_URL || '';
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/static/js/service-worker.js')
+        navigator.serviceWorker.register(baseUrl + '/static/js/service-worker.js')
             .then(function(reg) {
                 console.log('Service Worker registriert');
             })

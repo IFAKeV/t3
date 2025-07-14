@@ -2,7 +2,7 @@
 if (!isset($title)) { $title = 'IFAK Ticketsystem'; }
 $base_url = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/');
 $php_base = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-$css_version = filemtime(__DIR__ . '/../../static/css/style.css');
+$css_version = filemtime(__DIR__ . '/../static/css/style.css');
 ?>
 <!DOCTYPE html>
 <html lang="de">
