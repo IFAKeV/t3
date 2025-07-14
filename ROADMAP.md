@@ -1,25 +1,8 @@
 # Roadmap - IFAK Ticket-System
 
-## Phase 0: Ausgangsbasis
-- Vorhandenes Ticketsystem, implementiert mit Python (Flask)
-- SQLite-Datenbank
-- REST-API-Endpunkte:
-  - Ticketverwaltung (CRUD)
-  - Kommentare & Status-Updates
-  - Agentenverwaltung (rudimentär)
-- Lokale Test- und Entwicklungsumgebung
-
-## Phase 1: Migration auf PHP
-- Ziel: Vollständiger Umstieg von Python/Flask auf Plain PHP
+- Plain PHP
 - Keine PHP-Frameworks (z.B. Laravel, Symfony)
 - Keine Javascript Frameworks und Erweiterungen (z.B. jquery, vue)
-- Fokus auf einfache, modulare Struktur mit klarer Trennung von:
-  - API-Handlern 
-  - Datenbankzugriffen
-  - Reiner Serverlogik
-- REST-Logik bleibt gleich
-- API-Struktur übernehmen
-- Neue PHP-Funktionen analog zu bestehenden Endpunkten implementieren
 
 ## Phase 2: Web-Frontend
 - Umsetzung eines responsiven Frontends
@@ -61,12 +44,10 @@
 
 # Wichtig /  Hinweise für Codex
 
-- Code wird ab sofort ausschließlich in **Plain PHP** (nicht Flask/Python) erzeugt
-- Keine Verwendung von Frameworks
+- Code wird ausschließlich in **Plain PHP** erzeugt.
+- Keine Verwendung von Frameworks.
 - Die App soll bei jedem Hoster in einem Standard Webspace durch einfaches kopieren/hochladen einsetzbar sein.
-- Bestehende Python-Logik kann als semantisches Referenzmodell genutzt werden
-- Wir verwenden zwei SQLite Datenbanken. Eine für die Tickets und die Adressbuch-Datenbank als Grundlage für die Suche nach der aufgebenden Person. Nur wer bei uns beschäftigt ist kann ein Ticket aufgeben. Daher nutzen wir hier das Adressbuch als seperate Ressource
-- Erstes Ziel: Erreichen des gleichen Funktionsumfangs und Implemetierung der schon gelisteten neuen Features.
+- Wir verwenden zwei SQLite Datenbanken. Eine für die Tickets und die Adressbuch-Datenbank als Grundlage für die Suche nach der aufgebenden Person. Nur wer bei uns beschäftigt ist kann ein Ticket aufgeben. Daher nutzen wir hier das Adressbuch als seperate Ressource.
 
 ---
 

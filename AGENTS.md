@@ -19,4 +19,3 @@ Die python Entwicklung pausiert. Konzentration auf die Entwicklung einer php-Ver
 - Orientiert sich an vorhandenen Python-Funktionen, erstellt aber keine neuen Python-Dateien
 - Arbeitet ausschließlich innerhalb der aktiven Sprache (aktuell: PHP)
 - Trennung von Präsentation (HTML/JS) und Logik (PHP)
-- Erstellt auf Wunsch PRs mit beschreibenden Commits und optionalen `README.md`-Ergänzungen
