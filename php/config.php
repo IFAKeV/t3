@@ -1,5 +1,5 @@
 <?php
-$BASE_DIR = dirname(__DIR__);
+$BASE_DIR = __DIR__;
 
 // Database configuration
 $DATABASE = [
