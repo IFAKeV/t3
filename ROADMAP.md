@@ -28,14 +28,15 @@
   - Alle Tickets einer Person/Einrichtung/Standort - Wie "verwandte" Tickets
 - Warnung/Hinweis bei sehr alten offenen Tickets nach einzustellendem Schwellwert durch farbige Hervorhebung der Zeile im Dashboard
 - Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen. Auch hier eine farbige Hervorhebung bei erreichen eines zu definierenden Schwellwerts
+- Tickets die anderen Agenten zugewiesen sind, können gezielt angezeigt werden. Durch Klick auf den Agentennamen im Header
+- Chronologische Reihenfolge der Kommentare zu einem Ticket. Neuste oben!
 
 ---
 
 ## To-Do
 
+- Hinterlegung eines Verfügbarkeitskalenders für jeden Agenten.
 - "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
-- Tickets die anderen Agenten zugewiesen sind müssen gezielt anzeigbar sein. Durch Klick auf den Agentennamen im Header
-- Chronologische Reihenfolge der Kommentare zu einem Ticket. Neuste oben!
 - Benachrichtigung der Agenten bei:
   - Neuen Tickets (Funktions-Postfach helpdesk@ifak-sozial.de)
   - Ticket-Zuweisungen (individuelle Mail)
