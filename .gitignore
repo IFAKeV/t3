@@ -1,14 +1,8 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-venv/
-
 # Datenbanken  
-db/*.db
+php/db/*.db
 
 # Uploads
-static/uploads/*
+php/static/uploads/*
 !static/uploads/.gitkeep
 
 # Ignore-Ordner
