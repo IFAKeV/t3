@@ -68,6 +68,9 @@ if ($action === 'new_ticket') {
             $info = query_db('SELECT AgentName FROM Agents WHERE AgentID = ?', [$assigned_agent], true);
             if ($info) {
                 insert_db('TicketAssignees', ['TicketID','AgentID','AgentName','AssignedAt'], [$ticket_id,$assigned_agent,$info['AgentName'],get_local_timestamp()]);
+                $assign_time = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('d.m.Y H:i');
+                $assign_note = $agent['AgentName'] . ' hat am ' . $assign_time . ' ' . $info['AgentName'] . ' zugewiesen.';
+                insert_db('TicketUpdates', ['TicketID','UpdatedByName','UpdateText','IsSolution','UpdatedAt'], [$ticket_id,$agent['AgentName'],$assign_note,0,get_local_timestamp()]);
             }
         }
         if (!empty($_FILES['attachment']['name']) && allowed_file($_FILES['attachment']['name'])) {
@@ -122,6 +125,13 @@ if ($action === 'update_ticket') {
                     $info = query_db('SELECT AgentName FROM Agents WHERE AgentID = ?', [$assign_agent], true);
                     if ($info) {
                         insert_db('TicketAssignees', ['TicketID','AgentID','AgentName','AssignedAt'], [$ticket_id,$assign_agent,$info['AgentName'],get_local_timestamp()]);
+                        $assign_time = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('d.m.Y H:i');
+                        $assign_note = $agent['AgentName'] . ' hat am ' . $assign_time . ' ' . $info['AgentName'] . ' zugewiesen.';
+                        if ($update_text === '') {
+                            $update_text = $assign_note;
+                        } else {
+                            $update_text .= "\n\n" . $assign_note;
+                        }
                     }
                 }
             }
