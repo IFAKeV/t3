@@ -224,6 +224,7 @@ if ($team_filter === 'my_team') {
     $team_id = null;
 } elseif ($team_filter === 'mine') {
     $filter_agent = $agent['AgentID'];
+    $assigned_only = true;
 } elseif (ctype_digit($team_filter)) {
     $team_id = intval($team_filter);
 }
