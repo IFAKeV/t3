@@ -35,6 +35,7 @@
 
 ## To-Do
 
+- Bei Zuweisungen an einen Agenten muss ein entsprechender Text an den Kommentar angehängt werden. Aus dem muss deutlich werden, wer wann an wen zugewiesen hat.
 - Hinterlegung eines Verfügbarkeitskalenders für jeden Agenten.
 - "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
 - Benachrichtigung der Agenten bei:
