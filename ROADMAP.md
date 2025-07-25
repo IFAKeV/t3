@@ -35,12 +35,13 @@
 
 ## To-Do
 
-- Bei Zuweisungen an einen Agenten muss ein entsprechender Text an den Kommentar angehängt werden. Aus dem muss deutlich werden, wer wann an wen zugewiesen hat.
-- Hinterlegung eines Verfügbarkeitskalenders für jeden Agenten.
-- "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
-- Benachrichtigung der Agenten bei:
+1. Bei Zuweisungen an einen Agenten muss ein entsprechender Text an den Kommentar angehängt werden. Aus dem muss deutlich werden, wer wann an wen zugewiesen hat.
+2. "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
+3. Hinterlegung eines Verfügbarkeitskalenders für jeden Agenten.
+4. Ticketzuweisungen nur an innerhalb der Reaktionszeit verfügbare Agenten ermöglichen. Bei normaler Priorität kann es z.B. ausreichen, dass jemand am nächsten Tag das Ticket in Arbeit nehmen kann.
+5. Benachrichtigung der Agenten per EMail bei:
   - Neuen Tickets (Funktions-Postfach helpdesk@ifak-sozial.de)
-  - Ticket-Zuweisungen (individuelle Mail)
+  - Ticket-Zuweisungen (individuelle Mail) mit Angabe der Reaktionszeit, die sich aus der Priorität ableitet.
 
 ---
 
