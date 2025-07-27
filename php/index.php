@@ -117,6 +117,19 @@ if ($action === 'new_ticket') {
             [$title,$description,$priority_id,$team_id,1,get_local_timestamp(),$agent['AgentID'],$source,$contact_name,$contact_phone,$contact_email,$contact_employee_id,$facility_id,$location_id,$department_id]
         );
 
+        $prio = get_priority_by_id($priority_id);
+        $ticket_info_global = [
+            'TicketID' => $ticket_id,
+            'Title' => $title,
+            'Description' => $description,
+            'PriorityID' => $priority_id,
+            'PriorityName' => $prio['PriorityName'] ?? '',
+            'ContactName' => $contact_name,
+            'ContactPhone' => $contact_phone,
+            'ContactEmail' => $contact_email
+        ];
+        send_new_ticket_email($ticket_info_global);
+
         $assigned_agent = $_POST['assigned_agent'] ?? '';
         if ($assigned_agent) {
             $info = query_db('SELECT AgentName, AgentEmail FROM Agents WHERE AgentID = ?', [$assigned_agent], true);

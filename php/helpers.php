@@ -52,14 +52,13 @@ function get_base_url() {
     return $scheme . '://' . $host . $path;
 }
 
-function send_assignment_email($agent_email, $agent_name, $ticket) {
-    if (!$agent_email) return;
+function send_new_ticket_email($ticket) {
+    global $HELPDESK_FUNCTIONAL, $HELPDESK_FROM;
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
-    $subject = 'Ticket #' . $ticket['TicketID'] . ' zugewiesen';
+    $subject = 'Neues Ticket #' . $ticket['TicketID'];
     $priority = $ticket['PriorityName'] ?? '';
-    $body = "Hallo $agent_name,\n\n" .
-            "Ihnen wurde ein neues Ticket zugewiesen:\n" .
+    $body = "Neues Ticket wurde erstellt:\n" .
             "Titel: {$ticket['Title']}\n" .
             ($priority ? "Priorität: $priority\n" : '') .
             "Kontakt: {$ticket['ContactName']}\n" .
@@ -67,6 +66,27 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
             ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\n" : '') .
             "\nZum Ticket: $link\n\n" .
             "Beschreibung:\n{$ticket['Description']}\n";
-    @mail($agent_email, $subject, $body, "From: helpdesk@ifak-sozial.de");
+    @mail($HELPDESK_FUNCTIONAL, $subject, $body, "From: $HELPDESK_FROM");
+}
+
+function send_assignment_email($agent_email, $agent_name, $ticket) {
+    if (!$agent_email) return;
+    $base_url = get_base_url();
+    $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
+    $subject = 'Ticket #' . $ticket['TicketID'] . ' zugewiesen';
+    $priority = $ticket['PriorityName'] ?? '';
+    global $REACTION_TIME_HOURS, $HELPDESK_FROM;
+    $reaction = $ticket['PriorityID'] ? ($REACTION_TIME_HOURS[$ticket['PriorityID']] ?? null) : null;
+    $body = "Hallo $agent_name,\n\n" .
+            "Ihnen wurde ein neues Ticket zugewiesen:\n" .
+            "Titel: {$ticket['Title']}\n" .
+            ($priority ? "Priorität: $priority\n" : '') .
+            ($reaction ? "Reaktionszeit: {$reaction}h\n" : '') .
+            "Kontakt: {$ticket['ContactName']}\n" .
+            ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\n" : '') .
+            ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\n" : '') .
+            "\nZum Ticket: $link\n\n" .
+            "Beschreibung:\n{$ticket['Description']}\n";
+    @mail($agent_email, $subject, $body, "From: $HELPDESK_FROM");
 }
 ?>

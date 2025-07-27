@@ -25,4 +25,17 @@ $UNASSIGNED_WARNING_HOURS = [
 
 // ID des Auszubildenden für spezielle Verfügbarkeitsoptionen
 $TRAINEE_AGENT_ID = 5;
+
+// Absenderadresse für Benachrichtigungen
+$HELPDESK_FROM = 'helpdesk@ifak-bochum.de';
+
+// Funktions-Postfach für neue Tickets
+$HELPDESK_FUNCTIONAL = 'helpdesk@ifak-sozial.de';
+
+// Reaktionszeiten pro Priorität (in Stunden)
+$REACTION_TIME_HOURS = [
+    3 => 2, // Hoch
+    2 => 4, // Mittel
+    1 => 8  // Niedrig
+];
 ?>
