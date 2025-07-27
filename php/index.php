@@ -20,6 +20,19 @@ if ($action !== 'login') {
         exit;
     }
     $agents_overview = get_agents_with_ticket_counts();
+    $status_map = get_availability_status_map();
+    $week1_dates = [];
+    $tmp = new DateTime('monday this week', new DateTimeZone('Europe/Berlin'));
+    for ($i=0; $i<5; $i++) { $week1_dates[] = $tmp->format('Y-m-d'); $tmp->modify('+1 day'); }
+    $week2_dates = [];
+    $tmp = new DateTime('monday next week', new DateTimeZone('Europe/Berlin'));
+    for ($i=0; $i<5; $i++) { $week2_dates[] = $tmp->format('Y-m-d'); $tmp->modify('+1 day'); }
+    $availability_overview = [];
+    foreach ($agents_overview as $ov) {
+        $a1 = get_availability_for_agent($ov['AgentID'], $week1_dates[0], $week1_dates[4]);
+        $a2 = get_availability_for_agent($ov['AgentID'], $week2_dates[0], $week2_dates[4]);
+        $availability_overview[$ov['AgentID']] = ['week1'=>$a1,'week2'=>$a2];
+    }
 }
 
 if ($action === 'login') {
@@ -41,6 +54,36 @@ if ($action === 'login') {
 if ($action === 'logout') {
     setcookie('agent_token', '', time()-3600, '/');
     header('Location: index.php?action=login');
+    exit;
+}
+
+if ($action === 'availabilities') {
+    $calendar_start = new DateTime('first day of this month', new DateTimeZone('Europe/Berlin'));
+    $calendar_end = (clone $calendar_start)->modify('+2 month')->modify('last day of this month');
+    $agents = load_agents();
+    $status_map = get_availability_status_map();
+    $avail_data = [];
+    foreach ($agents as $ag) {
+        $avail_data[$ag['AgentID']] = get_availability_for_agent($ag['AgentID'], $calendar_start->format('Y-m-d'), $calendar_end->format('Y-m-d'));
+    }
+    include 'templates/availability_overview.php';
+    exit;
+}
+
+if ($action === 'edit_availability') {
+    $calendar_start = new DateTime('first day of this month', new DateTimeZone('Europe/Berlin'));
+    $calendar_end = (clone $calendar_start)->modify('+2 month')->modify('last day of this month');
+    $statuses = get_availability_statuses();
+    $status_map = get_availability_status_map();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $data = $_POST['status'] ?? [];
+        foreach ($data as $date => $status_id) {
+            upsert_agent_availability($agent['AgentID'], $date, intval($status_id));
+        }
+        $flash = 'Gespeichert';
+    }
+    $availability = get_availability_for_agent($agent['AgentID'], $calendar_start->format('Y-m-d'), $calendar_end->format('Y-m-d'));
+    include 'templates/availability_edit.php';
     exit;
 }
 

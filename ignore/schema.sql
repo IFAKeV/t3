@@ -93,6 +93,24 @@ CREATE TABLE IF NOT EXISTS "TicketAssignees" (
     FOREIGN KEY("AgentID") REFERENCES "Agents"("AgentID")
 );
 
+-- Verfügbarkeits-Status
+CREATE TABLE IF NOT EXISTS "AvailabilityStatuses" (
+    "StatusID" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "ShortCode" TEXT NOT NULL UNIQUE,
+    "StatusName" TEXT NOT NULL,
+    "ColorCode" TEXT NOT NULL
+);
+
+-- Verfügbarkeit je Agent und Tag
+CREATE TABLE IF NOT EXISTS "AgentAvailability" (
+    "AgentID" INTEGER NOT NULL,
+    "Date" DATE NOT NULL,
+    "StatusID" INTEGER NOT NULL,
+    PRIMARY KEY("AgentID","Date"),
+    FOREIGN KEY("AgentID") REFERENCES "Agents"("AgentID"),
+    FOREIGN KEY("StatusID") REFERENCES "AvailabilityStatuses"("StatusID")
+);
+
 -- Initial-Daten
 INSERT OR IGNORE INTO "Teams" VALUES (1, 'IT', '#007bff', 'IT-Support und Systemadministration');
 INSERT OR IGNORE INTO "Teams" VALUES (2, 'Haustechnik', '#28a745', 'Gebäudetechnik und Instandhaltung');
@@ -114,10 +132,18 @@ INSERT OR IGNORE INTO "Agents" VALUES (3, 'Martin', 'drees@ifak-sozial.de', '7b4
 INSERT OR IGNORE INTO "Agents" VALUES (4, 'Hussam', 'albenni@ifak-sozial.de', '2q5v8t3f7g9s', 1, 1);
 INSERT OR IGNORE INTO "Agents" VALUES (5, 'Ziad', 'errachidi@ifak-sozial.de', '4h7p2w9j5x8r', 1, 1);
 
+INSERT OR IGNORE INTO "AvailabilityStatuses" VALUES (1, 'A', 'Verfügbar', '#28a745');
+INSERT OR IGNORE INTO "AvailabilityStatuses" VALUES (2, 'U', 'Urlaub', '#dc3545');
+INSERT OR IGNORE INTO "AvailabilityStatuses" VALUES (3, 'K', 'Krank', '#800080');
+INSERT OR IGNORE INTO "AvailabilityStatuses" VALUES (4, 'S', 'Schule', '#ffc107');
+INSERT OR IGNORE INTO "AvailabilityStatuses" VALUES (5, 'F', 'Fehlt', '#ff8800');
+
 -- Performance-Indizes
 CREATE INDEX IF NOT EXISTS "idx_tickets_team" ON "Tickets"("TeamID");
 CREATE INDEX IF NOT EXISTS "idx_tickets_facility" ON "Tickets"("FacilityID");
 CREATE INDEX IF NOT EXISTS "idx_tickets_location" ON "Tickets"("LocationID");
 CREATE INDEX IF NOT EXISTS "idx_tickets_status" ON "Tickets"("StatusID");
+CREATE INDEX IF NOT EXISTS "idx_availability_agent" ON "AgentAvailability"("AgentID");
+CREATE INDEX IF NOT EXISTS "idx_availability_date" ON "AgentAvailability"("Date");
 
 COMMIT;
