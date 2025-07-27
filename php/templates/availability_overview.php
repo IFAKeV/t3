@@ -8,35 +8,73 @@ if (!isset($calendar_start)) {
 $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 ?>
 <h1>Verfügbarkeiten</h1>
-<p><a href="index.php?action=edit_availability">Meine Verfügbarkeit bearbeiten</a></p>
+<p>Klick auf einen Tag, um die eigene Verfügbarkeit zu ändern.</p>
+<div class="agent-columns">
 <?php foreach ($agents as $ag): ?>
-    <h2><?php echo htmlspecialchars($ag['AgentName']); ?></h2>
     <?php $data = $avail_data[$ag['AgentID']] ?? []; ?>
-    <?php if (empty($data)): ?>
-        <div class="availability-warning">Keine Verfügbarkeiten hinterlegt!</div>
-    <?php endif; ?>
-    <div class="calendar-months">
-        <?php for ($m=0; $m<3; $m++): ?>
-            <?php $month_start = (clone $calendar_start)->modify("+$m month");
-                  $month_end = (clone $month_start)->modify('last day of this month'); ?>
-            <div class="calendar-month">
-                <div class="month-name">
-                    <?php echo $month_names[(int)$month_start->format('n')-1] . ' ' . $month_start->format('Y'); ?>
+    <div class="agent-column">
+        <h2><?php echo htmlspecialchars($ag['AgentName']); ?></h2>
+        <?php if (empty($data)): ?>
+            <div class="availability-warning">Keine Verfügbarkeiten hinterlegt!</div>
+        <?php endif; ?>
+        <div class="calendar-months">
+            <?php for ($m=0; $m<3; $m++): ?>
+                <?php $month_start = (clone $calendar_start)->modify("+$m month");
+                      $month_end = (clone $month_start)->modify('last day of this month'); ?>
+                <div class="calendar-month">
+                    <div class="month-name">
+                        <?php echo $month_names[(int)$month_start->format('n')-1] . ' ' . $month_start->format('Y'); ?>
+                    </div>
+                    <table>
+                        <?php $week_start = (clone $month_start)->modify('monday this week'); ?>
+                        <?php while ($week_start <= $month_end): ?>
+                            <tr>
+                            <?php for ($i=0; $i<7; $i++): ?>
+                                <?php $date = $week_start->format('Y-m-d');
+                                      $day_num = (int)$week_start->format('j');
+                                      $in_month = $week_start->format('m') === $month_start->format('m');
+                                      $dow = (int)$week_start->format('N');
+                                      $status = $data[$date]['StatusID'] ?? null;
+                                      $color = $status ? ($status_map[$status]['ColorCode']) : '#000000';
+                                      $code = $status ? ($status_map[$status]['ShortCode']) : ''; ?>
+                                <td class="<?php echo $dow>=6 ? 'weekend' : ''; ?> availability-day" data-date="<?php echo $date; ?>" data-status="<?php echo $status ?: 0; ?>" data-agent="<?php echo $ag['AgentID']; ?>" style="background-color: <?php echo $in_month ? htmlspecialchars($color) : '#eee'; ?>" title="<?php echo htmlspecialchars($code); ?>">
+                                    <?php echo $in_month ? $day_num : '&nbsp;'; ?>
+                                </td>
+                                <?php $week_start->modify('+1 day'); ?>
+                            <?php endfor; ?>
+                            </tr>
+                        <?php endwhile; ?>
+                    </table>
                 </div>
-                <table>
-                    <tr>
-                    <?php for ($d=1; $d <= (int)$month_end->format('j'); $d++): ?>
-                        <?php $date = $month_start->format('Y-m-') . sprintf('%02d', $d); 
-                              $color = $data[$date]['ColorCode'] ?? $status_map[1]['ColorCode'];
-                              $code = $data[$date]['ShortCode'] ?? $status_map[1]['ShortCode']; ?>
-                        <td style="background-color: <?php echo htmlspecialchars($color); ?>" title="<?php echo htmlspecialchars($code); ?>">
-                            <?php echo $d; ?>
-                        </td>
-                    <?php endfor; ?>
-                    </tr>
-                </table>
-            </div>
-        <?php endfor; ?>
-    </div>
+            <?php endfor; ?>
+        </div>
+</div>
 <?php endforeach; ?>
+</div>
+<script>
+const statusMap = <?php echo json_encode($status_map); ?>;
+const traineeId = <?php echo json_encode($TRAINEE_AGENT_ID); ?>;
+document.querySelectorAll('.availability-day').forEach(function(td){
+    if(td.classList.contains('weekend')) return;
+    td.addEventListener('click', function(){
+        let current = parseInt(td.dataset.status);
+        const agentId = parseInt(td.dataset.agent);
+        let next;
+        if(!current || current === statusMap[1].StatusID){
+            next = statusMap[2].StatusID;
+        } else if(current === statusMap[2].StatusID){
+            next = (agentId === traineeId) ? statusMap[4].StatusID : statusMap[3].StatusID;
+        } else {
+            next = statusMap[1].StatusID;
+        }
+        td.dataset.status = next;
+        td.style.backgroundColor = statusMap[next].ColorCode;
+        fetch('index.php?action=set_availability', {
+            method:'POST',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:'date=' + encodeURIComponent(td.dataset.date) + '&status_id=' + next
+        });
+    });
+});
+</script>
 <?php include 'templates/footer.php'; ?>

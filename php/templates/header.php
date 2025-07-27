@@ -28,7 +28,7 @@ if (!isset($status_map)) $status_map = get_availability_status_map();
                 <div class="week-boxes">
                     <?php foreach ($week1_dates as $d): ?>
                         <?php $info = $availability_overview[$ov['AgentID']]['week1'][$d] ?? null; ?>
-                        <?php $color = $info['ColorCode'] ?? $status_map[1]['ColorCode']; ?>
+                        <?php $color = $info ? $info['ColorCode'] : '#000000'; ?>
                         <span class="day-box" style="background-color: <?php echo htmlspecialchars($color); ?>"></span>
                     <?php endforeach; ?>
                 </div>
@@ -39,7 +39,7 @@ if (!isset($status_map)) $status_map = get_availability_status_map();
                 <div class="week-boxes">
                     <?php foreach ($week2_dates as $d): ?>
                         <?php $info = $availability_overview[$ov['AgentID']]['week2'][$d] ?? null; ?>
-                        <?php $color = $info['ColorCode'] ?? $status_map[1]['ColorCode']; ?>
+                        <?php $color = $info ? $info['ColorCode'] : '#000000'; ?>
                         <span class="day-box" style="background-color: <?php echo htmlspecialchars($color); ?>"></span>
                     <?php endforeach; ?>
                 </div>

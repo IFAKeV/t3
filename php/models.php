@@ -15,11 +15,11 @@ function get_all_priorities() {
 }
 
 function load_agents() {
-    return query_db("SELECT a.AgentID, a.AgentName, a.AgentEmail, a.Token, a.Active, a.TeamID, t.TeamName, t.TeamColor FROM Agents a JOIN Teams t ON a.TeamID = t.TeamID WHERE a.Active = 1 ORDER BY a.AgentName");
+    return query_db("SELECT a.AgentID, a.AgentName, a.AgentEmail, a.Token, a.Active, a.IsTrainee, a.TeamID, t.TeamName, t.TeamColor FROM Agents a JOIN Teams t ON a.TeamID = t.TeamID WHERE a.Active = 1 ORDER BY a.AgentName");
 }
 
 function get_agent_by_token($token) {
-    return query_db("SELECT a.AgentID, a.AgentName, a.AgentEmail, a.Token, a.Active, a.TeamID, t.TeamName, t.TeamColor FROM Agents a JOIN Teams t ON a.TeamID = t.TeamID WHERE a.Token = ? AND a.Active = 1", [$token], true);
+    return query_db("SELECT a.AgentID, a.AgentName, a.AgentEmail, a.Token, a.Active, a.IsTrainee, a.TeamID, t.TeamName, t.TeamColor FROM Agents a JOIN Teams t ON a.TeamID = t.TeamID WHERE a.Token = ? AND a.Active = 1", [$token], true);
 }
 
 function get_agents_with_ticket_counts() {

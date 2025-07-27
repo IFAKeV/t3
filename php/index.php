@@ -57,6 +57,17 @@ if ($action === 'logout') {
     exit;
 }
 
+if ($action === 'set_availability') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $date = $_POST['date'] ?? '';
+        $status_id = intval($_POST['status_id'] ?? 1);
+        if ($date) {
+            upsert_agent_availability($agent['AgentID'], $date, $status_id);
+        }
+    }
+    exit;
+}
+
 if ($action === 'availabilities') {
     $calendar_start = new DateTime('first day of this month', new DateTimeZone('Europe/Berlin'));
     $calendar_end = (clone $calendar_start)->modify('+2 month')->modify('last day of this month');

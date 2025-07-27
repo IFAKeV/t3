@@ -882,6 +882,16 @@ footer {
     flex-wrap: wrap;
 }
 
+.agent-columns {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+}
+
+.agent-column {
+    min-width: 260px;
+}
+
 .calendar-month {
     border: 1px solid var(--border-color);
     padding: 0.5rem;
@@ -898,6 +908,11 @@ footer {
     text-align: center;
     color: #fff;
     font-size: 0.7rem;
+}
+
+.calendar-month td.weekend {
+    background-color: #ccc !important;
+    color: #666;
 }
 
 .availability-warning {

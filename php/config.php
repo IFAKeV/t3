@@ -22,4 +22,7 @@ $UNASSIGNED_WARNING_HOURS = [
     2 => 4, // Mittel
     1 => 8  // Niedrig
 ];
+
+// ID des Auszubildenden für spezielle Verfügbarkeitsoptionen
+$TRAINEE_AGENT_ID = 5;
 ?>
