@@ -1,6 +1,3 @@
--- IFAK Ticketsystem Database Schema v2.0
--- Mit Teams und Organisationsebenen
-
 BEGIN TRANSACTION;
 
 -- Teams für Multi-Team Support
