@@ -7,16 +7,18 @@ if (!isset($calendar_start)) {
 }
 $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 ?>
-<h1>Verfügbarkeiten</h1>
-<p>Klick auf einen Tag, um die eigene Verfügbarkeit zu ändern.</p>
-<div class="availability-legend">
-    <?php foreach ($status_map as $st): ?>
-    <div class="legend-item">
-        <span class="legend-box" style="background-color: <?php echo htmlspecialchars($st['ColorCode']); ?>"></span>
-        <span><?php echo htmlspecialchars($st['StatusName']); ?></span>
+<div class="availability-header">
+    <h1>Verfügbarkeiten</h1>
+    <div class="availability-legend">
+        <?php foreach ($status_map as $st): ?>
+        <div class="legend-item">
+            <span class="legend-box" style="background-color: <?php echo htmlspecialchars($st['ColorCode']); ?>"></span>
+            <span><?php echo htmlspecialchars($st['StatusName']); ?></span>
+        </div>
+        <?php endforeach; ?>
     </div>
-    <?php endforeach; ?>
 </div>
+<p>Klick auf einen Tag, um die eigene Verfügbarkeit zu ändern.</p>
 <div class="agent-columns">
 <?php foreach ($agents as $ag): ?>
     <?php $data = $avail_data[$ag['AgentID']] ?? []; ?>
