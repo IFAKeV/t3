@@ -54,8 +54,10 @@ $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August',
 <script>
 const statusMap = <?php echo json_encode($status_map); ?>;
 const traineeId = <?php echo json_encode($TRAINEE_AGENT_ID); ?>;
+const currentAgent = <?php echo json_encode($agent['AgentID']); ?>;
 document.querySelectorAll('.availability-day').forEach(function(td){
     if(td.classList.contains('weekend')) return;
+    if(parseInt(td.dataset.agent) !== currentAgent) return;
     td.addEventListener('click', function(){
         let current = parseInt(td.dataset.status);
         const agentId = parseInt(td.dataset.agent);
