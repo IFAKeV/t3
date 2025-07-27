@@ -9,6 +9,14 @@ $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August',
 ?>
 <h1>Verfügbarkeiten</h1>
 <p>Klick auf einen Tag, um die eigene Verfügbarkeit zu ändern.</p>
+<div class="availability-legend">
+    <?php foreach ($status_map as $st): ?>
+    <div class="legend-item">
+        <span class="legend-box" style="background-color: <?php echo htmlspecialchars($st['ColorCode']); ?>"></span>
+        <span><?php echo htmlspecialchars($st['StatusName']); ?></span>
+    </div>
+    <?php endforeach; ?>
+</div>
 <div class="agent-columns">
 <?php foreach ($agents as $ag): ?>
     <?php $data = $avail_data[$ag['AgentID']] ?? []; ?>
