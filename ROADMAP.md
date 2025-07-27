@@ -30,16 +30,16 @@
 - Zusätzlich zu "erstellt am" möchte ich im Dashboard noch das Alter des Tickets in Tagen sehen. Auch hier eine farbige Hervorhebung bei erreichen eines zu definierenden Schwellwerts
 - Tickets die anderen Agenten zugewiesen sind, können gezielt angezeigt werden. Durch Klick auf den Agentennamen im Header
 - Chronologische Reihenfolge der Kommentare zu einem Ticket. Neuste oben!
+- "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
+- Hinterlegung eines Verfügbarkeitskalenders für jeden Agenten.
 
 ---
 
 ## To-Do
 
-1. Bei Zuweisungen an einen Agenten muss ein entsprechender Text an den Kommentar angehängt werden. Aus dem muss deutlich werden, wer wann an wen zugewiesen hat.
-2. "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
-3. Hinterlegung eines Verfügbarkeitskalenders für jeden Agenten.
-4. Ticketzuweisungen nur an innerhalb der Reaktionszeit verfügbare Agenten ermöglichen. Bei normaler Priorität kann es z.B. ausreichen, dass jemand am nächsten Tag das Ticket in Arbeit nehmen kann.
-5. Benachrichtigung der Agenten per EMail bei:
+- Bei Zuweisungen an einen Agenten muss ein entsprechender Text an den Kommentar angehängt werden. Aus dem muss deutlich werden, wer wann an wen zugewiesen hat.
+- Ticketzuweisungen nur an innerhalb der Reaktionszeit verfügbare Agenten ermöglichen. Bei normaler Priorität kann es z.B. ausreichen, dass jemand am nächsten Tag das Ticket in Arbeit nehmen kann.
+- Benachrichtigung der Agenten per EMail bei:
   - Neuen Tickets (Funktions-Postfach helpdesk@ifak-sozial.de)
   - Ticket-Zuweisungen (individuelle Mail) mit Angabe der Reaktionszeit, die sich aus der Priorität ableitet.
 
