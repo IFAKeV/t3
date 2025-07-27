@@ -848,8 +848,59 @@ footer {
         margin-right: 0;
     }
     
-    .update-bubble.solution {
+.update-bubble.solution {
         margin-left: 0;
         margin-right: 0;
     }
+}
+
+/* ==============================================
+   VERFUEGBARKEITEN
+   ============================================== */
+
+.agent-box {
+    text-align: center;
+    margin: 0 0.3rem;
+}
+
+.week-boxes {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    margin-bottom: 2px;
+}
+
+.day-box {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #ccc;
+}
+
+.calendar-months {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.calendar-month {
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.calendar-month table {
+    border-collapse: collapse;
+}
+
+.calendar-month td {
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    color: #fff;
+    font-size: 0.7rem;
+}
+
+.availability-warning {
+    color: #dc3545;
+    font-weight: bold;
 }

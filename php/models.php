@@ -219,4 +219,39 @@ function get_related_tickets_by_location($location_id, $exclude_id, $facility_id
     $fid = $facility_id ? $facility_id : 0;
     return query_db($query, [$location_id, $exclude_id, $fid]);
 }
+
+// ----------------------------------------------------------------------
+// Agent Availability
+// ----------------------------------------------------------------------
+
+function get_availability_statuses() {
+    return query_db("SELECT StatusID, ShortCode, StatusName, ColorCode FROM AvailabilityStatuses ORDER BY StatusID");
+}
+
+function get_availability_status_map() {
+    $rows = get_availability_statuses();
+    $map = [];
+    foreach ($rows as $r) {
+        $map[$r['StatusID']] = $r;
+    }
+    return $map;
+}
+
+function get_availability_for_agent($agent_id, $start_date, $end_date) {
+    $query = "SELECT Date, a.StatusID, s.ShortCode, s.ColorCode FROM AgentAvailability a JOIN AvailabilityStatuses s ON a.StatusID = s.StatusID WHERE a.AgentID = ? AND Date BETWEEN ? AND ?";
+    $rows = query_db($query, [$agent_id, $start_date, $end_date]);
+    $result = [];
+    foreach ($rows as $row) {
+        $result[$row['Date']] = $row;
+    }
+    return $result;
+}
+
+function upsert_agent_availability($agent_id, $date, $status_id) {
+    $db = get_db();
+    $stmt = $db->prepare('INSERT INTO AgentAvailability (AgentID, Date, StatusID) VALUES (?, ?, ?) ON CONFLICT(AgentID, Date) DO UPDATE SET StatusID=excluded.StatusID');
+    bind_params($stmt, [$agent_id, $date, $status_id]);
+    $stmt->execute();
+    $stmt->close();
+}
 ?>
