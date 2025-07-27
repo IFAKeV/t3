@@ -44,4 +44,29 @@ function get_addressbook_date() {
         return 'Nicht verfügbar';
     }
 }
+
+function get_base_url() {
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+    return $scheme . '://' . $host . $path;
+}
+
+function send_assignment_email($agent_email, $agent_name, $ticket) {
+    if (!$agent_email) return;
+    $base_url = get_base_url();
+    $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
+    $subject = 'Ticket #' . $ticket['TicketID'] . ' zugewiesen';
+    $priority = $ticket['PriorityName'] ?? '';
+    $body = "Hallo $agent_name,\n\n" .
+            "Ihnen wurde ein neues Ticket zugewiesen:\n" .
+            "Titel: {$ticket['Title']}\n" .
+            ($priority ? "Priorität: $priority\n" : '') .
+            "Kontakt: {$ticket['ContactName']}\n" .
+            ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\n" : '') .
+            ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\n" : '') .
+            "\nZum Ticket: $link\n\n" .
+            "Beschreibung:\n{$ticket['Description']}\n";
+    @mail($agent_email, $subject, $body, "From: helpdesk@ifak-sozial.de");
+}
 ?>

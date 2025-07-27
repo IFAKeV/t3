@@ -119,12 +119,25 @@ if ($action === 'new_ticket') {
 
         $assigned_agent = $_POST['assigned_agent'] ?? '';
         if ($assigned_agent) {
-            $info = query_db('SELECT AgentName FROM Agents WHERE AgentID = ?', [$assigned_agent], true);
+            $info = query_db('SELECT AgentName, AgentEmail FROM Agents WHERE AgentID = ?', [$assigned_agent], true);
             if ($info) {
                 insert_db('TicketAssignees', ['TicketID','AgentID','AgentName','AssignedAt'], [$ticket_id,$assigned_agent,$info['AgentName'],get_local_timestamp()]);
                 $assign_time = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('d.m.Y H:i');
                 $assign_note = $agent['AgentName'] . ' hat am ' . $assign_time . ' ' . $info['AgentName'] . ' zugewiesen.';
                 insert_db('TicketUpdates', ['TicketID','UpdatedByName','UpdateText','IsSolution','UpdatedAt'], [$ticket_id,$agent['AgentName'],$assign_note,0,get_local_timestamp()]);
+
+                $prio = get_priority_by_id($priority_id);
+                $ticket_info = [
+                    'TicketID' => $ticket_id,
+                    'Title' => $title,
+                    'Description' => $description,
+                    'PriorityID' => $priority_id,
+                    'PriorityName' => $prio['PriorityName'] ?? '',
+                    'ContactName' => $contact_name,
+                    'ContactPhone' => $contact_phone,
+                    'ContactEmail' => $contact_email
+                ];
+                send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
             }
         }
         if (!empty($_FILES['attachment']['name']) && allowed_file($_FILES['attachment']['name'])) {
@@ -176,7 +189,7 @@ if ($action === 'update_ticket') {
             if ($assign_agent) {
                 $existing = query_db('SELECT 1 FROM TicketAssignees WHERE TicketID = ? AND AgentID = ?', [$ticket_id, $assign_agent], true);
                 if (!$existing) {
-                    $info = query_db('SELECT AgentName FROM Agents WHERE AgentID = ?', [$assign_agent], true);
+                    $info = query_db('SELECT AgentName, AgentEmail FROM Agents WHERE AgentID = ?', [$assign_agent], true);
                     if ($info) {
                         insert_db('TicketAssignees', ['TicketID','AgentID','AgentName','AssignedAt'], [$ticket_id,$assign_agent,$info['AgentName'],get_local_timestamp()]);
                         $assign_time = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('d.m.Y H:i');
@@ -186,6 +199,20 @@ if ($action === 'update_ticket') {
                         } else {
                             $update_text .= "\n\n" . $assign_note;
                         }
+
+                        $p_id = $priority_id ?: $ticket['PriorityID'];
+                        $prio = get_priority_by_id($p_id);
+                        $ticket_info = [
+                            'TicketID' => $ticket_id,
+                            'Title' => $ticket['Title'],
+                            'Description' => $ticket['Description'],
+                            'PriorityID' => $p_id,
+                            'PriorityName' => $prio['PriorityName'] ?? '',
+                            'ContactName' => $ticket['ContactName'],
+                            'ContactPhone' => $ticket['ContactPhone'],
+                            'ContactEmail' => $ticket['ContactEmail']
+                        ];
+                        send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
                     }
                 }
             }
