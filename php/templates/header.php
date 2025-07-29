@@ -19,7 +19,7 @@ if (!isset($status_map)) $status_map = get_availability_status_map();
 <body>
 <header>
     <div class="logo">
-        <a href="index.php"><img src="<?php echo $base_url; ?>/static/img/ifak-ticket-logo.svg" alt="IFAK Logo" width="300"></a>
+        <a href="index.php"><img src="<?php echo $base_url; ?>/static/img/ifak-ticket-logo.svg" alt="IFAK Logo" width="200"></a>
     </div>
     <?php if (!empty($agents_overview)): ?>
     <div class="agent-overview">

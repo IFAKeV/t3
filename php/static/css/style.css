@@ -51,6 +51,11 @@ header {
     text-decoration: none;
 }
 
+.logo img {
+    max-width: 200px;
+    height: auto;
+}
+
 nav ul {
     display: flex;
     list-style: none;
@@ -211,6 +216,10 @@ main {
 .search-group .search-bar input {
     flex: 1;
     width: auto;
+}
+
+.dashboard-table {
+    overflow-x: auto;
 }
 .assigned-agents {
     font-size: 0.9em;
@@ -819,6 +828,20 @@ footer {
     
     .form-row {
         flex-direction: column;
+    }
+
+    .ticket-form,
+    .login-box {
+        max-width: 100%;
+        padding: 1rem;
+    }
+
+    .dashboard-table table {
+        min-width: 600px;
+    }
+
+    .logo img {
+        max-width: 150px;
     }
     
     nav ul {
