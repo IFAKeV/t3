@@ -78,7 +78,7 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
     global $REACTION_TIME_HOURS, $HELPDESK_FROM;
     $reaction = $ticket['PriorityID'] ? ($REACTION_TIME_HOURS[$ticket['PriorityID']] ?? null) : null;
     $body = "Hallo $agent_name,\n\n" .
-            "Ihnen wurde ein neues Ticket zugewiesen:\n" .
+            "Dir wurde ein neues Ticket zugewiesen:\n" .
             "Titel: {$ticket['Title']}\n" .
             ($priority ? "Priorität: $priority\n" : '') .
             ($reaction ? "Reaktionszeit: {$reaction}h\n" : '') .
