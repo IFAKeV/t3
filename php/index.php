@@ -311,6 +311,7 @@ $agent_filter_param = $_GET['agent'] ?? null;
 $team_id = null;
 $filter_agent = null;
 $assigned_only = false;
+$include_global_new = false;
 
 if ($team_filter === 'my_team') {
     $team_id = $agent['TeamID'];
@@ -319,6 +320,7 @@ if ($team_filter === 'my_team') {
 } elseif ($team_filter === 'mine') {
     $filter_agent = $agent['AgentID'];
     $assigned_only = true;
+    $include_global_new = true;
 } elseif (ctype_digit($team_filter)) {
     $team_id = intval($team_filter);
 }
@@ -328,7 +330,7 @@ if ($agent_filter_param) {
     $assigned_only = true;
 }
 
-$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only);
+$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new);
 
 // mark unassigned tickets that exceed configured thresholds based on priority
 foreach ($tickets as &$t) {
