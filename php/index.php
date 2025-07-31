@@ -330,7 +330,7 @@ if ($agent_filter_param) {
     $assigned_only = true;
 }
 
-$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new);
+$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new, $agent['TeamID']);
 
 // mark unassigned tickets that exceed configured thresholds based on priority
 foreach ($tickets as &$t) {
