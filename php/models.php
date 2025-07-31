@@ -35,7 +35,7 @@ function get_agents_with_ticket_counts() {
     return query_db($query);
 }
 
-function get_tickets_with_filters($team_id = null, $status_filter = 'open', $search_term = null, $agent_id = null, $assigned_only = false, $include_unassigned_new = false) {
+function get_tickets_with_filters($team_id = null, $status_filter = 'open', $search_term = null, $agent_id = null, $assigned_only = false, $include_unassigned_new = false, $agent_team_id = null) {
     $base_query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt, t.CreatedAt as CreatedAtTS, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays, GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents, COUNT(ta.AgentID) as AssignedCount FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID LEFT JOIN TicketAssignees ta ON t.TicketID = ta.TicketID";
     $conditions = [];
     $params = [];
@@ -52,11 +52,21 @@ function get_tickets_with_filters($team_id = null, $status_filter = 'open', $sea
     }
     if ($agent_id) {
         if ($assigned_only) {
-            $conditions[] = 'ta.AgentID = ?'; $params[] = $agent_id;
+            if ($include_unassigned_new && $agent_team_id) {
+                $conditions[] = '(ta.AgentID = ? OR (t.TeamID = ? AND s.StatusName = "Neu" AND NOT EXISTS (SELECT 1 FROM TicketAssignees ta2 WHERE ta2.TicketID = t.TicketID)))';
+                $params[] = $agent_id;
+                $params[] = $agent_team_id;
+            } else {
+                $conditions[] = 'ta.AgentID = ?';
+                $params[] = $agent_id;
+            }
         } else {
             $conditions[] = '(ta.AgentID = ? OR t.CreatedByAgentID = ?)';
             $params[] = $agent_id; $params[] = $agent_id;
         }
+    } elseif ($include_unassigned_new && $agent_team_id) {
+        $conditions[] = '(t.TeamID = ? AND s.StatusName = "Neu" AND NOT EXISTS (SELECT 1 FROM TicketAssignees ta2 WHERE ta2.TicketID = t.TicketID))';
+        $params[] = $agent_team_id;
     }
     if ($conditions) { $base_query .= ' WHERE ' . implode(' AND ', $conditions); }
     $base_query .= " GROUP BY t.TicketID ORDER BY CASE WHEN COUNT(ta.AgentID) = 0 AND s.StatusName = 'Neu' THEN 0 ELSE 1 END, t.CreatedAt DESC";
