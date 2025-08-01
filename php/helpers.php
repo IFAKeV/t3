@@ -52,6 +52,12 @@ function get_base_url() {
     return $scheme . '://' . $host . $path;
 }
 
+function linkify_urls($text) {
+    $escaped = htmlspecialchars($text);
+    $pattern = '/(https:\/\/[^\s]+)/';
+    return preg_replace($pattern, '<a href="$1" target="_blank" rel="noopener">$1</a>', $escaped);
+}
+
 function send_new_ticket_email($ticket) {
     global $HELPDESK_FUNCTIONAL, $HELPDESK_FROM;
     $base_url = get_base_url();
