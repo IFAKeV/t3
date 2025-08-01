@@ -139,14 +139,14 @@
         <div class="ticket-details">
             <h3>Beschreibung</h3>
             <div class="description-bubble">
-                <div class="bubble-content"><?php echo htmlspecialchars($ticket['Description']); ?></div>
+                <div class="bubble-content"><?php echo linkify_urls($ticket['Description']); ?></div>
             </div>
 
             <h3>Verlauf</h3>
             <div class="updates-list">
                 <?php foreach ($updates as $u): ?>
                 <div class="update-bubble <?php if ($u['IsSolution']) echo 'solution'; ?>">
-                    <div class="bubble-content"><?php echo htmlspecialchars($u['UpdateText']); ?></div>
+                    <div class="bubble-content"><?php echo linkify_urls($u['UpdateText']); ?></div>
                     <div class="bubble-meta">
                         <span class="bubble-author"><?php echo htmlspecialchars($u['UpdatedByName']); ?></span>
                         <span class="bubble-time"><?php echo $u['FormattedUpdatedAt']; ?></span>
