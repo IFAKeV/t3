@@ -32,6 +32,9 @@ $HELPDESK_FROM = 'helpdesk@ifak-bochum.de';
 // Funktions-Postfach für neue Tickets
 $HELPDESK_FUNCTIONAL = 'helpdesk@ifak-sozial.de';
 
+// Empfänger für gelöste Tickets (Qualitätskontrolle)
+$QUALITY_CONTROL_EMAIL = 'helpdesk@ifak-bochum.de';
+
 // Reaktionszeiten pro Priorität (in Stunden)
 $REACTION_TIME_HOURS = [
     3 => 2, // Hoch

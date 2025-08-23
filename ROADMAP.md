@@ -42,6 +42,8 @@
 - Benachrichtigung der Agenten per EMail bei:
   - Neuen Tickets (Funktions-Postfach helpdesk@ifak-sozial.de)
   - Ticket-Zuweisungen (individuelle Mail) mit Angabe der Reaktionszeit, die sich aus der Priorität ableitet.
+- Benachrichtigung bei gelösten Tickets an Qualitätskontrolle und Ticket-Ersteller (Platzhalter helpdesk@ifak-sozial.de)
+- Prioritätsstufe "HOT" für Tickets mit sofortigem Handlungsbedarf
 
 ---
 
