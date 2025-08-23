@@ -200,38 +200,46 @@ if ($action === 'update_ticket') {
             }
 
             if ($assign_agent) {
-                $existing = query_db('SELECT 1 FROM TicketAssignees WHERE TicketID = ? AND AgentID = ?', [$ticket_id, $assign_agent], true);
-                if (!$existing) {
-                    $info = query_db('SELECT AgentName, AgentEmail FROM Agents WHERE AgentID = ?', [$assign_agent], true);
-                    if ($info) {
+                $info = query_db('SELECT AgentName, AgentEmail FROM Agents WHERE AgentID = ?', [$assign_agent], true);
+                if ($info) {
+                    $existing = query_db('SELECT 1 FROM TicketAssignees WHERE TicketID = ? AND AgentID = ?', [$ticket_id, $assign_agent], true);
+                    if (!$existing) {
                         insert_db('TicketAssignees', ['TicketID','AgentID','AgentName','AssignedAt'], [$ticket_id,$assign_agent,$info['AgentName'],get_local_timestamp()]);
-                        $assign_time = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('d.m.Y H:i');
-                        $assign_note = $agent['AgentName'] . ' hat am ' . $assign_time . ' ' . $info['AgentName'] . ' zugewiesen.';
-                        if ($update_text === '') {
-                            $update_text = $assign_note;
-                        } else {
-                            $update_text .= "\n\n" . $assign_note;
-                        }
-
-                        $p_id = $priority_id ?: $ticket['PriorityID'];
-                        $prio = get_priority_by_id($p_id);
-                        $ticket_info = [
-                            'TicketID' => $ticket_id,
-                            'Title' => $ticket['Title'],
-                            'Description' => $ticket['Description'],
-                            'PriorityID' => $p_id,
-                            'PriorityName' => $prio['PriorityName'] ?? '',
-                            'ContactName' => $ticket['ContactName'],
-                            'ContactPhone' => $ticket['ContactPhone'],
-                            'ContactEmail' => $ticket['ContactEmail']
-                        ];
-                        send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
+                    } else {
+                        query_db('UPDATE TicketAssignees SET AssignedAt = ? WHERE TicketID = ? AND AgentID = ?', [get_local_timestamp(), $ticket_id, $assign_agent]);
                     }
+                    $assign_time = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('d.m.Y H:i');
+                    $assign_note = $agent['AgentName'] . ' hat am ' . $assign_time . ' ' . $info['AgentName'] . ' zugewiesen.';
+                    if ($update_text === '') {
+                        $update_text = $assign_note;
+                    } else {
+                        $update_text .= "\n\n" . $assign_note;
+                    }
+
+                    $p_id = $priority_id ?: $ticket['PriorityID'];
+                    $prio = get_priority_by_id($p_id);
+                    $ticket_info = [
+                        'TicketID' => $ticket_id,
+                        'Title' => $ticket['Title'],
+                        'Description' => $ticket['Description'],
+                        'PriorityID' => $p_id,
+                        'PriorityName' => $prio['PriorityName'] ?? '',
+                        'ContactName' => $ticket['ContactName'],
+                        'ContactPhone' => $ticket['ContactPhone'],
+                        'ContactEmail' => $ticket['ContactEmail']
+                    ];
+                    send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
                 }
             }
 
             if ($update_text !== '' || $is_solution) {
                 insert_db('TicketUpdates', ['TicketID','UpdatedByName','UpdateText','IsSolution','UpdatedAt'], [$ticket_id,$agent['AgentName'],$update_text,$is_solution,get_local_timestamp()]);
+            }
+
+            if ($is_solution) {
+                $ticket_mail = get_ticket_by_id($ticket_id);
+                $updates_mail = get_ticket_updates($ticket_id);
+                send_solution_email($ticket_mail, $updates_mail);
             }
 
             if (!empty($_FILES['attachment']['name']) && allowed_file($_FILES['attachment']['name'])) {

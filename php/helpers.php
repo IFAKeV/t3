@@ -95,4 +95,30 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
             "Beschreibung:\n{$ticket['Description']}\n";
     @mail($agent_email, $subject, $body, "From: $HELPDESK_FROM");
 }
+
+function send_solution_email($ticket, $updates) {
+    global $QUALITY_CONTROL_EMAIL, $HELPDESK_FROM;
+    $base_url = get_base_url();
+    $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
+    $subject = 'Ticket #' . $ticket['TicketID'] . ' gelöst';
+    $body = 'Ticket #' . $ticket['TicketID'] . " wurde als gelöst markiert.\n\n" .
+            "Aufgabenstellung:\n{$ticket['Description']}\n\n" .
+            "Kommentarhistorie:\n";
+    $history = array_reverse($updates);
+    foreach ($history as $u) {
+        $prefix = $u['IsSolution'] ? '[Lösung] ' : '';
+        $body .= $prefix . $u['UpdatedByName'] . ' (' . $u['FormattedUpdatedAt'] . "):\n" .
+                 $u['UpdateText'] . "\n\n";
+    }
+    $body .= "Zum Ticket: $link\n";
+
+    if (!empty($QUALITY_CONTROL_EMAIL)) {
+        @mail($QUALITY_CONTROL_EMAIL, $subject, $body, "From: $HELPDESK_FROM");
+    }
+    $submitter = 'helpdesk@ifak-sozial.de'; // Platzhalter für die aufgebende Person
+    // $submitter = $ticket['ContactEmail'];
+    if ($submitter) {
+        @mail($submitter, $subject, $body, "From: $HELPDESK_FROM");
+    }
+}
 ?>
