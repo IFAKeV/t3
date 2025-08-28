@@ -83,11 +83,22 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
     $priority = $ticket['PriorityName'] ?? '';
     global $REACTION_TIME_HOURS, $HELPDESK_FROM;
     $reaction = $ticket['PriorityID'] ? ($REACTION_TIME_HOURS[$ticket['PriorityID']] ?? null) : null;
+    $remaining = null;
+    if ($reaction && !empty($ticket['CreatedAt'])) {
+        try {
+            $created = new DateTime($ticket['CreatedAt'], new DateTimeZone('Europe/Berlin'));
+            $now = new DateTime('now', new DateTimeZone('Europe/Berlin'));
+            $elapsed = ($now->getTimestamp() - $created->getTimestamp()) / 3600;
+            $remaining = max(0, $reaction - $elapsed);
+            $remaining = round($remaining);
+        } catch (Exception $e) {}
+    }
     $body = "Hallo $agent_name,\n\n" .
             "Dir wurde ein neues Ticket zugewiesen:\n" .
             "Titel: {$ticket['Title']}\n" .
             ($priority ? "Priorität: $priority\n" : '') .
             ($reaction ? "Reaktionszeit: {$reaction}h\n" : '') .
+            ($remaining !== null ? "Reaktionszeit verbleibend: {$remaining}h\n" : '') .
             "Kontakt: {$ticket['ContactName']}\n" .
             ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\n" : '') .
             ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\n" : '') .
