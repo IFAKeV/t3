@@ -65,6 +65,10 @@ $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August',
 const statusMap = <?php echo json_encode($status_map); ?>;
 const traineeId = <?php echo json_encode($TRAINEE_AGENT_ID); ?>;
 const currentAgent = <?php echo json_encode($agent['AgentID']); ?>;
+const codeMap = {};
+Object.values(statusMap).forEach(function(st){
+    codeMap[st.ShortCode] = st.StatusID;
+});
 document.querySelectorAll('.availability-day').forEach(function(td){
     if(td.classList.contains('weekend')) return;
     if(parseInt(td.dataset.agent) !== currentAgent) return;
@@ -72,12 +76,21 @@ document.querySelectorAll('.availability-day').forEach(function(td){
         let current = parseInt(td.dataset.status);
         const agentId = parseInt(td.dataset.agent);
         let next;
-        if(!current || current === statusMap[1].StatusID){
-            next = statusMap[2].StatusID;
-        } else if(current === statusMap[2].StatusID){
-            next = (agentId === traineeId) ? statusMap[4].StatusID : statusMap[3].StatusID;
+        if(!current){
+            // Erste Auswahl: Verfügbar
+            next = codeMap['V'];
+        } else if(current === codeMap['V']){
+            // Von Verfügbar zu Urlaub bzw. Schule (nur Azubi)
+            next = (agentId === traineeId && codeMap['S']) ? codeMap['S'] : codeMap['U'];
+        } else if(agentId === traineeId && codeMap['S'] && current === codeMap['S']){
+            // Von Schule zu Urlaub
+            next = codeMap['U'];
+        } else if(current === codeMap['U']){
+            // Von Urlaub zu Krank
+            next = codeMap['K'];
         } else {
-            next = statusMap[1].StatusID;
+            // Zurück zu Verfügbar
+            next = codeMap['V'];
         }
         td.dataset.status = next;
         td.style.backgroundColor = statusMap[next].ColorCode;

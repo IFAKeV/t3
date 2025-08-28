@@ -24,7 +24,8 @@ $UNASSIGNED_WARNING_HOURS = [
 ];
 
 // ID des Auszubildenden für spezielle Verfügbarkeitsoptionen
-$TRAINEE_AGENT_ID = 5;
+// Der Auszubildende nutzt zusätzliche Verfügbarkeitsoptionen (z. B. Schule)
+$TRAINEE_AGENT_ID = 2;
 
 // Absenderadresse für Benachrichtigungen
 $HELPDESK_FROM = 'helpdesk@ifak-bochum.de';

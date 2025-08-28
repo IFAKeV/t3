@@ -2,6 +2,10 @@
 $title = 'Meine Verfügbarkeit - IFAK Ticketsystem';
 include 'templates/header.php';
 $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+// Nur der Auszubildende darf den Status "Schule" nutzen
+if ($agent['AgentID'] !== $TRAINEE_AGENT_ID) {
+    $statuses = array_filter($statuses, fn($s) => $s['StatusID'] != 4);
+}
 ?>
 <h1>Meine Verfügbarkeit</h1>
 <form method="POST" action="index.php?action=edit_availability">
