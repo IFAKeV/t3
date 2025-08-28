@@ -17,5 +17,13 @@ Funktionsfähige Beta
 - REST‑ähnliche APIs – Endpunkte für Ticket- und Mitarbeitersuche sowie Detailabruf eines Mitarbeiters.
 - Service Worker für Benachrichtigungen – Registrierung eines Service Workers in main.js für Push-Benachrichtigungen.
 
+## Cronjob
+Unzugewiesene Tickets können automatisch gemeldet werden. Dazu folgenden Cronjob einrichten:
+
+```
+*/15 * * * * php /pfad/zum/notify_unassigned.php
+```
+
 ## Kontakt
 IFAK e.V. - IT-Abteilung
+
