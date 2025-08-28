@@ -153,6 +153,8 @@ if ($action === 'new_ticket') {
                     'CreatedAt' => $created_at
                 ];
                 send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
+                require_once __DIR__ . '/push.php';
+                send_push_notification([$assigned_agent], 'Ticket #' . $ticket_id . ' zugewiesen', $title);
             }
         }
         if (!empty($_FILES['attachment']['name']) && allowed_file($_FILES['attachment']['name'])) {
@@ -232,6 +234,8 @@ if ($action === 'update_ticket') {
                         'CreatedAt' => $ticket['CreatedAt']
                     ];
                     send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
+                    require_once __DIR__ . '/push.php';
+                    send_push_notification([$assign_agent], 'Ticket #' . $ticket_id . ' zugewiesen', $ticket['Title']);
                 }
             }
 

@@ -41,4 +41,9 @@ $REACTION_TIME_HOURS = [
     2 => 4, // Mittel
     1 => 8  // Niedrig
 ];
+
+// Web Push VAPID configuration
+$PUSH_VAPID_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+$PUSH_VAPID_PRIVATE_KEY = 'YOUR_PRIVATE_KEY';
+$PUSH_VAPID_SUBJECT = 'mailto:admin@example.com';
 ?>

@@ -5,5 +5,6 @@ self.addEventListener('push', function(event) {
         body: data.body || '',
         icon: '../img/ifak-ticket-logo.svg'
     };
-    event.waitUntil(self.registration.showNotification(title, options));
+    const registration = self.registration;
+    event.waitUntil(registration.showNotification(title, options));
 });
