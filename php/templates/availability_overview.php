@@ -65,6 +65,7 @@ $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August',
 const statusMap = <?php echo json_encode($status_map); ?>;
 const traineeId = <?php echo json_encode($TRAINEE_AGENT_ID); ?>;
 const currentAgent = <?php echo json_encode($agent['AgentID']); ?>;
+const partTimeIds = <?php echo json_encode($PART_TIME_AGENT_IDS); ?>;
 const codeMap = {};
 Object.values(statusMap).forEach(function(st){
     codeMap[st.ShortCode] = st.StatusID;
@@ -80,8 +81,19 @@ document.querySelectorAll('.availability-day').forEach(function(td){
             // Erste Auswahl: Verfügbar
             next = codeMap['V'];
         } else if(current === codeMap['V']){
-            // Von Verfügbar zu Urlaub bzw. Schule (nur Azubi)
-            next = (agentId === traineeId && codeMap['S']) ? codeMap['S'] : codeMap['U'];
+            if(partTimeIds.includes(agentId) && codeMap['F']){
+                // Von Verfügbar zu Frei (nur Teilzeit)
+                next = codeMap['F'];
+            } else if(agentId === traineeId && codeMap['S']){
+                // Von Verfügbar zu Schule (nur Azubi)
+                next = codeMap['S'];
+            } else {
+                // Von Verfügbar zu Urlaub
+                next = codeMap['U'];
+            }
+        } else if(partTimeIds.includes(agentId) && codeMap['F'] && current === codeMap['F']){
+            // Von Frei zu Urlaub
+            next = codeMap['U'];
         } else if(agentId === traineeId && codeMap['S'] && current === codeMap['S']){
             // Von Schule zu Urlaub
             next = codeMap['U'];

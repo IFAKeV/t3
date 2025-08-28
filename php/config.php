@@ -27,6 +27,9 @@ $UNASSIGNED_WARNING_HOURS = [
 // Der Auszubildende nutzt zusätzliche Verfügbarkeitsoptionen (z. B. Schule)
 $TRAINEE_AGENT_ID = 2;
 
+// IDs der Teilzeit-Beschäftigten für den Status "Frei" (Albenni, Errachidi)
+$PART_TIME_AGENT_IDS = [4, 5];
+
 // Absenderadresse für Benachrichtigungen
 $HELPDESK_FROM = 'helpdesk@ifak-bochum.de';
 

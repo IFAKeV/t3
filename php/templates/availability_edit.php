@@ -6,6 +6,9 @@ $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August',
 if ($agent['AgentID'] !== $TRAINEE_AGENT_ID) {
     $statuses = array_filter($statuses, fn($s) => $s['StatusID'] != 4);
 }
+if (!in_array($agent['AgentID'], $PART_TIME_AGENT_IDS)) {
+    $statuses = array_filter($statuses, fn($s) => $s['ShortCode'] !== 'F');
+}
 ?>
 <h1>Meine Verfügbarkeit</h1>
 <form method="POST" action="index.php?action=edit_availability">
