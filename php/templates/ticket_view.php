@@ -162,10 +162,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="status_id">Status ändern:</label>
-                            <select id="status_id" name="status_id">
+                            <select id="status_id" name="status_id" <?php if ($ticket['StatusName'] == 'Neu') echo 'required'; ?>>
+                                <?php if ($ticket['StatusName'] != 'Neu'): ?>
                                 <option value="">-- Unverändert --</option>
+                                <?php endif; ?>
                                 <?php foreach ($statuses as $s): if ($s['StatusName'] != 'Neu' && $s['StatusName'] != 'Gelöst'): ?>
-                                <option value="<?php echo $s['StatusID']; ?>" <?php if ($s['StatusID'] == $ticket['StatusID']) echo 'selected'; ?>><?php echo htmlspecialchars($s['StatusName']); ?></option>
+                                <option value="<?php echo $s['StatusID']; ?>" <?php if (($ticket['StatusName'] == 'Neu' && $s['StatusName'] == 'In Arbeit') || ($s['StatusID'] == $ticket['StatusID'])) echo 'selected'; ?>><?php echo htmlspecialchars($s['StatusName']); ?></option>
                                 <?php endif; endforeach; ?>
                             </select>
                         </div>

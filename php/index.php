@@ -190,6 +190,11 @@ if ($action === 'update_ticket') {
             $update_text = trim($_POST['update_text'] ?? '');
             $is_solution = isset($_POST['is_solution']) ? 1 : 0;
 
+            if ($ticket['StatusName'] == 'Neu' && !$status_id && ($update_text !== '' || $priority_id !== '' || $assign_agent !== '' || !empty($_FILES['attachment']['name']))) {
+                $in_progress = query_db("SELECT StatusID FROM TicketStatus WHERE StatusName = 'In Arbeit'", [], true);
+                if ($in_progress) { $status_id = $in_progress['StatusID']; }
+            }
+
             if ($is_solution) {
                 $solved = query_db("SELECT StatusID FROM TicketStatus WHERE StatusName = 'Gelöst'", [], true);
                 if ($solved) { $status_id = $solved['StatusID']; }
