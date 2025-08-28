@@ -112,9 +112,10 @@ if ($action === 'new_ticket') {
         $location_id = $_POST['location_id'] ?? null;
         $department_id = $_POST['department_id'] ?? null;
         $source = $_POST['source'] ?? null;
+        $created_at = get_local_timestamp();
         $ticket_id = insert_db('Tickets',
             ['Title','Description','PriorityID','TeamID','StatusID','CreatedAt','CreatedByAgentID','Source','ContactName','ContactPhone','ContactEmail','ContactEmployeeID','FacilityID','LocationID','DepartmentID'],
-            [$title,$description,$priority_id,$team_id,1,get_local_timestamp(),$agent['AgentID'],$source,$contact_name,$contact_phone,$contact_email,$contact_employee_id,$facility_id,$location_id,$department_id]
+            [$title,$description,$priority_id,$team_id,1,$created_at,$agent['AgentID'],$source,$contact_name,$contact_phone,$contact_email,$contact_employee_id,$facility_id,$location_id,$department_id]
         );
 
         $prio = get_priority_by_id($priority_id);
@@ -148,7 +149,8 @@ if ($action === 'new_ticket') {
                     'PriorityName' => $prio['PriorityName'] ?? '',
                     'ContactName' => $contact_name,
                     'ContactPhone' => $contact_phone,
-                    'ContactEmail' => $contact_email
+                    'ContactEmail' => $contact_email,
+                    'CreatedAt' => $created_at
                 ];
                 send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
             }
@@ -226,7 +228,8 @@ if ($action === 'update_ticket') {
                         'PriorityName' => $prio['PriorityName'] ?? '',
                         'ContactName' => $ticket['ContactName'],
                         'ContactPhone' => $ticket['ContactPhone'],
-                        'ContactEmail' => $ticket['ContactEmail']
+                        'ContactEmail' => $ticket['ContactEmail'],
+                        'CreatedAt' => $ticket['CreatedAt']
                     ];
                     send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
                 }
