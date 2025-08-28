@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../models.php';
+require_once __DIR__ . '/../push.php';
 
 $now = new DateTime('now', new DateTimeZone('Europe/Berlin'));
 $today = $now->format('Y-m-d');
@@ -45,4 +46,5 @@ foreach ($agents as $ag) {
     }
     $body = "Folgende Tickets sind unzugewiesen:\n\n" . implode("\n", $lines) . "\n";
     @mail($ag['AgentEmail'], 'Unzugewiesene Tickets', $body, "From: $HELPDESK_FROM");
+    send_push_notification([$ag['AgentID']], 'Unzugewiesene Tickets', $body);
 }
