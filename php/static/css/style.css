@@ -842,6 +842,14 @@ footer {
     border-radius: 4px;
 }
 
+.md-modal-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
 .md-modal-close {
     position: absolute;
     top: 20px;

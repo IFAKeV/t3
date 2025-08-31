@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.addEventListener('click', function(e) {
-        if (e.target.matches('.attachment-preview img')) {
+        if (e.target.matches('.attachment-preview img, .md-modal-content img')) {
             e.preventDefault();
             img.src = e.target.src;
             lightbox.style.display = 'block';
@@ -134,6 +134,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(function(resp) { return resp.text(); })
                 .then(function(html) {
                     content.innerHTML = html;
+                    content.querySelectorAll('img').forEach(function(imgEl) {
+                        imgEl.setAttribute('title', 'Klick zum Vergrößern');
+                    });
                     modal.style.display = 'block';
                 });
         } else if (e.target === modal || e.target === closeBtn) {
