@@ -115,17 +115,24 @@
                     <div class="attachment-preview">
                         <?php $ext = strtolower(pathinfo($a['FileName'], PATHINFO_EXTENSION)); ?>
                         <?php if (in_array($ext, ['jpg','jpeg','png','gif'])): ?>
-                            <img src="../static/uploads/<?php echo $a['StoragePath']; ?>" alt="<?php echo htmlspecialchars($a['FileName']); ?>">
+                            <img src="<?php echo $base_url; ?>/static/uploads/<?php echo $a['StoragePath']; ?>" alt="<?php echo htmlspecialchars($a['FileName']); ?>">
                         <?php elseif ($ext == 'pdf'): ?>
                             📄
                         <?php elseif (in_array($ext, ['doc','docx'])): ?>
                             📝
+                        <?php elseif ($ext == 'md'): ?>
+                            📘
                         <?php else: ?>
                             📎
                         <?php endif; ?>
                     </div>
                     <div class="attachment-info">
-                        <a href="../static/uploads/<?php echo $a['StoragePath']; ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
+                        <?php if ($ext == 'md'): ?>
+                            <a href="index.php?action=view_markdown&amp;file=<?php echo urlencode($a['StoragePath']); ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
+                            (<a href="<?php echo $base_url; ?>/static/uploads/<?php echo $a['StoragePath']; ?>" download>Download</a>)
+                        <?php else: ?>
+                            <a href="<?php echo $base_url; ?>/static/uploads/<?php echo $a['StoragePath']; ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
+                        <?php endif; ?>
                         <div class="attachment-meta"><?php echo $a['FormattedUploadedAt']; ?> • <?php echo round($a['FileSize']/1024,1); ?> KB</div>
                     </div>
                 </div>
@@ -139,14 +146,14 @@
         <div class="ticket-details">
             <h3>Beschreibung</h3>
             <div class="description-bubble">
-                <div class="bubble-content"><?php echo nl2br(htmlspecialchars($ticket['Description'])); ?></div>
+                <div class="bubble-content"><?php echo linkify_urls($ticket['Description']); ?></div>
             </div>
 
             <h3>Verlauf</h3>
             <div class="updates-list">
                 <?php foreach ($updates as $u): ?>
                 <div class="update-bubble <?php if ($u['IsSolution']) echo 'solution'; ?>">
-                    <div class="bubble-content"><?php echo nl2br(htmlspecialchars($u['UpdateText'])); ?></div>
+                    <div class="bubble-content"><?php echo linkify_urls($u['UpdateText']); ?></div>
                     <div class="bubble-meta">
                         <span class="bubble-author"><?php echo htmlspecialchars($u['UpdatedByName']); ?></span>
                         <span class="bubble-time"><?php echo $u['FormattedUpdatedAt']; ?></span>
@@ -162,10 +169,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="status_id">Status ändern:</label>
-                            <select id="status_id" name="status_id">
+                            <select id="status_id" name="status_id" <?php if ($ticket['StatusName'] == 'Neu') echo 'required'; ?>>
+                                <?php if ($ticket['StatusName'] != 'Neu'): ?>
                                 <option value="">-- Unverändert --</option>
+                                <?php endif; ?>
                                 <?php foreach ($statuses as $s): if ($s['StatusName'] != 'Neu' && $s['StatusName'] != 'Gelöst'): ?>
-                                <option value="<?php echo $s['StatusID']; ?>" <?php if ($s['StatusID'] == $ticket['StatusID']) echo 'selected'; ?>><?php echo htmlspecialchars($s['StatusName']); ?></option>
+                                <option value="<?php echo $s['StatusID']; ?>" <?php if (($ticket['StatusName'] == 'Neu' && $s['StatusName'] == 'In Arbeit') || ($s['StatusID'] == $ticket['StatusID'])) echo 'selected'; ?>><?php echo htmlspecialchars($s['StatusName']); ?></option>
                                 <?php endif; endforeach; ?>
                             </select>
                         </div>

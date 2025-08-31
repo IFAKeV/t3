@@ -1,1 +1,0 @@
-- Create the Ticket-App in (vanilla) php with exakt the same features as the flask App

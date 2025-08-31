@@ -35,8 +35,8 @@ function get_agents_with_ticket_counts() {
     return query_db($query);
 }
 
-function get_tickets_with_filters($team_id = null, $status_filter = 'open', $search_term = null, $agent_id = null, $assigned_only = false) {
-    $base_query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt, t.CreatedAt as CreatedAtTS, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays, GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID LEFT JOIN TicketAssignees ta ON t.TicketID = ta.TicketID";
+function get_tickets_with_filters($team_id = null, $status_filter = 'open', $search_term = null, $agent_id = null, $assigned_only = false, $include_unassigned_new = false, $agent_team_id = null) {
+    $base_query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt, t.CreatedAt as CreatedAtTS, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays, GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents, COUNT(ta.AgentID) as AssignedCount FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID LEFT JOIN TicketAssignees ta ON t.TicketID = ta.TicketID";
     $conditions = [];
     $params = [];
     if ($team_id) { $conditions[] = 't.TeamID = ?'; $params[] = $team_id; }
@@ -52,14 +52,24 @@ function get_tickets_with_filters($team_id = null, $status_filter = 'open', $sea
     }
     if ($agent_id) {
         if ($assigned_only) {
-            $conditions[] = 'ta.AgentID = ?'; $params[] = $agent_id;
+            if ($include_unassigned_new && $agent_team_id) {
+                $conditions[] = '(ta.AgentID = ? OR (t.TeamID = ? AND s.StatusName = "Neu" AND NOT EXISTS (SELECT 1 FROM TicketAssignees ta2 WHERE ta2.TicketID = t.TicketID)))';
+                $params[] = $agent_id;
+                $params[] = $agent_team_id;
+            } else {
+                $conditions[] = 'ta.AgentID = ?';
+                $params[] = $agent_id;
+            }
         } else {
             $conditions[] = '(ta.AgentID = ? OR t.CreatedByAgentID = ?)';
             $params[] = $agent_id; $params[] = $agent_id;
         }
+    } elseif ($include_unassigned_new && $agent_team_id) {
+        $conditions[] = '(t.TeamID = ? AND s.StatusName = "Neu" AND NOT EXISTS (SELECT 1 FROM TicketAssignees ta2 WHERE ta2.TicketID = t.TicketID))';
+        $params[] = $agent_team_id;
     }
     if ($conditions) { $base_query .= ' WHERE ' . implode(' AND ', $conditions); }
-    $base_query .= ' GROUP BY t.TicketID ORDER BY t.CreatedAt DESC';
+    $base_query .= " GROUP BY t.TicketID ORDER BY CASE WHEN COUNT(ta.AgentID) = 0 AND s.StatusName = 'Neu' THEN 0 ELSE 1 END, t.CreatedAt DESC";
     return query_db($base_query, $params);
 }
 
@@ -163,7 +173,7 @@ function get_priority_by_id($priority_id) {
 }
 
 function get_ticket_updates($ticket_id) {
-    $query = "SELECT UpdateID, TicketID, UpdatedByName, UpdateText, IsSolution, strftime('%d.%m.%Y %H:%M', UpdatedAt) as FormattedUpdatedAt FROM TicketUpdates WHERE TicketID = ? ORDER BY UpdatedAt ASC";
+    $query = "SELECT UpdateID, TicketID, UpdatedByName, UpdateText, IsSolution, strftime('%d.%m.%Y %H:%M', UpdatedAt) as FormattedUpdatedAt FROM TicketUpdates WHERE TicketID = ? ORDER BY UpdatedAt DESC";
     return query_db($query, [$ticket_id]);
 }
 
@@ -218,5 +228,40 @@ function get_related_tickets_by_location($location_id, $exclude_id, $facility_id
              "ORDER BY t.CreatedAt DESC LIMIT 5";
     $fid = $facility_id ? $facility_id : 0;
     return query_db($query, [$location_id, $exclude_id, $fid]);
+}
+
+// ----------------------------------------------------------------------
+// Agent Availability
+// ----------------------------------------------------------------------
+
+function get_availability_statuses() {
+    return query_db("SELECT StatusID, ShortCode, StatusName, ColorCode FROM AvailabilityStatuses ORDER BY StatusID");
+}
+
+function get_availability_status_map() {
+    $rows = get_availability_statuses();
+    $map = [];
+    foreach ($rows as $r) {
+        $map[$r['StatusID']] = $r;
+    }
+    return $map;
+}
+
+function get_availability_for_agent($agent_id, $start_date, $end_date) {
+    $query = "SELECT Date, a.StatusID, s.ShortCode, s.ColorCode FROM AgentAvailability a JOIN AvailabilityStatuses s ON a.StatusID = s.StatusID WHERE a.AgentID = ? AND Date BETWEEN ? AND ?";
+    $rows = query_db($query, [$agent_id, $start_date, $end_date]);
+    $result = [];
+    foreach ($rows as $row) {
+        $result[$row['Date']] = $row;
+    }
+    return $result;
+}
+
+function upsert_agent_availability($agent_id, $date, $status_id) {
+    $db = get_db();
+    $stmt = $db->prepare('INSERT INTO AgentAvailability (AgentID, Date, StatusID) VALUES (?, ?, ?) ON CONFLICT(AgentID, Date) DO UPDATE SET StatusID=excluded.StatusID');
+    bind_params($stmt, [$agent_id, $date, $status_id]);
+    $stmt->execute();
+    $stmt->close();
 }
 ?>

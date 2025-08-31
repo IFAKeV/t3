@@ -20,6 +20,19 @@ if ($action !== 'login') {
         exit;
     }
     $agents_overview = get_agents_with_ticket_counts();
+    $status_map = get_availability_status_map();
+    $week1_dates = [];
+    $tmp = new DateTime('monday this week', new DateTimeZone('Europe/Berlin'));
+    for ($i=0; $i<5; $i++) { $week1_dates[] = $tmp->format('Y-m-d'); $tmp->modify('+1 day'); }
+    $week2_dates = [];
+    $tmp = new DateTime('monday next week', new DateTimeZone('Europe/Berlin'));
+    for ($i=0; $i<5; $i++) { $week2_dates[] = $tmp->format('Y-m-d'); $tmp->modify('+1 day'); }
+    $availability_overview = [];
+    foreach ($agents_overview as $ov) {
+        $a1 = get_availability_for_agent($ov['AgentID'], $week1_dates[0], $week1_dates[4]);
+        $a2 = get_availability_for_agent($ov['AgentID'], $week2_dates[0], $week2_dates[4]);
+        $availability_overview[$ov['AgentID']] = ['week1'=>$a1,'week2'=>$a2];
+    }
 }
 
 if ($action === 'login') {
@@ -44,6 +57,47 @@ if ($action === 'logout') {
     exit;
 }
 
+if ($action === 'set_availability') {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $date = $_POST['date'] ?? '';
+        $status_id = intval($_POST['status_id'] ?? 1);
+        if ($date) {
+            upsert_agent_availability($agent['AgentID'], $date, $status_id);
+        }
+    }
+    exit;
+}
+
+if ($action === 'availabilities') {
+    $calendar_start = new DateTime('first day of this month', new DateTimeZone('Europe/Berlin'));
+    $calendar_end = (clone $calendar_start)->modify('+2 month')->modify('last day of this month');
+    $agents = load_agents();
+    $status_map = get_availability_status_map();
+    $avail_data = [];
+    foreach ($agents as $ag) {
+        $avail_data[$ag['AgentID']] = get_availability_for_agent($ag['AgentID'], $calendar_start->format('Y-m-d'), $calendar_end->format('Y-m-d'));
+    }
+    include 'templates/availability_overview.php';
+    exit;
+}
+
+if ($action === 'edit_availability') {
+    $calendar_start = new DateTime('first day of this month', new DateTimeZone('Europe/Berlin'));
+    $calendar_end = (clone $calendar_start)->modify('+2 month')->modify('last day of this month');
+    $statuses = get_availability_statuses();
+    $status_map = get_availability_status_map();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $data = $_POST['status'] ?? [];
+        foreach ($data as $date => $status_id) {
+            upsert_agent_availability($agent['AgentID'], $date, intval($status_id));
+        }
+        $flash = 'Gespeichert';
+    }
+    $availability = get_availability_for_agent($agent['AgentID'], $calendar_start->format('Y-m-d'), $calendar_end->format('Y-m-d'));
+    include 'templates/availability_edit.php';
+    exit;
+}
+
 if ($action === 'new_ticket') {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $title = $_POST['title'];
@@ -58,16 +112,49 @@ if ($action === 'new_ticket') {
         $location_id = $_POST['location_id'] ?? null;
         $department_id = $_POST['department_id'] ?? null;
         $source = $_POST['source'] ?? null;
+        $created_at = get_local_timestamp();
         $ticket_id = insert_db('Tickets',
             ['Title','Description','PriorityID','TeamID','StatusID','CreatedAt','CreatedByAgentID','Source','ContactName','ContactPhone','ContactEmail','ContactEmployeeID','FacilityID','LocationID','DepartmentID'],
-            [$title,$description,$priority_id,$team_id,1,get_local_timestamp(),$agent['AgentID'],$source,$contact_name,$contact_phone,$contact_email,$contact_employee_id,$facility_id,$location_id,$department_id]
+            [$title,$description,$priority_id,$team_id,1,$created_at,$agent['AgentID'],$source,$contact_name,$contact_phone,$contact_email,$contact_employee_id,$facility_id,$location_id,$department_id]
         );
+
+        $prio = get_priority_by_id($priority_id);
+        $ticket_info_global = [
+            'TicketID' => $ticket_id,
+            'Title' => $title,
+            'Description' => $description,
+            'PriorityID' => $priority_id,
+            'PriorityName' => $prio['PriorityName'] ?? '',
+            'ContactName' => $contact_name,
+            'ContactPhone' => $contact_phone,
+            'ContactEmail' => $contact_email
+        ];
+        send_new_ticket_email($ticket_info_global);
 
         $assigned_agent = $_POST['assigned_agent'] ?? '';
         if ($assigned_agent) {
-            $info = query_db('SELECT AgentName FROM Agents WHERE AgentID = ?', [$assigned_agent], true);
+            $info = query_db('SELECT AgentName, AgentEmail FROM Agents WHERE AgentID = ?', [$assigned_agent], true);
             if ($info) {
                 insert_db('TicketAssignees', ['TicketID','AgentID','AgentName','AssignedAt'], [$ticket_id,$assigned_agent,$info['AgentName'],get_local_timestamp()]);
+                $assign_time = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('d.m.Y H:i');
+                $assign_note = $agent['AgentName'] . ' hat am ' . $assign_time . ' ' . $info['AgentName'] . ' zugewiesen.';
+                insert_db('TicketUpdates', ['TicketID','UpdatedByName','UpdateText','IsSolution','UpdatedAt'], [$ticket_id,$agent['AgentName'],$assign_note,0,get_local_timestamp()]);
+
+                $prio = get_priority_by_id($priority_id);
+                $ticket_info = [
+                    'TicketID' => $ticket_id,
+                    'Title' => $title,
+                    'Description' => $description,
+                    'PriorityID' => $priority_id,
+                    'PriorityName' => $prio['PriorityName'] ?? '',
+                    'ContactName' => $contact_name,
+                    'ContactPhone' => $contact_phone,
+                    'ContactEmail' => $contact_email,
+                    'CreatedAt' => $created_at
+                ];
+                send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
+                require_once __DIR__ . '/push.php';
+                send_push_notification([$assigned_agent], 'Ticket #' . $ticket_id . ' zugewiesen', $title);
             }
         }
         if (!empty($_FILES['attachment']['name']) && allowed_file($_FILES['attachment']['name'])) {
@@ -103,6 +190,11 @@ if ($action === 'update_ticket') {
             $update_text = trim($_POST['update_text'] ?? '');
             $is_solution = isset($_POST['is_solution']) ? 1 : 0;
 
+            if ($ticket['StatusName'] == 'Neu' && !$status_id && ($update_text !== '' || $priority_id !== '' || $assign_agent !== '' || !empty($_FILES['attachment']['name']))) {
+                $in_progress = query_db("SELECT StatusID FROM TicketStatus WHERE StatusName = 'In Arbeit'", [], true);
+                if ($in_progress) { $status_id = $in_progress['StatusID']; }
+            }
+
             if ($is_solution) {
                 $solved = query_db("SELECT StatusID FROM TicketStatus WHERE StatusName = 'Gelöst'", [], true);
                 if ($solved) { $status_id = $solved['StatusID']; }
@@ -117,17 +209,49 @@ if ($action === 'update_ticket') {
             }
 
             if ($assign_agent) {
-                $existing = query_db('SELECT 1 FROM TicketAssignees WHERE TicketID = ? AND AgentID = ?', [$ticket_id, $assign_agent], true);
-                if (!$existing) {
-                    $info = query_db('SELECT AgentName FROM Agents WHERE AgentID = ?', [$assign_agent], true);
-                    if ($info) {
+                $info = query_db('SELECT AgentName, AgentEmail FROM Agents WHERE AgentID = ?', [$assign_agent], true);
+                if ($info) {
+                    $existing = query_db('SELECT 1 FROM TicketAssignees WHERE TicketID = ? AND AgentID = ?', [$ticket_id, $assign_agent], true);
+                    if (!$existing) {
                         insert_db('TicketAssignees', ['TicketID','AgentID','AgentName','AssignedAt'], [$ticket_id,$assign_agent,$info['AgentName'],get_local_timestamp()]);
+                    } else {
+                        query_db('UPDATE TicketAssignees SET AssignedAt = ? WHERE TicketID = ? AND AgentID = ?', [get_local_timestamp(), $ticket_id, $assign_agent]);
                     }
+                    $assign_time = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('d.m.Y H:i');
+                    $assign_note = $agent['AgentName'] . ' hat am ' . $assign_time . ' ' . $info['AgentName'] . ' zugewiesen.';
+                    if ($update_text === '') {
+                        $update_text = $assign_note;
+                    } else {
+                        $update_text .= "\n\n" . $assign_note;
+                    }
+
+                    $p_id = $priority_id ?: $ticket['PriorityID'];
+                    $prio = get_priority_by_id($p_id);
+                    $ticket_info = [
+                        'TicketID' => $ticket_id,
+                        'Title' => $ticket['Title'],
+                        'Description' => $ticket['Description'],
+                        'PriorityID' => $p_id,
+                        'PriorityName' => $prio['PriorityName'] ?? '',
+                        'ContactName' => $ticket['ContactName'],
+                        'ContactPhone' => $ticket['ContactPhone'],
+                        'ContactEmail' => $ticket['ContactEmail'],
+                        'CreatedAt' => $ticket['CreatedAt']
+                    ];
+                    send_assignment_email($info['AgentEmail'], $info['AgentName'], $ticket_info);
+                    require_once __DIR__ . '/push.php';
+                    send_push_notification([$assign_agent], 'Ticket #' . $ticket_id . ' zugewiesen', $ticket['Title']);
                 }
             }
 
             if ($update_text !== '' || $is_solution) {
                 insert_db('TicketUpdates', ['TicketID','UpdatedByName','UpdateText','IsSolution','UpdatedAt'], [$ticket_id,$agent['AgentName'],$update_text,$is_solution,get_local_timestamp()]);
+            }
+
+            if ($is_solution) {
+                $ticket_mail = get_ticket_by_id($ticket_id);
+                $updates_mail = get_ticket_updates($ticket_id);
+                send_solution_email($ticket_mail, $updates_mail);
             }
 
             if (!empty($_FILES['attachment']['name']) && allowed_file($_FILES['attachment']['name'])) {
@@ -198,6 +322,22 @@ if ($action === 'view_ticket') {
     exit;
 }
 
+if ($action === 'view_markdown') {
+    $file = $_GET['file'] ?? '';
+    $safe = preg_match('/^[\w.\-]+$/', $file);
+    $path = __DIR__ . '/static/uploads/' . $file;
+    if (!$safe || !is_file($path)) {
+        http_response_code(404);
+        echo 'Datei nicht gefunden';
+        exit;
+    }
+    $content = file_get_contents($path);
+    $markdown_html = markdown_to_html($content);
+    $markdown_file = $file;
+    include 'templates/markdown_view.php';
+    exit;
+}
+
 // default dashboard with filters
 $team_filter = $_GET['team'] ?? 'mine';
 $status_filter = $_GET['status'] ?? 'open';
@@ -207,6 +347,7 @@ $agent_filter_param = $_GET['agent'] ?? null;
 $team_id = null;
 $filter_agent = null;
 $assigned_only = false;
+$include_global_new = false;
 
 if ($team_filter === 'my_team') {
     $team_id = $agent['TeamID'];
@@ -214,6 +355,8 @@ if ($team_filter === 'my_team') {
     $team_id = null;
 } elseif ($team_filter === 'mine') {
     $filter_agent = $agent['AgentID'];
+    $assigned_only = true;
+    $include_global_new = true;
 } elseif (ctype_digit($team_filter)) {
     $team_id = intval($team_filter);
 }
@@ -223,7 +366,7 @@ if ($agent_filter_param) {
     $assigned_only = true;
 }
 
-$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only);
+$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new, $agent['TeamID']);
 
 // mark unassigned tickets that exceed configured thresholds based on priority
 foreach ($tickets as &$t) {
