@@ -270,7 +270,7 @@ th, td {
     background-color: var(--light-color);
 }
 
-/* Hervorhebung sehr alter offener Tickets */
+/* Hervorhebung von Tickets ohne aktuelle Bearbeitung */
 .old-ticket {
     background-color: #fff3cd;
 }
