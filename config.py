@@ -36,3 +36,12 @@ PERMANENT_SESSION_LIFETIME = 30 * 24 * 60 * 60  # 30 Tage
 # Offene Tickets, die älter als dieser Schwellenwert sind, werden im Dashboard
 # farblich hervorgehoben.
 OLD_TICKET_THRESHOLD_DAYS = 30
+
+# Schwellenwerte in Stunden für unzugewiesene Tickets nach Priorität
+# Wird genutzt, um Tickets im Dashboard optisch hervorzuheben,
+# wenn sie länger als die definierte Zeit offen und unzugewiesen sind.
+UNASSIGNED_WARNING_HOURS = {
+    3: 1,  # Hoch
+    2: 4,  # Mittel
+    1: 8,  # Niedrig
+}

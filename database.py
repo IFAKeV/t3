@@ -195,7 +195,8 @@ def get_tickets_with_filters(
                s.StatusName, s.ColorCode as StatusColor,
                p.PriorityName, p.ColorCode as PriorityColor,
                team.TeamName, team.TeamColor,
-                strftime('%d.%m.%Y %H:%M', t.CreatedAt, 'localtime') as CreatedAt,
+               strftime('%d.%m.%Y %H:%M', t.CreatedAt, 'localtime') as CreatedAt,
+               t.CreatedAt as CreatedAtTS,
                CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays,
                GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents
         FROM Tickets t
