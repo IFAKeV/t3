@@ -4,11 +4,13 @@ include 'templates/header.php';
 $month_names = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 // Nur der Auszubildende darf den Status "Schule" nutzen
 if ($agent['AgentID'] !== $TRAINEE_AGENT_ID) {
-    $statuses = array_filter($statuses, fn($s) => $s['StatusID'] != 4);
+    $statuses = array_filter($statuses, fn($s) => $s['ShortCode'] !== 'S');
 }
 if (!in_array($agent['AgentID'], $PART_TIME_AGENT_IDS)) {
     $statuses = array_filter($statuses, fn($s) => $s['ShortCode'] !== 'F');
 }
+$statuses = array_values($statuses);
+$default_status_id = $statuses[0]['StatusID'] ?? null;
 ?>
 <h1>Meine Verfügbarkeit</h1>
 <form method="POST" action="index.php?action=edit_availability">
@@ -24,7 +26,7 @@ if (!in_array($agent['AgentID'], $PART_TIME_AGENT_IDS)) {
             <tr>
             <?php for ($d=1; $d <= (int)$month_end->format('j'); $d++): ?>
                 <?php $date = $month_start->format('Y-m-') . sprintf('%02d',$d);
-                      $current = $availability[$date]['StatusID'] ?? 1; ?>
+                      $current = $availability[$date]['StatusID'] ?? $default_status_id; ?>
                 <td>
                     <select name="status[<?php echo $date; ?>]">
                         <?php foreach ($statuses as $s): ?>
