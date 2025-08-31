@@ -75,6 +75,14 @@ function send_new_ticket_email($ticket) {
     @mail($HELPDESK_FUNCTIONAL, $subject, $body, "From: $HELPDESK_FROM");
 }
 
+function send_ticket_confirmation_email($email, $ticket_id) {
+    if (!$email) return;
+    global $HELPDESK_FROM;
+    $subject = 'Ticket #' . $ticket_id;
+    $body = 'Dein Fall wird unter #' . $ticket_id . ' bearbeitet.';
+    @mail($email, $subject, $body, "From: $HELPDESK_FROM");
+}
+
 function send_assignment_email($agent_email, $agent_name, $ticket) {
     if (!$agent_email) return;
     $base_url = get_base_url();
