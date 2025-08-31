@@ -66,50 +66,30 @@ const statusMap = <?php echo json_encode($status_map); ?>;
 const traineeId = <?php echo json_encode($TRAINEE_AGENT_ID); ?>;
 const currentAgent = <?php echo json_encode($agent['AgentID']); ?>;
 const partTimeIds = <?php echo json_encode($PART_TIME_AGENT_IDS); ?>;
-const codeMap = {};
-Object.values(statusMap).forEach(function(st){
-    codeMap[st.ShortCode] = st.StatusID;
-});
+const statusSequence = Object.values(statusMap).sort((a,b)=>a.StatusID-b.StatusID);
 document.querySelectorAll('.availability-day').forEach(function(td){
     if(td.classList.contains('weekend')) return;
-    if(parseInt(td.dataset.agent) !== currentAgent) return;
+    if(currentAgent !== 1 && parseInt(td.dataset.agent) !== currentAgent) return;
     td.addEventListener('click', function(){
-        let current = parseInt(td.dataset.status);
         const agentId = parseInt(td.dataset.agent);
-        let next;
-        if(!current){
-            // Erste Auswahl: Verfügbar
-            next = codeMap['V'];
-        } else if(current === codeMap['V']){
-            if(partTimeIds.includes(agentId) && codeMap['F']){
-                // Von Verfügbar zu Frei (nur Teilzeit)
-                next = codeMap['F'];
-            } else if(agentId === traineeId && codeMap['S']){
-                // Von Verfügbar zu Schule (nur Azubi)
-                next = codeMap['S'];
-            } else {
-                // Von Verfügbar zu Urlaub
-                next = codeMap['U'];
-            }
-        } else if(partTimeIds.includes(agentId) && codeMap['F'] && current === codeMap['F']){
-            // Von Frei zu Urlaub
-            next = codeMap['U'];
-        } else if(agentId === traineeId && codeMap['S'] && current === codeMap['S']){
-            // Von Schule zu Urlaub
-            next = codeMap['U'];
-        } else if(current === codeMap['U']){
-            // Von Urlaub zu Krank
-            next = codeMap['K'];
-        } else {
-            // Zurück zu Verfügbar
-            next = codeMap['V'];
+        let sequence = statusSequence;
+        if(currentAgent !== 1){
+            sequence = sequence.filter(st => {
+                if(st.ShortCode === 'S' && agentId !== traineeId) return false;
+                if(st.ShortCode === 'F' && !partTimeIds.includes(agentId)) return false;
+                return true;
+            });
         }
-        td.dataset.status = next;
-        td.style.backgroundColor = statusMap[next].ColorCode;
+        const current = parseInt(td.dataset.status);
+        const idx = sequence.findIndex(s => s.StatusID === current);
+        const nextStatus = sequence[(idx + 1) % sequence.length];
+        td.dataset.status = nextStatus.StatusID;
+        td.style.backgroundColor = nextStatus.ColorCode;
+        td.title = nextStatus.ShortCode;
         fetch('index.php?action=set_availability', {
             method:'POST',
             headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            body:'date=' + encodeURIComponent(td.dataset.date) + '&status_id=' + next
+            body:'date=' + encodeURIComponent(td.dataset.date) + '&status_id=' + nextStatus.StatusID
         });
     });
 });
