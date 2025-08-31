@@ -333,6 +333,10 @@ if ($action === 'view_markdown') {
     }
     $content = file_get_contents($path);
     $markdown_html = markdown_to_html($content);
+    if (isset($_GET['raw']) && $_GET['raw'] === '1') {
+        echo '<div class="markdown-view">' . $markdown_html . '</div>';
+        exit;
+    }
     $markdown_file = $file;
     include 'templates/markdown_view.php';
     exit;

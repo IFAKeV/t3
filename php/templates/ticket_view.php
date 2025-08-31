@@ -12,6 +12,15 @@
             </div>
             <span class="ticket-id">Ticket-ID: <?php echo $ticket['TicketID']; ?></span>
         </div>
+        <?php $prev_id = $ticket['TicketID'] - 1; $next_id = $ticket['TicketID'] + 1; ?>
+        <div class="ticket-nav">
+            <a href="index.php?action=view_ticket&amp;id=<?php echo $prev_id; ?>" class="ticket-nav-link">&lt;</a>
+            <form method="GET" action="index.php" class="ticket-nav-form">
+                <input type="hidden" name="action" value="view_ticket">
+                <input type="number" name="id" value="<?php echo $ticket['TicketID']; ?>" class="ticket-nav-input">
+            </form>
+            <a href="index.php?action=view_ticket&amp;id=<?php echo $next_id; ?>" class="ticket-nav-link">&gt;</a>
+        </div>
         <h1><?php echo htmlspecialchars($ticket['Title']); ?></h1>
     </div>
 
@@ -128,7 +137,7 @@
                     </div>
                     <div class="attachment-info">
                         <?php if ($ext == 'md'): ?>
-                            <a href="index.php?action=view_markdown&amp;file=<?php echo urlencode($a['StoragePath']); ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
+                            <a href="index.php?action=view_markdown&amp;file=<?php echo urlencode($a['StoragePath']); ?>" class="attachment-name md-attachment"><?php echo htmlspecialchars($a['FileName']); ?></a>
                             (<a href="<?php echo $base_url; ?>/static/uploads/<?php echo $a['StoragePath']; ?>" download>Download</a>)
                         <?php else: ?>
                             <a href="<?php echo $base_url; ?>/static/uploads/<?php echo $a['StoragePath']; ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
