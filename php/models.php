@@ -24,7 +24,7 @@ function get_agent_by_token($token) {
 
 function get_agents_with_ticket_counts() {
     $query = "SELECT a.AgentID, a.AgentName, a.TeamID, t.TeamName, " .
-             "COUNT(CASE WHEN s.StatusName != 'Gelöst' THEN 1 END) AS OpenTickets, " .
+             "COUNT(CASE WHEN s.StatusName IN ('Neu','In Arbeit','Wartend') THEN 1 END) AS OpenTickets, " .
              "COUNT(DISTINCT tu.TicketID) AS SolvedTickets " .
              "FROM Agents a " .
              "JOIN Teams t ON a.TeamID = t.TeamID " .
@@ -49,7 +49,7 @@ function get_tickets_with_filters($team_id = null, $status_filter = 'open', $sea
     $params = [];
     if ($team_id) { $conditions[] = 't.TeamID = ?'; $params[] = $team_id; }
     if ($status_filter === 'open') {
-        $conditions[] = "s.StatusName != 'Gelöst'"; // Gelöst
+        $conditions[] = "s.StatusName IN ('Neu','In Arbeit','Wartend')"; // offen
     } elseif ($status_filter !== 'all') {
         $conditions[] = 's.StatusName = ?'; $params[] = $status_filter; }
     if ($search_term) {
