@@ -120,12 +120,19 @@
                             📄
                         <?php elseif (in_array($ext, ['doc','docx'])): ?>
                             📝
+                        <?php elseif ($ext == 'md'): ?>
+                            📘
                         <?php else: ?>
                             📎
                         <?php endif; ?>
                     </div>
                     <div class="attachment-info">
-                        <a href="<?php echo $base_url; ?>/static/uploads/<?php echo $a['StoragePath']; ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
+                        <?php if ($ext == 'md'): ?>
+                            <a href="index.php?action=view_markdown&amp;file=<?php echo urlencode($a['StoragePath']); ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
+                            (<a href="<?php echo $base_url; ?>/static/uploads/<?php echo $a['StoragePath']; ?>" download>Download</a>)
+                        <?php else: ?>
+                            <a href="<?php echo $base_url; ?>/static/uploads/<?php echo $a['StoragePath']; ?>" target="_blank" class="attachment-name"><?php echo htmlspecialchars($a['FileName']); ?></a>
+                        <?php endif; ?>
                         <div class="attachment-meta"><?php echo $a['FormattedUploadedAt']; ?> • <?php echo round($a['FileSize']/1024,1); ?> KB</div>
                     </div>
                 </div>

@@ -32,6 +32,16 @@ body {
     flex-direction: column;
 }
 
+/* Markdown view */
+.markdown-view {
+    padding: 20px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    max-width: 800px;
+    margin: 20px auto;
+}
+
 /* ==============================================
    HEADER & NAVIGATION
    ============================================== */
