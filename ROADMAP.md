@@ -1,13 +1,18 @@
 # Roadmap - IFAK Ticket-System
 
+Am Anfang stand die Idee: **Wir entwickeln ein Ticketsystem**
+
 ## Phase 0: Ausgangsbasis
-- Vorhandenes Ticketsystem, implementiert mit Python (Flask)
+- Die Sprachmodelle sagen, sie sprechen am besten Python/Flask, also nehmen wir das um ein erstes System maßgeblich mit Claude zu entwickeln. 
 - SQLite-Datenbank
 - REST-API-Endpunkte:
   - Ticketverwaltung (CRUD)
   - Kommentare & Status-Updates
   - Agentenverwaltung (rudimentär)
 - Lokale Test- und Entwicklungsumgebung
+
+Dann kam zum einen die Erkenntnis, dass kurze und einfache Scripte mit KI ganz toll funktionieren und Entwicklungszeiten dramatisch verkürzen. Komplexere Dinge über ein Chatfenster aber auf Dauer kompliziert werden. Und das das Hosting eines Flask Systems auf dem Markt quasi nicht verfügbar ist. Auf einem Lokalen, ganzen oder vServer kein Problem, nur doch aufwändiger als ein Standard PHP Hosting, welches es bei jedem Anbieter gibt.
+Die Entwicklung schwenkt dazu von Claude auf Codex, der mit diesem Repo spricht und was Dinge nach einer Eingewöhnungsphase deutlich einfacher und das ganze System wesentlich mächtiger macht.
 
 ## Phase 1: Migration auf PHP
 - Ziel: Vollständiger Umstieg von Python/Flask auf Plain PHP
@@ -24,7 +29,7 @@
 ## Phase 2: Web-Frontend
 - Umsetzung eines responsiven Frontends
 
----
+Die responsive Umsetzung ist noch gar nicht abgeschlossen, da keimt die Idee ob codex in der Lage ist, aus der Vorlage von gut zwei Monaten Betrieb und schrittweiser Weiterentwicklung der php-Version alle Änderungen und Erweiterungen auf die Flask-Version zu übertragen.
 
 ## Features
 
@@ -50,9 +55,6 @@
 
 ## To-Do
 
-- "Meine Tickets" soll die "mir" zugewiesenen Tickets zeigen, nicht die von mir erstellten.
-- Tickets die anderen Agenten zugewiesen sind müssen gezielt anzeigbar sein. Durch Klick auf den Agentennamen im Header
-- Chronologische Reihenfolge der Kommentare zu einem Ticket. Neuste oben!
 - Benachrichtigung der Agenten bei:
   - Neuen Tickets (Funktions-Postfach helpdesk@ifak-sozial.de)
   - Ticket-Zuweisungen (individuelle Mail)
@@ -61,12 +63,9 @@
 
 # Wichtig /  Hinweise für Codex
 
-- Code wird ab sofort ausschließlich in **Plain PHP** (nicht Flask/Python) erzeugt
-- Keine Verwendung von Frameworks
-- Die App soll bei jedem Hoster in einem Standard Webspace durch einfaches kopieren/hochladen einsetzbar sein.
-- Bestehende Python-Logik kann als semantisches Referenzmodell genutzt werden
-- Wir verwenden zwei SQLite Datenbanken. Eine für die Tickets und die Adressbuch-Datenbank als Grundlage für die Suche nach der aufgebenden Person. Nur wer bei uns beschäftigt ist kann ein Ticket aufgeben. Daher nutzen wir hier das Adressbuch als seperate Ressource
-- Erstes Ziel: Erreichen des gleichen Funktionsumfangs und Implemetierung der schon gelisteten neuen Features.
+Aktuelles Ziel:
+Im Ordner PHP befindet sich eine PHP Version der Ticketlösung, die jetzt gut zwei Monate Testbetrieb hinter sich hat und in der viele Erweiterungen umgesetzt wurden.
+Übertrage **ALLE** diese Features und Funktionen in die Flask-Version! Analysiere dafür den Quellcode sorgfältig. Dafür steht er vollständig zur Verfügung.
 
 ---
 
