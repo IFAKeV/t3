@@ -2,11 +2,11 @@
 <div class="ticket-form">
     <h1>Neues Ticket erstellen</h1>
     <form method="POST" enctype="multipart/form-data" action="index.php?action=new_ticket">
+        <div class="form-group">
+            <label for="title">Titel*:</label>
+            <input type="text" name="title" id="title" required placeholder="Kurze Beschreibung des Problems">
+        </div>
         <div class="form-row">
-            <div class="form-group">
-                <label for="title">Titel*:</label>
-                <input type="text" name="title" id="title" required placeholder="Kurze Beschreibung des Problems">
-            </div>
             <div class="form-group">
                 <label for="priority_id">Priorität*:</label>
                 <select name="priority_id" id="priority_id" required>
@@ -15,8 +15,6 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-        </div>
-        <div class="form-row">
             <div class="form-group">
                 <label for="team_id">Team*:</label>
                 <select name="team_id" id="team_id" required>
