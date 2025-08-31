@@ -9,6 +9,8 @@
                 <span>Erstellt am: <?php echo $ticket['CreatedAt']; ?></span>
                 <span>von <?php echo htmlspecialchars($ticket['CreatedByName']); ?></span>
                 <?php if ($ticket['Source']): ?><span>via <?php echo htmlspecialchars($ticket['Source']); ?></span><?php endif; ?>
+                <span>Offen seit: <?php echo $ticket['AgeDays']; ?> Tage</span>
+                <span>Letzte Aktualisierung: <?php echo $last_update_at; ?></span>
             </div>
             <span class="ticket-id">Ticket-ID: <?php echo $ticket['TicketID']; ?></span>
         </div>

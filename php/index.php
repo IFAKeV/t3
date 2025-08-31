@@ -274,6 +274,7 @@ if ($action === 'view_ticket') {
     $ticket = get_ticket_by_id($ticket_id);
     $attachments = get_ticket_attachments($ticket_id);
     $updates = get_ticket_updates($ticket_id);
+    $last_update_at = $updates ? $updates[0]['FormattedUpdatedAt'] : $ticket['CreatedAt'];
     $assignees = get_ticket_assignees($ticket_id);
     $related_person = [];
     $related_facility = [];
