@@ -196,10 +196,15 @@
                     </div>
                     <div class="form-group">
                         <label for="assign_agent">Agent zuweisen:</label>
+                        <?php $current_assignee_id = $assignees[0]['AgentID'] ?? null; ?>
                         <select id="assign_agent" name="assign_agent">
                             <option value="">-- Niemanden zuweisen --</option>
-                            <?php foreach ($agents as $ag): ?>
-                            <option value="<?php echo $ag['AgentID']; ?>"><?php echo htmlspecialchars($ag['AgentName'] . ' (' . $ag['TeamName'] . ')'); ?></option>
+                            <?php foreach ($agents as $ag):
+                                if ($ag['AgentID'] == $current_assignee_id) { continue; }
+                                $label = ($ag['AgentID'] == $agent['AgentID']) ? 'Mich selbst' : $ag['AgentName'];
+                                $label .= ' (' . $ag['TeamName'] . ')';
+                            ?>
+                            <option value="<?php echo $ag['AgentID']; ?>"><?php echo htmlspecialchars($label); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
