@@ -8,7 +8,7 @@ $DATABASE = [
 ];
 
 $UPLOAD_FOLDER = $BASE_DIR . '/static/uploads';
-$ALLOWED_EXTENSIONS = ['png','jpg','jpeg','gif','pdf','doc','docx','txt','zip'];
+$ALLOWED_EXTENSIONS = ['png','jpg','jpeg','gif','pdf','doc','docx','txt','zip','md'];
 $MAX_CONTENT_LENGTH = 10 * 1024 * 1024; // 10MB
 
 $SECRET_KEY = 'your-secret-key-here'; // TODO: change in production

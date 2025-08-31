@@ -132,4 +132,20 @@ function send_solution_email($ticket, $updates) {
         @mail($submitter, $subject, $body, "From: $HELPDESK_FROM");
     }
 }
+
+function markdown_to_html($text) {
+    $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    $patterns = [
+        '/^### (.+)$/m' => '<h3>$1</h3>',
+        '/^## (.+)$/m' => '<h2>$1</h2>',
+        '/^# (.+)$/m' => '<h1>$1</h1>',
+        '/\*\*(.+?)\*\*/s' => '<strong>$1</strong>',
+        '/\*(.+?)\*/s' => '<em>$1</em>',
+        '/`(.+?)`/s' => '<code>$1</code>'
+    ];
+    foreach ($patterns as $regex => $replacement) {
+        $text = preg_replace($regex, $replacement, $text);
+    }
+    return nl2br($text);
+}
 ?>

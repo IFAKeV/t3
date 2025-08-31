@@ -322,6 +322,22 @@ if ($action === 'view_ticket') {
     exit;
 }
 
+if ($action === 'view_markdown') {
+    $file = $_GET['file'] ?? '';
+    $safe = preg_match('/^[\w.\-]+$/', $file);
+    $path = __DIR__ . '/static/uploads/' . $file;
+    if (!$safe || !is_file($path)) {
+        http_response_code(404);
+        echo 'Datei nicht gefunden';
+        exit;
+    }
+    $content = file_get_contents($path);
+    $markdown_html = markdown_to_html($content);
+    $markdown_file = $file;
+    include 'templates/markdown_view.php';
+    exit;
+}
+
 // default dashboard with filters
 $team_filter = $_GET['team'] ?? 'mine';
 $status_filter = $_GET['status'] ?? 'open';
