@@ -108,3 +108,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Modal für Markdown-Anhänge
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.createElement('div');
+    modal.id = 'md-modal';
+    modal.className = 'md-modal';
+
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'md-modal-close';
+    closeBtn.textContent = '\u00d7';
+
+    const content = document.createElement('div');
+    content.className = 'md-modal-content';
+
+    modal.appendChild(closeBtn);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.md-attachment')) {
+            e.preventDefault();
+            const url = e.target.getAttribute('href') + '&raw=1';
+            fetch(url)
+                .then(function(resp) { return resp.text(); })
+                .then(function(html) {
+                    content.innerHTML = html;
+                    modal.style.display = 'block';
+                });
+        } else if (e.target === modal || e.target === closeBtn) {
+            modal.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+            modal.style.display = 'none';
+        }
+    });
+});
