@@ -377,20 +377,21 @@ if ($agent_filter_param) {
 
 $tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new, $agent['TeamID']);
 
-// mark unassigned tickets that exceed configured thresholds based on priority
+// mark unassigned new tickets that exceed configured thresholds and stale tickets
 foreach ($tickets as &$t) {
     $created = new DateTime($t['CreatedAtTS']);
     $now = new DateTime('now', new DateTimeZone('Europe/Berlin'));
     $hours_total = ($now->getTimestamp() - $created->getTimestamp()) / 3600;
     $t['AgeHours'] = (int) floor($hours_total);
     $t['Delayed'] = false;
-    if (empty($t['AssignedAgents'])) {
+    if ($t['StatusName'] === 'Neu' && empty($t['AssignedAgents'])) {
         $prio = $t['PriorityID'];
         $threshold = $UNASSIGNED_WARNING_HOURS[$prio] ?? null;
         if ($threshold !== null && $t['AgeHours'] > $threshold) {
             $t['Delayed'] = true;
         }
     }
+    $t['Stale'] = ($t['LastUpdatedDays'] >= $STALE_TICKET_THRESHOLD_DAYS);
 }
 unset($t);
 $teams = get_all_teams();
