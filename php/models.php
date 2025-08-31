@@ -24,14 +24,20 @@ function get_agent_by_token($token) {
 
 function get_agents_with_ticket_counts() {
     $query = "SELECT a.AgentID, a.AgentName, a.TeamID, t.TeamName, " .
-             "COUNT(DISTINCT CASE WHEN s.StatusName != 'Gelöst' THEN tk.TicketID END) AS OpenTickets, " .
-             "COUNT(CASE WHEN tu.IsSolution = 1 AND tu.UpdatedByName = a.AgentName THEN 1 END) AS SolvedTickets " .
+             "COUNT(CASE WHEN s.StatusName != 'Gelöst' THEN 1 END) AS OpenTickets, " .
+             "COUNT(DISTINCT tu.TicketID) AS SolvedTickets " .
              "FROM Agents a " .
              "JOIN Teams t ON a.TeamID = t.TeamID " .
-             "LEFT JOIN TicketAssignees ta ON a.AgentID = ta.AgentID " .
-             "LEFT JOIN Tickets tk ON tk.TicketID = ta.TicketID " .
+             "LEFT JOIN (" .
+             "    SELECT ta.TicketID, ta.AgentID " .
+             "    FROM TicketAssignees ta " .
+             "    JOIN (" .
+             "        SELECT TicketID, MAX(AssignedAt) AS MaxAssignedAt FROM TicketAssignees GROUP BY TicketID" .
+             "    ) last ON ta.TicketID = last.TicketID AND ta.AssignedAt = last.MaxAssignedAt" .
+             ") la ON a.AgentID = la.AgentID " .
+             "LEFT JOIN Tickets tk ON tk.TicketID = la.TicketID " .
              "LEFT JOIN TicketStatus s ON tk.StatusID = s.StatusID " .
-             "LEFT JOIN TicketUpdates tu ON tk.TicketID = tu.TicketID " .
+             "LEFT JOIN TicketUpdates tu ON tk.TicketID = tu.TicketID AND tu.IsSolution = 1 AND tu.UpdatedByName = a.AgentName " .
              "WHERE a.Active = 1 " .
              "GROUP BY a.AgentID ORDER BY a.AgentName";
     return query_db($query);
