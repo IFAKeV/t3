@@ -34,7 +34,7 @@ if (!isset($status_map)) $status_map = get_availability_status_map();
                 </div>
                 <a href="index.php?agent=<?php echo $ov['AgentID']; ?>" class="agent-link">
                     <?php echo htmlspecialchars($ov['AgentName']); ?>
-                    (<?php echo $ov['OpenTickets']; ?>)
+                    (<?php echo $ov['OpenTickets']; ?> | <?php echo $ov['SolvedTickets']; ?>)
                 </a>
                 <div class="week-boxes">
                     <?php foreach ($week2_dates as $d): ?>
