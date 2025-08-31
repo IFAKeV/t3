@@ -25,6 +25,7 @@ from config import (
     SECRET_KEY,
     DEBUG,
     OLD_TICKET_THRESHOLD_DAYS,
+    UNASSIGNED_WARNING_HOURS,
 )
 from database import (
     get_ticket_db,
@@ -204,6 +205,25 @@ def dashboard():
         agent_id=agent_filter,
         assigned_only=assigned_only,
     )
+
+    # Unzugewiesene Tickets nach Reaktionszeit markieren
+    now = datetime.now(ZoneInfo("Europe/Berlin"))
+    for t in tickets:
+        created_ts = t.get("CreatedAtTS")
+        if created_ts:
+            try:
+                created_dt = datetime.fromisoformat(created_ts)
+                age_hours = int((now - created_dt).total_seconds() / 3600)
+            except ValueError:
+                age_hours = 0
+        else:
+            age_hours = 0
+        t["AgeHours"] = age_hours
+        t["Delayed"] = False
+        if not t.get("AssignedAgents"):
+            threshold = UNASSIGNED_WARNING_HOURS.get(t.get("PriorityID"))
+            if threshold is not None and age_hours > threshold:
+                t["Delayed"] = True
 
     # Teams und Status für Filter laden
     teams = get_all_teams()
