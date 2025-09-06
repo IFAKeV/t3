@@ -351,6 +351,8 @@ if ($action === 'view_markdown') {
 $team_filter = $_GET['team'] ?? 'mine';
 $status_filter = $_GET['status'] ?? 'open';
 $search_value = trim($_GET['q'] ?? '');
+$person_value = trim($_GET['person'] ?? '');
+$facility_value = trim($_GET['facility'] ?? '');
 $agent_filter_param = $_GET['agent'] ?? null;
 
 $team_id = null;
@@ -375,7 +377,7 @@ if ($agent_filter_param) {
     $assigned_only = true;
 }
 
-$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new, $agent['TeamID']);
+$tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new, $agent['TeamID'], $person_value ?: null, $facility_value ?: null);
 
 // mark unassigned new tickets that exceed configured thresholds and stale tickets
 foreach ($tickets as &$t) {
@@ -401,4 +403,6 @@ $current_team_filter = $team_filter;
 $current_status_filter = $status_filter;
 $current_agent_filter = $agent_filter_param;
 $search_term = $search_value;
+$person_term = $person_value;
+$facility_term = $facility_value;
 include 'templates/dashboard.php';

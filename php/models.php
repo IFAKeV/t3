@@ -43,8 +43,8 @@ function get_agents_with_ticket_counts() {
     return query_db($query);
 }
 
-function get_tickets_with_filters($team_id = null, $status_filter = 'open', $search_term = null, $agent_id = null, $assigned_only = false, $include_unassigned_new = false, $agent_team_id = null) {
-    $base_query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, t.ContactName, t.ContactPhone, t.ContactEmail, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt, t.CreatedAt as CreatedAtTS, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays, COALESCE(u.LastUpdatedAt, t.CreatedAt) as LastUpdatedTS, CAST(julianday('now') - julianday(COALESCE(u.LastUpdatedAt, t.CreatedAt)) AS INT) as LastUpdatedDays, GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents, COUNT(ta.AgentID) as AssignedCount FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID LEFT JOIN (SELECT TicketID, MAX(UpdatedAt) AS LastUpdatedAt FROM TicketUpdates GROUP BY TicketID) u ON t.TicketID = u.TicketID LEFT JOIN (SELECT ta1.TicketID, ta1.AgentID, ta1.AgentName FROM TicketAssignees ta1 JOIN (SELECT TicketID, MAX(AssignedAt) AS MaxAssignedAt FROM TicketAssignees GROUP BY TicketID) ta2 ON ta1.TicketID = ta2.TicketID AND ta1.AssignedAt = ta2.MaxAssignedAt) ta ON t.TicketID = ta.TicketID";
+function get_tickets_with_filters($team_id = null, $status_filter = 'open', $search_term = null, $agent_id = null, $assigned_only = false, $include_unassigned_new = false, $agent_team_id = null, $person = null, $facility = null) {
+    $base_query = "SELECT t.TicketID, t.Title, t.Description, t.StatusID, t.PriorityID, t.TeamID, COALESCE(emp.FirstName || ' ' || emp.LastName, t.ContactName) AS ContactName, t.ContactPhone, t.ContactEmail, a.AgentName AS CreatedByName, t.Source, s.StatusName, s.ColorCode as StatusColor, p.PriorityName, p.ColorCode as PriorityColor, team.TeamName, team.TeamColor, fac.Facility AS FacilityName, strftime('%d.%m.%Y %H:%M', t.CreatedAt) as CreatedAt, t.CreatedAt as CreatedAtTS, CAST(julianday('now') - julianday(t.CreatedAt) AS INT) as AgeDays, COALESCE(u.LastUpdatedAt, t.CreatedAt) as LastUpdatedTS, CAST(julianday('now') - julianday(COALESCE(u.LastUpdatedAt, t.CreatedAt)) AS INT) as LastUpdatedDays, GROUP_CONCAT(ta.AgentName, ', ') as AssignedAgents, COUNT(ta.AgentID) as AssignedCount FROM Tickets t JOIN TicketStatus s ON t.StatusID = s.StatusID JOIN TicketPriorities p ON t.PriorityID = p.PriorityID JOIN Teams team ON t.TeamID = team.TeamID JOIN Agents a ON t.CreatedByAgentID = a.AgentID LEFT JOIN Employees emp ON t.ContactEmployeeID = emp.EmployeeID LEFT JOIN Facilities fac ON t.FacilityID = fac.FacilityID LEFT JOIN (SELECT TicketID, MAX(UpdatedAt) AS LastUpdatedAt FROM TicketUpdates GROUP BY TicketID) u ON t.TicketID = u.TicketID LEFT JOIN (SELECT ta1.TicketID, ta1.AgentID, ta1.AgentName FROM TicketAssignees ta1 JOIN (SELECT TicketID, MAX(AssignedAt) AS MaxAssignedAt FROM TicketAssignees GROUP BY TicketID) ta2 ON ta1.TicketID = ta2.TicketID AND ta1.AssignedAt = ta2.MaxAssignedAt) ta ON t.TicketID = ta.TicketID";
     $conditions = [];
     $params = [];
     if ($team_id) { $conditions[] = 't.TeamID = ?'; $params[] = $team_id; }
@@ -53,10 +53,21 @@ function get_tickets_with_filters($team_id = null, $status_filter = 'open', $sea
     } elseif ($status_filter !== 'all') {
         $conditions[] = 's.StatusName = ?'; $params[] = $status_filter; }
     if ($search_term) {
-        $conditions[] = '(t.Title LIKE ? OR t.TicketID = ? OR t.ContactName LIKE ?)';
+        $conditions[] = "(t.Title LIKE ? OR t.TicketID = ? OR t.ContactName LIKE ? OR (emp.FirstName || ' ' || emp.LastName) LIKE ? OR fac.Facility LIKE ? )";
         $params[] = "%$search_term%";
         $params[] = ctype_digit($search_term) ? $search_term : -1;
         $params[] = "%$search_term%";
+        $params[] = "%$search_term%";
+        $params[] = "%$search_term%";
+    }
+    if ($person) {
+        $conditions[] = "((emp.FirstName || ' ' || emp.LastName) LIKE ? OR t.ContactName LIKE ?)";
+        $params[] = "%$person%";
+        $params[] = "%$person%";
+    }
+    if ($facility) {
+        $conditions[] = 'fac.Facility LIKE ?';
+        $params[] = "%$facility%";
     }
     if ($agent_id) {
         if ($assigned_only) {
@@ -86,9 +97,21 @@ function get_ticket_by_id($ticket_id) {
     return query_db($query, [$ticket_id], true);
 }
 
-function search_tickets($term, $limit = 10) {
-    $query = "SELECT TicketID, Title FROM Tickets WHERE Title LIKE ? OR CAST(TicketID AS TEXT) LIKE ? OR ContactName LIKE ? ORDER BY CreatedAt DESC LIMIT ?";
-    return query_db($query, ["%$term%", "%$term%", "%$term%", $limit]);
+function search_tickets($term, $person = null, $facility = null, $limit = 10) {
+    $query = "SELECT t.TicketID, t.Title, COALESCE(emp.FirstName || ' ' || emp.LastName, t.ContactName) AS PersonName, fac.Facility AS FacilityName FROM Tickets t LEFT JOIN Employees emp ON t.ContactEmployeeID = emp.EmployeeID LEFT JOIN Facilities fac ON t.FacilityID = fac.FacilityID WHERE (t.Title LIKE ? OR CAST(t.TicketID AS TEXT) LIKE ? OR COALESCE(emp.FirstName || ' ' || emp.LastName, t.ContactName) LIKE ? OR fac.Facility LIKE ?)";
+    $params = ["%$term%", "%$term%", "%$term%", "%$term%"];
+    if ($person) {
+        $query .= " AND ((emp.FirstName || ' ' || emp.LastName) LIKE ? OR t.ContactName LIKE ?)";
+        $params[] = "%$person%";
+        $params[] = "%$person%";
+    }
+    if ($facility) {
+        $query .= " AND fac.Facility LIKE ?";
+        $params[] = "%$facility%";
+    }
+    $query .= " ORDER BY t.CreatedAt DESC LIMIT ?";
+    $params[] = $limit;
+    return query_db($query, $params);
 }
 
 // ----------------------------------------------------------------------
