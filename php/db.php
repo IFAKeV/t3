@@ -8,6 +8,9 @@ function get_db($type = 'ticket') {
         $db = new SQLite3($DATABASE[$type . '_db']);
         $db->enableExceptions(true);
         $db->busyTimeout(5000);
+        if ($type === 'ticket' && isset($DATABASE['address_db'])) {
+            $db->exec("ATTACH DATABASE '{$DATABASE['address_db']}' AS address");
+        }
         $connections[$type] = $db;
     }
     return $connections[$type];
