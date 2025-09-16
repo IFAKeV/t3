@@ -19,13 +19,24 @@ function get_db($type = 'ticket') {
 function bind_params($stmt, $params) {
     foreach (array_values($params) as $idx => $val) {
         $type = SQLITE3_TEXT;
-        if (is_int($val) || ctype_digit((string)$val)) {
+
+        if (is_null($val)) {
+            $type = SQLITE3_NULL;
+        } elseif (is_bool($val)) {
+            $type = SQLITE3_INTEGER;
+            $val = $val ? 1 : 0;
+        } elseif (is_int($val)) {
             $type = SQLITE3_INTEGER;
         } elseif (is_float($val)) {
             $type = SQLITE3_FLOAT;
-        } elseif (is_null($val)) {
-            $type = SQLITE3_NULL;
+        } elseif (is_string($val)) {
+            $trimmed = trim($val);
+            if ($trimmed !== '' && ctype_digit($trimmed) && ($trimmed === '0' || $trimmed[0] !== '0')) {
+                $type = SQLITE3_INTEGER;
+                $val = (int)$trimmed;
+            }
         }
+
         $stmt->bindValue($idx + 1, $val, $type);
     }
 }
