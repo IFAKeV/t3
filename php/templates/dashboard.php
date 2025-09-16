@@ -13,9 +13,9 @@ if (!isset($open_ticket_count)) $open_ticket_count = 0;
     <div class="dashboard-header">
         <h1>
             <?php if (!empty($search_term)): ?>
-                Tickets mit Suchbegriff "<?php echo htmlspecialchars($search_term); ?>" (Neu: <?php echo $new_ticket_count; ?> / Offen: <?php echo $open_ticket_count; ?>)
+                Tickets mit Suchbegriff "<?php echo htmlspecialchars($search_term); ?>" (<?php echo $new_ticket_count; ?>|<?php echo $open_ticket_count; ?>)
             <?php else: ?>
-                Ticket-Übersicht (Neu: <?php echo $new_ticket_count; ?> / Offen: <?php echo $open_ticket_count; ?>)
+                Ticket-Übersicht (<?php echo $new_ticket_count; ?>|<?php echo $open_ticket_count; ?>)
             <?php endif; ?>
         </h1>
         <div class="dashboard-filters">
