@@ -379,6 +379,10 @@ if ($agent_filter_param) {
 
 $tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new, $agent['TeamID'], $person_value ?: null, $facility_value ?: null);
 
+$new_ticket_count = 0;
+$open_ticket_count = 0;
+$open_statuses = ['Neu', 'In Arbeit', 'Wartend'];
+
 // mark unassigned new tickets that exceed configured thresholds and stale tickets
 foreach ($tickets as &$t) {
     $created = new DateTime($t['CreatedAtTS']);
@@ -394,12 +398,16 @@ foreach ($tickets as &$t) {
         }
     }
     $t['Stale'] = ($t['LastUpdatedDays'] >= $STALE_TICKET_THRESHOLD_DAYS);
+    if ($t['StatusName'] === 'Neu') {
+        $new_ticket_count++;
+    }
+    if (in_array($t['StatusName'], $open_statuses, true)) {
+        $open_ticket_count++;
+    }
 }
 unset($t);
-$teams = get_all_teams();
 $statuses = get_all_statuses();
 $agents = load_agents();
-$current_team_filter = $team_filter;
 $current_status_filter = $status_filter;
 $current_agent_filter = $agent_filter_param;
 $search_term = $search_value;

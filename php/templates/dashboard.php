@@ -1,34 +1,24 @@
 <?php
 $title = 'Dashboard - IFAK Ticketsystem';
 include 'templates/header.php';
-if (!isset($current_team_filter)) $current_team_filter = 'mine';
 if (!isset($current_status_filter)) $current_status_filter = 'open';
 if (!isset($search_term)) $search_term = '';
 if (!isset($person_term)) $person_term = '';
 if (!isset($facility_term)) $facility_term = '';
 if (!isset($current_agent_filter)) $current_agent_filter = '';
+if (!isset($new_ticket_count)) $new_ticket_count = 0;
+if (!isset($open_ticket_count)) $open_ticket_count = 0;
 ?>
 <div class="dashboard">
     <div class="dashboard-header">
         <h1>
             <?php if (!empty($search_term)): ?>
-                Tickets mit Suchbegriff "<?php echo htmlspecialchars($search_term); ?>"
+                Tickets mit Suchbegriff "<?php echo htmlspecialchars($search_term); ?>" (Neu: <?php echo $new_ticket_count; ?> / Offen: <?php echo $open_ticket_count; ?>)
             <?php else: ?>
-                Ticket-Übersicht
+                Ticket-Übersicht (Neu: <?php echo $new_ticket_count; ?> / Offen: <?php echo $open_ticket_count; ?>)
             <?php endif; ?>
         </h1>
         <div class="dashboard-filters">
-            <div class="filter-group">
-                <label>Team:</label>
-                <select id="team-filter" onchange="applyFilters()">
-                    <option value="mine" <?php if ($current_team_filter == 'mine') echo 'selected'; ?>>Meine Tickets</option>
-                    <option value="my_team" <?php if ($current_team_filter == 'my_team') echo 'selected'; ?>>Mein Team (<?php echo htmlspecialchars($agent['TeamName']); ?>)</option>
-                    <option value="all" <?php if ($current_team_filter == 'all') echo 'selected'; ?>>Alle Teams</option>
-                    <?php foreach ($teams as $t): ?>
-                    <option value="<?php echo $t['TeamID']; ?>" <?php if ($current_team_filter == $t['TeamID']) echo 'selected'; ?>><?php echo htmlspecialchars($t['TeamName']); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
             <div class="filter-group">
                 <label>Status:</label>
                 <select id="status-filter" onchange="applyFilters()">
@@ -106,7 +96,6 @@ if (!isset($current_agent_filter)) $current_agent_filter = '';
 </div>
 <script>
 function applyFilters() {
-    const team = document.getElementById('team-filter').value;
     const status = document.getElementById('status-filter').value;
     const agent = document.getElementById('agent-filter').value;
     const search = document.getElementById('search-input').value;
@@ -114,7 +103,7 @@ function applyFilters() {
     const facility = document.getElementById('facility-input').value;
 
     const url = new URL(window.location);
-    url.searchParams.set('team', team);
+    url.searchParams.delete('team');
     url.searchParams.set('status', status);
     if (agent) { url.searchParams.set('agent', agent); } else { url.searchParams.delete('agent'); }
     if (search) { url.searchParams.set('q', search); } else { url.searchParams.delete('q'); }
