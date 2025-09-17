@@ -3,8 +3,6 @@ $title = 'Dashboard - IFAK Ticketsystem';
 include 'templates/header.php';
 if (!isset($current_status_filter)) $current_status_filter = 'open';
 if (!isset($search_term)) $search_term = '';
-if (!isset($person_term)) $person_term = '';
-if (!isset($facility_term)) $facility_term = '';
 if (!isset($current_agent_filter)) $current_agent_filter = '';
 if (!isset($new_ticket_count)) $new_ticket_count = 0;
 if (!isset($open_ticket_count)) $open_ticket_count = 0;
@@ -39,11 +37,9 @@ if (!isset($open_ticket_count)) $open_ticket_count = 0;
                 </select>
             </div>
             <div class="filter-group search-group">
-                <label>Titel, ID, Person oder Einrichtung:</label>
+                <label>Titel, ID, Beschreibung, Kontakt oder Einrichtung:</label>
                 <div class="search-bar">
-                    <input type="text" id="search-input" value="<?php echo htmlspecialchars($search_term); ?>" placeholder="Titel, ID, Person oder Einrichtung">
-                    <input type="text" id="person-input" value="<?php echo htmlspecialchars($person_term); ?>" placeholder="Person">
-                    <input type="text" id="facility-input" value="<?php echo htmlspecialchars($facility_term); ?>" placeholder="Einrichtung">
+                    <input type="text" id="search-input" value="<?php echo htmlspecialchars($search_term); ?>" placeholder="Titel, ID, Beschreibung, Kontakt oder Einrichtung">
                     <button onclick="applyFilters()">Suchen</button>
                 </div>
             </div>
@@ -99,28 +95,24 @@ function applyFilters() {
     const status = document.getElementById('status-filter').value;
     const agent = document.getElementById('agent-filter').value;
     const search = document.getElementById('search-input').value;
-    const person = document.getElementById('person-input').value;
-    const facility = document.getElementById('facility-input').value;
 
     const url = new URL(window.location);
     url.searchParams.delete('team');
     url.searchParams.set('status', status);
     if (agent) { url.searchParams.set('agent', agent); } else { url.searchParams.delete('agent'); }
     if (search) { url.searchParams.set('q', search); } else { url.searchParams.delete('q'); }
-    if (person) { url.searchParams.set('person', person); } else { url.searchParams.delete('person'); }
-    if (facility) { url.searchParams.set('facility', facility); } else { url.searchParams.delete('facility'); }
+    url.searchParams.delete('person');
+    url.searchParams.delete('facility');
     window.location = url;
 }
-['search-input','person-input','facility-input'].forEach(function(id) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                applyFilters();
-            }
-        });
-    }
-});
+const searchInput = document.getElementById('search-input');
+if (searchInput) {
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            applyFilters();
+        }
+    });
+}
 </script>
 <?php include 'templates/footer.php'; ?>
