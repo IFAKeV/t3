@@ -379,9 +379,17 @@ if ($agent_filter_param) {
 
 $tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new, $agent['TeamID'], $person_value ?: null, $facility_value ?: null);
 
+$statuses = get_all_statuses();
+$closed_statuses = ['Gelöst', 'Storniert'];
+$open_statuses = [];
+foreach ($statuses as $status) {
+    if (!in_array($status['StatusName'], $closed_statuses, true)) {
+        $open_statuses[] = $status['StatusName'];
+    }
+}
+
 $new_ticket_count = 0;
 $open_ticket_count = 0;
-$open_statuses = ['Neu', 'In Arbeit', 'Wartend'];
 
 // mark unassigned new tickets that exceed configured thresholds and stale tickets
 foreach ($tickets as &$t) {
@@ -401,12 +409,11 @@ foreach ($tickets as &$t) {
     if ($t['StatusName'] === 'Neu') {
         $new_ticket_count++;
     }
-    if (in_array($t['StatusName'], $open_statuses, true)) {
+    if (!in_array($t['StatusName'], $closed_statuses, true)) {
         $open_ticket_count++;
     }
 }
 unset($t);
-$statuses = get_all_statuses();
 $agents = load_agents();
 $current_status_filter = $status_filter;
 $current_agent_filter = $agent_filter_param;
