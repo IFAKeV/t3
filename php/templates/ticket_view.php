@@ -170,12 +170,33 @@
             </div>
 
             <?php if ($ticket['StatusName'] != 'Gelöst'): ?>
+            <?php
+                $new_status_id = null;
+                $solved_status_id = null;
+                $solved_status_label = null;
+                foreach ($statuses as $status_option) {
+                    if ($status_option['StatusName'] === 'Neu') {
+                        $new_status_id = (int) $status_option['StatusID'];
+                    }
+                    if ($status_option['StatusName'] === 'Gelöst') {
+                        $solved_status_id = (int) $status_option['StatusID'];
+                        $solved_status_label = $status_option['StatusName'];
+                    }
+                }
+            ?>
             <div class="update-form">
                 <form method="POST" action="index.php?action=update_ticket&id=<?php echo $ticket['TicketID']; ?>" enctype="multipart/form-data">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="status_id">Status ändern:</label>
-                            <select id="status_id" name="status_id" <?php if ($ticket['StatusName'] == 'Neu') echo 'required'; ?>>
+                            <select
+                                id="status_id"
+                                name="status_id"
+                                data-status-new="<?php echo $new_status_id !== null ? htmlspecialchars((string) $new_status_id) : ''; ?>"
+                                data-status-solved="<?php echo $solved_status_id !== null ? htmlspecialchars((string) $solved_status_id) : ''; ?>"
+                                data-status-solved-label="<?php echo $solved_status_label !== null ? htmlspecialchars($solved_status_label) : ''; ?>"
+                                data-current-status="<?php echo htmlspecialchars((string) $ticket['StatusID']); ?>"
+                                <?php if ($ticket['StatusName'] == 'Neu') echo 'required'; ?>>
                                 <?php if ($ticket['StatusName'] != 'Neu'): ?>
                                 <option value="">-- Unverändert --</option>
                                 <?php endif; ?>
@@ -239,24 +260,72 @@
 document.addEventListener('DOMContentLoaded', function() {
     const isSolution = document.getElementById('is_solution');
     const statusSelect = document.getElementById('status_id');
-    if (isSolution && statusSelect) {
-        isSolution.addEventListener('change', function() {
-            if (isSolution.checked) {
-                statusSelect.value = '3';
-                statusSelect.disabled = true;
-            } else {
-                statusSelect.disabled = false;
-            }
-        });
-
-        const currentStatus = <?php echo $ticket['StatusID']; ?>;
-        Array.from(statusSelect.options).forEach(function(opt) {
-            const val = parseInt(opt.value);
-            if ((val === 1 && currentStatus > 1) || val === 3) {
-                opt.remove();
-            }
-        });
+    if (!isSolution || !statusSelect) {
+        return;
     }
+
+    const parseId = function(value) {
+        const parsed = parseInt(value, 10);
+        return Number.isNaN(parsed) ? null : parsed;
+    };
+
+    const newStatusId = parseId(statusSelect.dataset.statusNew);
+    const solvedStatusId = parseId(statusSelect.dataset.statusSolved);
+    const solvedStatusLabel = statusSelect.dataset.statusSolvedLabel || '';
+    const currentStatus = parseId(statusSelect.dataset.currentStatus);
+
+    const nonSelectableIds = [];
+    if (solvedStatusId !== null) {
+        nonSelectableIds.push(solvedStatusId);
+    }
+    if (newStatusId !== null && currentStatus !== null && currentStatus !== newStatusId) {
+        nonSelectableIds.push(newStatusId);
+    }
+
+    const solvedIdString = solvedStatusId !== null ? String(solvedStatusId) : null;
+    let solvedOption = null;
+
+    Array.from(statusSelect.options).forEach(function(opt) {
+        const optionValue = parseId(opt.value);
+        if (optionValue !== null && nonSelectableIds.includes(optionValue)) {
+            if (solvedIdString !== null && optionValue === solvedStatusId) {
+                solvedOption = opt;
+            }
+            opt.remove();
+        }
+    });
+
+    if (!solvedOption && solvedIdString !== null && solvedStatusLabel) {
+        solvedOption = document.createElement('option');
+        solvedOption.value = solvedIdString;
+        solvedOption.textContent = solvedStatusLabel;
+    }
+
+    let previousStatusValue = statusSelect.value;
+
+    isSolution.addEventListener('change', function() {
+        if (isSolution.checked) {
+            previousStatusValue = statusSelect.value;
+            if (solvedOption && solvedIdString !== null && !statusSelect.querySelector('option[value="' + solvedIdString + '"]')) {
+                statusSelect.appendChild(solvedOption);
+            }
+            if (solvedIdString !== null) {
+                statusSelect.value = solvedIdString;
+            }
+            statusSelect.disabled = true;
+        } else {
+            statusSelect.disabled = false;
+            if (solvedOption && statusSelect.contains(solvedOption)) {
+                solvedOption.remove();
+            }
+            if (previousStatusValue && statusSelect.querySelector('option[value="' + previousStatusValue + '"]')) {
+                statusSelect.value = previousStatusValue;
+            } else {
+                const fallbackOption = statusSelect.querySelector('option[value=""]') || statusSelect.querySelector('option');
+                statusSelect.value = fallbackOption ? fallbackOption.value : '';
+            }
+        }
+    });
 });
 </script>
 <?php include 'templates/footer.php'; ?>
