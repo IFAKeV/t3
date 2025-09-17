@@ -37,9 +37,9 @@ if (!isset($open_ticket_count)) $open_ticket_count = 0;
                 </select>
             </div>
             <div class="filter-group search-group">
-                <label>Titel, ID, Beschreibung, Kontakt oder Einrichtung:</label>
+                <label>Titel, ID, Beschreibung, Kontakt, Einrichtung, Standort oder Verlauf:</label>
                 <div class="search-bar">
-                    <input type="text" id="search-input" value="<?php echo htmlspecialchars($search_term); ?>" placeholder="Titel, ID, Beschreibung, Kontakt oder Einrichtung">
+                    <input type="text" id="search-input" value="<?php echo htmlspecialchars($search_term); ?>" placeholder="Titel, ID, Beschreibung, Kontakt, Einrichtung, Standort oder Verlauf">
                     <button onclick="applyFilters()">Suchen</button>
                 </div>
             </div>
@@ -55,6 +55,7 @@ if (!isset($open_ticket_count)) $open_ticket_count = 0;
                     <th>Priorität</th>
                     <th>Titel</th>
                     <th>Kontakt</th>
+                    <th>Einrichtung / Standort</th>
                     <th>Zugewiesen an</th>
                     <th>Erstellt am</th>
                     <th>Alter (Tage)</th>
@@ -71,6 +72,18 @@ if (!isset($open_ticket_count)) $open_ticket_count = 0;
                     <td><span class="priority-badge" style="background-color: <?php echo htmlspecialchars($ticket['PriorityColor']); ?>;"><?php echo htmlspecialchars($ticket['PriorityName']); ?></span></td>
                     <td><?php echo htmlspecialchars($ticket['Title']); ?></td>
                     <td><?php echo htmlspecialchars($ticket['ContactName']); ?></td>
+                    <td>
+                        <?php if (!empty($ticket['FacilityName']) || !empty($ticket['LocationName'])): ?>
+                            <?php if (!empty($ticket['FacilityName'])): ?>
+                                <div><?php echo htmlspecialchars($ticket['FacilityName']); ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($ticket['LocationName'])): ?>
+                                <div><small><?php echo htmlspecialchars($ticket['LocationName']); ?></small></div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            &ndash;
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <?php if (!empty($ticket['AssignedAgents'])): ?>
                             <?php echo htmlspecialchars($ticket['AssignedAgents']); ?>
