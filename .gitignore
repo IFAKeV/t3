@@ -10,3 +10,6 @@ ignore/
 
 # macOS
 .DS_Store
+
+# Test Artefakte
+php/tests/mail_output.log
