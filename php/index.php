@@ -349,7 +349,11 @@ if ($action === 'view_markdown') {
 
 // default dashboard with filters
 $team_filter = $_GET['team'] ?? 'mine';
-$status_filter = $_GET['status'] ?? 'open';
+$status_filter_param = $_GET['status'] ?? 'open';
+$status_filter = $status_filter_param;
+if (is_string($status_filter_param) && ctype_digit($status_filter_param)) {
+    $status_filter = intval($status_filter_param);
+}
 $search_value = trim($_GET['q'] ?? '');
 $agent_filter_param = $_GET['agent'] ?? null;
 
@@ -413,7 +417,15 @@ foreach ($tickets as &$t) {
 }
 unset($t);
 $agents = load_agents();
-$current_status_filter = $status_filter;
+$current_status_filter = $status_filter_param;
+if ($status_filter_param !== 'open' && $status_filter_param !== 'all' && (!is_string($status_filter_param) || !ctype_digit($status_filter_param))) {
+    foreach ($statuses as $status_option) {
+        if ($status_option['StatusName'] === $status_filter_param) {
+            $current_status_filter = (string) $status_option['StatusID'];
+            break;
+        }
+    }
+}
 $current_agent_filter = $agent_filter_param;
 $search_term = $search_value;
 include 'templates/dashboard.php';

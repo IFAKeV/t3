@@ -23,7 +23,7 @@ if (!isset($open_ticket_count)) $open_ticket_count = 0;
                     <option value="open" <?php if ($current_status_filter == 'open') echo 'selected'; ?>>Alle offenen</option>
                     <option value="all" <?php if ($current_status_filter == 'all') echo 'selected'; ?>>Alle</option>
                     <?php foreach ($statuses as $s): ?>
-                    <option value="<?php echo $s['StatusName']; ?>" <?php if ($current_status_filter == $s['StatusName']) echo 'selected'; ?>><?php echo htmlspecialchars($s['StatusName']); ?></option>
+                    <option value="<?php echo htmlspecialchars((string)$s['StatusID']); ?>" <?php if ((string)$current_status_filter === (string)$s['StatusID']) echo 'selected'; ?>><?php echo htmlspecialchars($s['StatusName']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
