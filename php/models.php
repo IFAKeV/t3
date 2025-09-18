@@ -51,7 +51,17 @@ function get_tickets_with_filters($team_id = null, $status_filter = 'open', $sea
     if ($status_filter === 'open') {
         $conditions[] = "s.StatusName NOT IN ('Gelöst','Storniert')"; // offen
     } elseif ($status_filter !== 'all') {
-        $conditions[] = 's.StatusName = ?'; $params[] = $status_filter; }
+        if (is_int($status_filter)) {
+            $conditions[] = 's.StatusID = ?';
+            $params[] = $status_filter;
+        } elseif (is_string($status_filter) && ctype_digit($status_filter)) {
+            $conditions[] = 's.StatusID = ?';
+            $params[] = intval($status_filter);
+        } else {
+            $conditions[] = 's.StatusName = ?';
+            $params[] = $status_filter;
+        }
+    }
     if ($search_term) {
         $conditions[] = "(t.Title LIKE ? OR t.Description LIKE ? OR CAST(t.TicketID AS TEXT) LIKE ? OR t.ContactName LIKE ? OR (emp.FirstName || ' ' || emp.LastName) LIKE ? OR fac.Facility LIKE ? OR loc.Location LIKE ? OR EXISTS (SELECT 1 FROM TicketUpdates tu WHERE tu.TicketID = t.TicketID AND (tu.UpdateText LIKE ? OR tu.UpdatedByName LIKE ?)))";
         $like = "%$search_term%";
