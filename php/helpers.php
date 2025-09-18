@@ -116,7 +116,6 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
 }
 
 function send_solution_email($ticket, $updates) {
-    if (empty($ticket['ContactEmail'])) return;
     global $QUALITY_CONTROL_EMAIL, $HELPDESK_FROM;
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
@@ -135,8 +134,11 @@ function send_solution_email($ticket, $updates) {
     if (!empty($QUALITY_CONTROL_EMAIL)) {
         @mail($QUALITY_CONTROL_EMAIL, $subject, $body, "From: $HELPDESK_FROM");
     }
-    $submitter = $ticket['ContactEmail'];
-    @mail($submitter, $subject, $body, "From: $HELPDESK_FROM");
+
+    $submitter = $ticket['ContactEmail'] ?? null;
+    if (!empty($submitter)) {
+        @mail($submitter, $subject, $body, "From: $HELPDESK_FROM");
+    }
 }
 
 function markdown_to_html($text) {
