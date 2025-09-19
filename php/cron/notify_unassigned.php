@@ -44,7 +44,13 @@ foreach ($agents as $ag) {
     foreach ($overdue as $t) {
         $lines[] = '#' . $t['TicketID'] . ' (' . $t['PriorityName'] . ') ' . $t['Title'];
     }
-    $body = "Folgende Tickets sind unzugewiesen:\n\n" . implode("\n", $lines) . "\n";
-    send_mail_message($ag['AgentEmail'], 'Unzugewiesene Tickets', $body);
-    send_push_notification([$ag['AgentID']], 'Unzugewiesene Tickets', $body);
+    $mailBody = build_plaintext_mail_body(array_merge(
+        ['Folgende Tickets sind unzugewiesen:', ''],
+        $lines,
+        ['']
+    ));
+    send_mail_message($ag['AgentEmail'], 'Unzugewiesene Tickets', $mailBody);
+
+    $pushBody = str_replace("\r\n", "\n", $mailBody);
+    send_push_notification([$ag['AgentID']], 'Unzugewiesene Tickets', $pushBody);
 }

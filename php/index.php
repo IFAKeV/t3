@@ -132,7 +132,7 @@ if ($action === 'new_ticket') {
         send_new_ticket_email($ticket_info_global);
 
         if ($contact_email && filter_var($contact_email, FILTER_VALIDATE_EMAIL)) {
-            send_ticket_confirmation_email($contact_email, $ticket_id);
+            send_ticket_confirmation_email($contact_email, $ticket_info_global);
         }
 
         $assigned_agent = $_POST['assigned_agent'] ?? '';
