@@ -540,7 +540,7 @@ function send_solution_email($ticket, $updates) {
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
     $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'] . ' - gelöst';
     $lines = [
-        'Ticket #' . $ticket['TicketID'] . ' wurde als gelöst markiert.',
+        'Dein Ticket #' . $ticket['TicketID'] . ' wurde als gelöst markiert.',
         '',
         'Aufgabenstellung:',
         $ticket['Description'] ?? '',
