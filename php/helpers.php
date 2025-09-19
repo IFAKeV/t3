@@ -539,35 +539,60 @@ function send_solution_email($ticket, $updates) {
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
     $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'] . ' - gelöst';
-    $lines = [
-        'Dein Ticket #' . $ticket['TicketID'] . ' wurde als gelöst markiert.',
+    $history = array_reverse($updates);
+
+    $quality_lines = [
+        'Das Ticket #' . $ticket['TicketID'] . ' wurde als gelöst markiert.',
         '',
         'Aufgabenstellung:',
         $ticket['Description'] ?? '',
         '',
         'Kommentarhistorie:',
     ];
-    $history = array_reverse($updates);
     foreach ($history as $u) {
         $prefix = $u['IsSolution'] ? '[Lösung] ' : '';
-        $lines[] = $prefix . $u['UpdatedByName'] . ' (' . $u['FormattedUpdatedAt'] . '):';
-        $lines[] = $u['UpdateText'];
-        $lines[] = '';
+        $quality_lines[] = $prefix . $u['UpdatedByName'] . ' (' . $u['FormattedUpdatedAt'] . '):';
+        $quality_lines[] = $u['UpdateText'];
+        $quality_lines[] = '';
     }
-    if (end($lines) === '') {
-        array_pop($lines);
+    if (end($quality_lines) === '') {
+        array_pop($quality_lines);
     }
-    $lines[] = '';
-    $lines[] = "Zum Ticket: $link";
-    $body = build_plaintext_mail_body($lines);
+    $quality_lines[] = '';
+    $quality_lines[] = "Zum Ticket: $link";
+    $quality_body = build_plaintext_mail_body($quality_lines);
 
     if (!empty($QUALITY_CONTROL_EMAIL)) {
-        send_mail_message($QUALITY_CONTROL_EMAIL, $subject, $body);
+        send_mail_message($QUALITY_CONTROL_EMAIL, $subject, $quality_body);
     }
 
     $submitter = $ticket['ContactEmail'] ?? null;
     if (!empty($submitter)) {
-        send_mail_message($submitter, $subject, $body);
+        $solution_lines = [
+            'Dein Ticket #' . $ticket['TicketID'] . ' wurde als gelöst markiert.',
+        ];
+        $solutions = [];
+        foreach ($history as $entry) {
+            if (!empty($entry['IsSolution'])) {
+                $solutions[] = $entry;
+            }
+        }
+        if (!empty($solutions)) {
+            $solution_lines[] = '';
+            $solution_lines[] = 'Lösung:';
+            foreach ($solutions as $solution) {
+                $solution_lines[] = $solution['UpdatedByName'] . ' (' . $solution['FormattedUpdatedAt'] . '):';
+                $solution_lines[] = $solution['UpdateText'];
+                $solution_lines[] = '';
+            }
+            if (end($solution_lines) === '') {
+                array_pop($solution_lines);
+            }
+        }
+        $solution_lines[] = '';
+        $solution_lines[] = "Zum Ticket: $link";
+        $solution_body = build_plaintext_mail_body($solution_lines);
+        send_mail_message($submitter, $subject, $solution_body);
     }
 }
 
