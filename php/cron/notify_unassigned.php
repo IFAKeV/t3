@@ -45,6 +45,6 @@ foreach ($agents as $ag) {
         $lines[] = '#' . $t['TicketID'] . ' (' . $t['PriorityName'] . ') ' . $t['Title'];
     }
     $body = "Folgende Tickets sind unzugewiesen:\n\n" . implode("\n", $lines) . "\n";
-    @mail($ag['AgentEmail'], 'Unzugewiesene Tickets', $body, "From: $HELPDESK_FROM");
+    send_mail_message($ag['AgentEmail'], 'Unzugewiesene Tickets', $body);
     send_push_notification([$ag['AgentID']], 'Unzugewiesene Tickets', $body);
 }
