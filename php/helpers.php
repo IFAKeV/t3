@@ -1,4 +1,4 @@
-<?php
+ke<?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/lib/PHPMailer/src/PHPMailer.php';
 require_once __DIR__ . '/lib/PHPMailer/src/SMTP.php';
@@ -485,7 +485,7 @@ function send_ticket_confirmation_email($email, $ticket) {
     $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'];
     $priority = $ticket['PriorityName'] ?? '';
     $body = build_plaintext_mail_body([
-        'Dein Anliegen wird unter #' . $ticket['TicketID'] . ' bearbeitet.',
+        'Dein Anliegen wird unter der Ticket-Nr: ' . $ticket['TicketID'] . ' bearbeitet.',
         '',
         "Titel: {$ticket['Title']}",
         $priority ? "Priorität: $priority" : null,
