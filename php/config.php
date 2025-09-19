@@ -57,6 +57,9 @@ $MAIL_CONFIG = [
     ]
 ];
 
+// Pfad für Mail-Logeinträge (leer lassen zum Deaktivieren)
+$MAIL_LOG_FILE = $BASE_DIR . '/logs/mail.log';
+
 // Reaktionszeiten pro Priorität (in Stunden)
 $REACTION_TIME_HOURS = [
     3 => 2, // Hoch
