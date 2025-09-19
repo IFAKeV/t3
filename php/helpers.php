@@ -304,6 +304,20 @@ function normalize_recipient($recipient) {
     return null;
 }
 
+function build_plaintext_mail_body(array $lines) {
+    $bodyLines = [];
+
+    foreach ($lines as $line) {
+        if ($line === null || $line === false) {
+            continue;
+        }
+
+        $bodyLines[] = $line;
+    }
+
+    return implode("\r\n", $bodyLines);
+}
+
 function send_mail_message($recipients, $subject, $body, $options = []) {
     if (empty($recipients)) {
         write_mail_log('warning', 'Mailversand übersprungen – keine Empfänger angegeben', [
@@ -450,25 +464,35 @@ function send_new_ticket_email($ticket) {
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
     $subject = 'Neues Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'];
     $priority = $ticket['PriorityName'] ?? '';
-    $body = "Neues Ticket wurde erstellt:\r\n" .
-            "Titel: {$ticket['Title']}\r\n" .
-            ($priority ? "Priorität: $priority\r\n" : '') .
-            "Kontakt: {$ticket['ContactName']}\r\n" .
-            ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\r\n" : '') .
-            ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\r\n" : '') .
-            "\r\nZum Ticket: $link\r\n\r\n" .
-            "Beschreibung:\r\n{$ticket['Description']}";
+    $body = build_plaintext_mail_body([
+        'Neues Ticket wurde erstellt:',
+        "Titel: {$ticket['Title']}",
+        $priority ? "Priorität: $priority" : null,
+        'Kontakt: ' . ($ticket['ContactName'] ?? ''),
+        !empty($ticket['ContactPhone']) ? "Telefon: {$ticket['ContactPhone']}" : null,
+        !empty($ticket['ContactEmail']) ? "E-Mail: {$ticket['ContactEmail']}" : null,
+        '',
+        "Zum Ticket: $link",
+        '',
+        'Beschreibung:',
+        $ticket['Description'] ?? '',
+    ]);
     send_mail_message($HELPDESK_FUNCTIONAL, $subject, $body);
 }
 
 function send_ticket_confirmation_email($email, $ticket) {
     if (!$email) return;
-    $subject = 'Ticket #' . $ticket_id;
     $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'];
-    $body = 'Dein Anliegen wird unter #' . $ticket_id . ' bearbeitet.\r\n\r\n'.
-            "Titel: {$ticket['Title']}\r\n" .
-            ($priority ? "Priorität: $priority\r\n" : '') .
-            "Beschreibung:\r\n{$ticket['Description']}";
+    $priority = $ticket['PriorityName'] ?? '';
+    $body = build_plaintext_mail_body([
+        'Dein Anliegen wird unter #' . $ticket['TicketID'] . ' bearbeitet.',
+        '',
+        "Titel: {$ticket['Title']}",
+        $priority ? "Priorität: $priority" : null,
+        '',
+        'Beschreibung:',
+        $ticket['Description'] ?? '',
+    ]);
     send_mail_message($email, $subject, $body);
 }
 
@@ -490,17 +514,23 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
             $remaining = round($remaining);
         } catch (Exception $e) {}
     }
-    $body = "Hallo $agent_name,\r\n\r\n" .
-            "Dir wurde ein neues Ticket zugewiesen:\r\n" .
-            "Titel: {$ticket['Title']}\n" .
-            ($priority ? "Priorität: $priority\r\n" : '') .
-            ($reaction ? "Reaktionszeit: {$reaction}h\r\n" : '') .
-            ($remaining !== null ? "Reaktionszeit verbleibend: {$remaining}h\r\n" : '') .
-            "Kontakt: {$ticket['ContactName']}\r\n" .
-            ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\r\n" : '') .
-            ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\r\n" : '') .
-            "\r\nZum Ticket: $link\r\n\r\n" .
-            "Beschreibung:\r\n{$ticket['Description']}";
+    $body = build_plaintext_mail_body([
+        "Hallo $agent_name,",
+        '',
+        'Dir wurde ein neues Ticket zugewiesen:',
+        "Titel: {$ticket['Title']}",
+        $priority ? "Priorität: $priority" : null,
+        $reaction ? "Reaktionszeit: {$reaction}h" : null,
+        $remaining !== null ? "Reaktionszeit verbleibend: {$remaining}h" : null,
+        'Kontakt: ' . ($ticket['ContactName'] ?? ''),
+        !empty($ticket['ContactPhone']) ? "Telefon: {$ticket['ContactPhone']}" : null,
+        !empty($ticket['ContactEmail']) ? "E-Mail: {$ticket['ContactEmail']}" : null,
+        '',
+        "Zum Ticket: $link",
+        '',
+        'Beschreibung:',
+        $ticket['Description'] ?? '',
+    ]);
     send_mail_message($agent_email, $subject, $body);
 }
 
@@ -508,17 +538,28 @@ function send_solution_email($ticket, $updates) {
     global $QUALITY_CONTROL_EMAIL;
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
-    $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'] . '- gelöst';    
-    $body = 'Ticket #' . $ticket['TicketID'] . " wurde als gelöst markiert.\r\n\r\n" .
-            "Aufgabenstellung:\r\n{$ticket['Description']}\r\n\r\n" .
-            "Kommentarhistorie:\r\n";
+    $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'] . ' - gelöst';
+    $lines = [
+        'Ticket #' . $ticket['TicketID'] . ' wurde als gelöst markiert.',
+        '',
+        'Aufgabenstellung:',
+        $ticket['Description'] ?? '',
+        '',
+        'Kommentarhistorie:',
+    ];
     $history = array_reverse($updates);
     foreach ($history as $u) {
         $prefix = $u['IsSolution'] ? '[Lösung] ' : '';
-        $body .= $prefix . $u['UpdatedByName'] . ' (' . $u['FormattedUpdatedAt'] . "):\r\n" .
-                 $u['UpdateText'] . "\r\n\r\n";
+        $lines[] = $prefix . $u['UpdatedByName'] . ' (' . $u['FormattedUpdatedAt'] . '):';
+        $lines[] = $u['UpdateText'];
+        $lines[] = '';
     }
-    $body .= "Zum Ticket: $link";
+    if (end($lines) === '') {
+        array_pop($lines);
+    }
+    $lines[] = '';
+    $lines[] = "Zum Ticket: $link";
+    $body = build_plaintext_mail_body($lines);
 
     if (!empty($QUALITY_CONTROL_EMAIL)) {
         send_mail_message($QUALITY_CONTROL_EMAIL, $subject, $body);
