@@ -447,23 +447,27 @@ function send_new_ticket_email($ticket) {
     global $HELPDESK_FUNCTIONAL;
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
-    $subject = 'Neues Ticket #' . $ticket['TicketID'];
+    $subject = 'Neues Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'];
     $priority = $ticket['PriorityName'] ?? '';
-    $body = "Neues Ticket wurde erstellt:\n" .
-            "Titel: {$ticket['Title']}\n" .
-            ($priority ? "Priorität: $priority\n" : '') .
-            "Kontakt: {$ticket['ContactName']}\n" .
-            ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\n" : '') .
-            ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\n" : '') .
-            "\nZum Ticket: $link\n\n" .
-            "Beschreibung:\n{$ticket['Description']}\n";
+    $body = "Neues Ticket wurde erstellt:\r\n" .
+            "Titel: {$ticket['Title']}\r\n" .
+            ($priority ? "Priorität: $priority\r\n" : '') .
+            "Kontakt: {$ticket['ContactName']}\r\n" .
+            ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\r\n" : '') .
+            ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\r\n" : '') .
+            "\r\nZum Ticket: $link\r\n\r\n" .
+            "Beschreibung:\r\n{$ticket['Description']}";
     send_mail_message($HELPDESK_FUNCTIONAL, $subject, $body);
 }
 
-function send_ticket_confirmation_email($email, $ticket_id) {
+function send_ticket_confirmation_email($email, $ticket) {
     if (!$email) return;
     $subject = 'Ticket #' . $ticket_id;
-    $body = 'Dein Fall wird unter #' . $ticket_id . ' bearbeitet.';
+    $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'];
+    $body = 'Dein Anliegen wird unter #' . $ticket_id . ' bearbeitet.\r\n\r\n'.
+            "Titel: {$ticket['Title']}\r\n" .
+            ($priority ? "Priorität: $priority\r\n" : '') .
+            "Beschreibung:\r\n{$ticket['Description']}";
     send_mail_message($email, $subject, $body);
 }
 
@@ -471,7 +475,7 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
     if (!$agent_email) return;
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
-    $subject = 'Ticket #' . $ticket['TicketID'] . ' zugewiesen';
+    $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'] . ' - zugewiesen';
     $priority = $ticket['PriorityName'] ?? '';
     global $REACTION_TIME_HOURS;
     $reaction = $ticket['PriorityID'] ? ($REACTION_TIME_HOURS[$ticket['PriorityID']] ?? null) : null;
@@ -485,17 +489,17 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
             $remaining = round($remaining);
         } catch (Exception $e) {}
     }
-    $body = "Hallo $agent_name,\n\n" .
-            "Dir wurde ein neues Ticket zugewiesen:\n" .
+    $body = "Hallo $agent_name,\r\n\r\n" .
+            "Dir wurde ein neues Ticket zugewiesen:\r\n" .
             "Titel: {$ticket['Title']}\n" .
-            ($priority ? "Priorität: $priority\n" : '') .
-            ($reaction ? "Reaktionszeit: {$reaction}h\n" : '') .
-            ($remaining !== null ? "Reaktionszeit verbleibend: {$remaining}h\n" : '') .
-            "Kontakt: {$ticket['ContactName']}\n" .
-            ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\n" : '') .
-            ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\n" : '') .
-            "\nZum Ticket: $link\n\n" .
-            "Beschreibung:\n{$ticket['Description']}\n";
+            ($priority ? "Priorität: $priority\r\n" : '') .
+            ($reaction ? "Reaktionszeit: {$reaction}h\r\n" : '') .
+            ($remaining !== null ? "Reaktionszeit verbleibend: {$remaining}h\r\n" : '') .
+            "Kontakt: {$ticket['ContactName']}\r\n" .
+            ($ticket['ContactPhone'] ? "Telefon: {$ticket['ContactPhone']}\r\n" : '') .
+            ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\r\n" : '') .
+            "\r\nZum Ticket: $link\r\n\r\n" .
+            "Beschreibung:\r\n{$ticket['Description']}";
     send_mail_message($agent_email, $subject, $body);
 }
 
@@ -503,17 +507,17 @@ function send_solution_email($ticket, $updates) {
     global $QUALITY_CONTROL_EMAIL;
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
-    $subject = 'Ticket #' . $ticket['TicketID'] . ' gelöst';
-    $body = 'Ticket #' . $ticket['TicketID'] . " wurde als gelöst markiert.\n\n" .
-            "Aufgabenstellung:\n{$ticket['Description']}\n\n" .
-            "Kommentarhistorie:\n";
+    $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'] . '- gelöst';    
+    $body = 'Ticket #' . $ticket['TicketID'] . " wurde als gelöst markiert.\r\n\r\n" .
+            "Aufgabenstellung:\r\n{$ticket['Description']}\r\n\r\n" .
+            "Kommentarhistorie:\r\n";
     $history = array_reverse($updates);
     foreach ($history as $u) {
         $prefix = $u['IsSolution'] ? '[Lösung] ' : '';
-        $body .= $prefix . $u['UpdatedByName'] . ' (' . $u['FormattedUpdatedAt'] . "):\n" .
-                 $u['UpdateText'] . "\n\n";
+        $body .= $prefix . $u['UpdatedByName'] . ' (' . $u['FormattedUpdatedAt'] . "):\r\n" .
+                 $u['UpdateText'] . "\r\n\r\n";
     }
-    $body .= "Zum Ticket: $link\n";
+    $body .= "Zum Ticket: $link";
 
     if (!empty($QUALITY_CONTROL_EMAIL)) {
         send_mail_message($QUALITY_CONTROL_EMAIL, $subject, $body);
