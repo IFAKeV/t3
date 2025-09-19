@@ -30,9 +30,12 @@ if (!isset($open_ticket_count)) $open_ticket_count = 0;
             <div class="filter-group">
                 <label>Agent:</label>
                 <select id="agent-filter" onchange="applyFilters()">
-                    <option value="" <?php if (!$current_agent_filter) echo 'selected'; ?>>Alle</option>
+                    <option value="mine" <?php if ($current_agent_filter === 'mine') echo 'selected'; ?>>Meine Tickets</option>
+                    <option value="all" <?php if ($current_agent_filter === 'all') echo 'selected'; ?>>Alle</option>
                     <?php foreach ($agents as $ag): ?>
-                    <option value="<?php echo $ag['AgentID']; ?>" <?php if ($current_agent_filter == $ag['AgentID']) echo 'selected'; ?>><?php echo htmlspecialchars($ag['AgentName']); ?></option>
+                    <?php $agent_value = (string) $ag['AgentID']; ?>
+                    <?php $agent_label = ($ag['AgentID'] == $agent['AgentID']) ? $ag['AgentName'] . ' (Ich)' : $ag['AgentName']; ?>
+                    <option value="<?php echo $agent_value; ?>" <?php if ($current_agent_filter === $agent_value) echo 'selected'; ?>><?php echo htmlspecialchars($agent_label); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -112,7 +115,11 @@ function applyFilters() {
     const url = new URL(window.location);
     url.searchParams.delete('team');
     url.searchParams.set('status', status);
-    if (agent) { url.searchParams.set('agent', agent); } else { url.searchParams.delete('agent'); }
+    if (agent === 'mine') {
+        url.searchParams.delete('agent');
+    } else {
+        url.searchParams.set('agent', agent);
+    }
     if (search) { url.searchParams.set('q', search); } else { url.searchParams.delete('q'); }
     url.searchParams.delete('person');
     url.searchParams.delete('facility');

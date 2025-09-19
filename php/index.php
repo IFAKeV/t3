@@ -354,7 +354,8 @@ if ($action === 'view_markdown') {
 }
 
 // default dashboard with filters
-$team_filter = $_GET['team'] ?? 'mine';
+$team_param = $_GET['team'] ?? null;
+$team_filter = $team_param ?: 'mine';
 $status_filter_param = $_GET['status'] ?? 'open';
 $status_filter = $status_filter_param;
 if (is_string($status_filter_param) && ctype_digit($status_filter_param)) {
@@ -367,22 +368,46 @@ $team_id = null;
 $filter_agent = null;
 $assigned_only = false;
 $include_global_new = false;
+$current_agent_filter = 'mine';
+
+if ($agent_filter_param === 'all') {
+    $current_agent_filter = 'all';
+    $team_filter = 'all';
+} elseif ($agent_filter_param === 'mine') {
+    $filter_agent = $agent['AgentID'];
+    $assigned_only = true;
+    $include_global_new = true;
+    $current_agent_filter = 'mine';
+    $team_filter = 'mine';
+} elseif ($agent_filter_param !== null && ctype_digit((string) $agent_filter_param)) {
+    $filter_agent = intval($agent_filter_param);
+    $assigned_only = true;
+    $current_agent_filter = (string) $filter_agent;
+    if ($team_param === null) {
+        $team_filter = 'all';
+    }
+} else {
+    if ($team_filter === 'mine') {
+        $filter_agent = $agent['AgentID'];
+        $assigned_only = true;
+        $include_global_new = true;
+        $current_agent_filter = 'mine';
+    } else {
+        $current_agent_filter = 'all';
+    }
+}
 
 if ($team_filter === 'my_team') {
     $team_id = $agent['TeamID'];
 } elseif ($team_filter === 'all') {
     $team_id = null;
 } elseif ($team_filter === 'mine') {
-    $filter_agent = $agent['AgentID'];
-    $assigned_only = true;
-    $include_global_new = true;
-} elseif (ctype_digit($team_filter)) {
+    $team_id = null;
+    if ($filter_agent !== null && $filter_agent !== $agent['AgentID']) {
+        $include_global_new = false;
+    }
+} elseif (ctype_digit((string) $team_filter)) {
     $team_id = intval($team_filter);
-}
-
-if ($agent_filter_param) {
-    $filter_agent = intval($agent_filter_param);
-    $assigned_only = true;
 }
 
 $tickets = get_tickets_with_filters($team_id, $status_filter, $search_value ?: null, $filter_agent, $assigned_only, $include_global_new, $agent['TeamID']);
@@ -432,6 +457,5 @@ if ($status_filter_param !== 'open' && $status_filter_param !== 'all' && (!is_st
         }
     }
 }
-$current_agent_filter = $agent_filter_param;
 $search_term = $search_value;
 include 'templates/dashboard.php';
