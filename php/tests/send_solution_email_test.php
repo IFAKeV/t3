@@ -17,13 +17,27 @@ if (file_exists($logFile)) {
 
 $desiredScript = realpath(__DIR__ . '/fake_mail.php');
 $currentPath = ini_get('sendmail_path');
+$candidate = PHP_BINARY . ' ' . escapeshellarg($desiredScript);
+$applied = false;
 if (strpos($currentPath, $desiredScript) === false) {
-    $candidate = PHP_BINARY . ' ' . escapeshellarg($desiredScript);
     ini_set('sendmail_path', $candidate);
     $currentPath = ini_get('sendmail_path');
 }
+if (strpos($currentPath, $desiredScript) !== false) {
+    $applied = true;
+}
 
-if (strpos($currentPath, $desiredScript) === false) {
+global $MAIL_CONFIG;
+if (!$applied) {
+    if (!is_array($MAIL_CONFIG)) {
+        $MAIL_CONFIG = [];
+    }
+    $MAIL_CONFIG['transport'] = 'sendmail';
+    $MAIL_CONFIG['sendmail_path'] = $candidate;
+    $applied = true;
+}
+
+if (!$applied) {
     restore_error_handler();
     fwrite(STDERR, 'Fehler: sendmail_path nicht auf fake_mail.php gesetzt.' . PHP_EOL);
     exit(1);

@@ -1,5 +1,11 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/lib/PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '/lib/PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/lib/PHPMailer/src/Exception.php';
+
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
+use PHPMailer\PHPMailer\PHPMailer;
 
 function allowed_file($filename) {
     global $ALLOWED_EXTENSIONS;
@@ -58,8 +64,158 @@ function linkify_urls($text) {
     return preg_replace($pattern, '<a href="$1" target="_blank" rel="noopener">$1</a>', $escaped);
 }
 
+function create_mailer_instance() {
+    global $HELPDESK_FROM, $MAIL_CONFIG;
+
+    $settings = $MAIL_CONFIG ?? [];
+
+    $mailer = new PHPMailer(true);
+    $mailer->CharSet = 'UTF-8';
+    $mailer->Encoding = 'base64';
+    $mailer->isHTML(false);
+
+    $fromName = $settings['from_name'] ?? '';
+    if ($fromName) {
+        $mailer->setFrom($HELPDESK_FROM, $fromName);
+    } else {
+        $mailer->setFrom($HELPDESK_FROM);
+    }
+
+    $senderAddress = $settings['sender'] ?? $HELPDESK_FROM;
+    if ($senderAddress) {
+        $mailer->Sender = $senderAddress;
+    }
+
+    $replyTo = $settings['reply_to'] ?? null;
+    if ($replyTo) {
+        if (is_array($replyTo)) {
+            $email = $replyTo['email'] ?? ($replyTo[0] ?? null);
+            $name = $replyTo['name'] ?? ($replyTo[1] ?? '');
+            if ($email) {
+                $mailer->addReplyTo($email, $name);
+            }
+        } elseif (is_string($replyTo)) {
+            $mailer->addReplyTo($replyTo);
+        }
+    }
+
+    $transport = $settings['transport'] ?? 'sendmail';
+    if ($transport === 'smtp') {
+        $smtp = $settings['smtp'] ?? [];
+        $host = trim($smtp['host'] ?? '');
+        if ($host === '') {
+            $transport = 'sendmail';
+        } else {
+            $mailer->isSMTP();
+            $mailer->Host = $host;
+            $mailer->Port = (int)($smtp['port'] ?? 587);
+            $encryption = strtolower((string)($smtp['encryption'] ?? ''));
+            if ($encryption === 'ssl') {
+                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } elseif ($encryption === 'tls' || $encryption === 'starttls') {
+                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            }
+            $username = $smtp['username'] ?? '';
+            $password = $smtp['password'] ?? '';
+            $auth = $smtp['auth'] ?? null;
+            if (!empty($username) || !empty($password)) {
+                $mailer->SMTPAuth = true;
+                $mailer->Username = $username;
+                $mailer->Password = $password;
+            } elseif ($auth !== null) {
+                $mailer->SMTPAuth = (bool)$auth;
+                if ($mailer->SMTPAuth) {
+                    $mailer->Username = $username;
+                    $mailer->Password = $password;
+                }
+            } else {
+                $mailer->SMTPAuth = false;
+            }
+            if (!empty($smtp['options']) && is_array($smtp['options'])) {
+                $mailer->SMTPOptions = $smtp['options'];
+            }
+        }
+    }
+
+    if ($transport !== 'smtp') {
+        $mailer->isSendmail();
+        $path = $settings['sendmail_path'] ?? null;
+        if ($path) {
+            $mailer->Sendmail = $path;
+        } else {
+            $configuredPath = ini_get('sendmail_path');
+            if ($configuredPath) {
+                $mailer->Sendmail = $configuredPath;
+            }
+        }
+    }
+
+    return $mailer;
+}
+
+function normalize_recipient($recipient) {
+    if (is_string($recipient)) {
+        return ['email' => $recipient, 'name' => ''];
+    }
+    if (is_array($recipient)) {
+        if (isset($recipient['email'])) {
+            return ['email' => $recipient['email'], 'name' => $recipient['name'] ?? ''];
+        }
+        if (isset($recipient[0])) {
+            return ['email' => $recipient[0], 'name' => $recipient[1] ?? ''];
+        }
+    }
+    return null;
+}
+
+function send_mail_message($recipients, $subject, $body, $options = []) {
+    if (empty($recipients)) {
+        return false;
+    }
+
+    if (!is_array($recipients) || array_keys($recipients) !== range(0, count($recipients) - 1)) {
+        $recipients = [$recipients];
+    }
+
+    $mailer = null;
+    try {
+        $mailer = create_mailer_instance();
+        foreach ($recipients as $entry) {
+            $normalized = normalize_recipient($entry);
+            if (!$normalized || empty($normalized['email'])) {
+                continue;
+            }
+            $mailer->addAddress($normalized['email'], $normalized['name']);
+        }
+
+        if (count($mailer->getToAddresses()) === 0) {
+            return false;
+        }
+
+        if (!empty($options['reply_to'])) {
+            $replyTo = normalize_recipient($options['reply_to']);
+            if ($replyTo && !empty($replyTo['email'])) {
+                $mailer->clearReplyTos();
+                $mailer->addReplyTo($replyTo['email'], $replyTo['name']);
+            }
+        }
+
+        $mailer->Subject = $subject;
+        $mailer->Body = $body;
+        $mailer->AltBody = $body;
+
+        return $mailer->send();
+    } catch (PHPMailerException $e) {
+        error_log('Mailversand fehlgeschlagen: ' . $e->getMessage());
+    } catch (Throwable $e) {
+        error_log('Unerwarteter Fehler beim Mailversand: ' . $e->getMessage());
+    }
+
+    return false;
+}
+
 function send_new_ticket_email($ticket) {
-    global $HELPDESK_FUNCTIONAL, $HELPDESK_FROM;
+    global $HELPDESK_FUNCTIONAL;
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
     $subject = 'Neues Ticket #' . $ticket['TicketID'];
@@ -72,15 +228,14 @@ function send_new_ticket_email($ticket) {
             ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\n" : '') .
             "\nZum Ticket: $link\n\n" .
             "Beschreibung:\n{$ticket['Description']}\n";
-    @mail($HELPDESK_FUNCTIONAL, $subject, $body, "From: $HELPDESK_FROM");
+    send_mail_message($HELPDESK_FUNCTIONAL, $subject, $body);
 }
 
 function send_ticket_confirmation_email($email, $ticket_id) {
     if (!$email) return;
-    global $HELPDESK_FROM;
     $subject = 'Ticket #' . $ticket_id;
     $body = 'Dein Fall wird unter #' . $ticket_id . ' bearbeitet.';
-    @mail($email, $subject, $body, "From: $HELPDESK_FROM");
+    send_mail_message($email, $subject, $body);
 }
 
 function send_assignment_email($agent_email, $agent_name, $ticket) {
@@ -89,7 +244,7 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
     $subject = 'Ticket #' . $ticket['TicketID'] . ' zugewiesen';
     $priority = $ticket['PriorityName'] ?? '';
-    global $REACTION_TIME_HOURS, $HELPDESK_FROM;
+    global $REACTION_TIME_HOURS;
     $reaction = $ticket['PriorityID'] ? ($REACTION_TIME_HOURS[$ticket['PriorityID']] ?? null) : null;
     $remaining = null;
     if ($reaction && !empty($ticket['CreatedAt'])) {
@@ -112,11 +267,11 @@ function send_assignment_email($agent_email, $agent_name, $ticket) {
             ($ticket['ContactEmail'] ? "E-Mail: {$ticket['ContactEmail']}\n" : '') .
             "\nZum Ticket: $link\n\n" .
             "Beschreibung:\n{$ticket['Description']}\n";
-    @mail($agent_email, $subject, $body, "From: $HELPDESK_FROM");
+    send_mail_message($agent_email, $subject, $body);
 }
 
 function send_solution_email($ticket, $updates) {
-    global $QUALITY_CONTROL_EMAIL, $HELPDESK_FROM;
+    global $QUALITY_CONTROL_EMAIL;
     $base_url = get_base_url();
     $link = $base_url . '/index.php?action=view_ticket&id=' . $ticket['TicketID'];
     $subject = 'Ticket #' . $ticket['TicketID'] . ' gelöst';
@@ -132,12 +287,12 @@ function send_solution_email($ticket, $updates) {
     $body .= "Zum Ticket: $link\n";
 
     if (!empty($QUALITY_CONTROL_EMAIL)) {
-        @mail($QUALITY_CONTROL_EMAIL, $subject, $body, "From: $HELPDESK_FROM");
+        send_mail_message($QUALITY_CONTROL_EMAIL, $subject, $body);
     }
 
     $submitter = $ticket['ContactEmail'] ?? null;
     if (!empty($submitter)) {
-        @mail($submitter, $subject, $body, "From: $HELPDESK_FROM");
+        send_mail_message($submitter, $subject, $body);
     }
 }
 

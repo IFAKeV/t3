@@ -39,6 +39,24 @@ $HELPDESK_FUNCTIONAL = 'helpdesk@ifak-sozial.de';
 // Empfänger für gelöste Tickets (Qualitätskontrolle)
 $QUALITY_CONTROL_EMAIL = 'helpdesk@ifak-bochum.de';
 
+// Mailer-Konfiguration (Standard: sendmail, optional: SMTP)
+$MAIL_CONFIG = [
+    'transport' => 'sendmail',
+    'sendmail_path' => null, // null nutzt ini_get('sendmail_path') zur Laufzeit
+    'from_name' => 'IFAK Helpdesk',
+    'sender' => null, // optional: Envelope-Sender/Return-Path
+    'reply_to' => null, // z. B. ['email' => 'reply@example.com', 'name' => 'Support']
+    'smtp' => [
+        'host' => '',
+        'port' => 587,
+        'username' => '',
+        'password' => '',
+        'encryption' => 'starttls', // starttls | ssl | none
+        'auth' => true,
+        'options' => [] // optionale PHPMailer SMTPOptions
+    ]
+];
+
 // Reaktionszeiten pro Priorität (in Stunden)
 $REACTION_TIME_HOURS = [
     3 => 2, // Hoch
