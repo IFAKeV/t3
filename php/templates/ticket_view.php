@@ -239,8 +239,8 @@
                     </div>
                     <div class="form-group">
                         <label for="attachment">Anhang hinzufügen:</label>
-                        <input type="file" id="attachment" name="attachment" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.zip">
-                        <small class="form-hint">Erlaubte Dateiformate: jpg, jpeg, png, gif, pdf, doc, docx, txt, zip</small>
+                        <input type="file" id="attachment" name="attachment" accept="<?php echo htmlspecialchars($allowed_accept ?? ''); ?>">
+                        <small class="form-hint">Erlaubte Dateiformate: <?php echo htmlspecialchars($allowed_hint ?? ''); ?></small>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="submit-button">Aktualisieren</button>

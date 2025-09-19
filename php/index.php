@@ -179,6 +179,9 @@ if ($action === 'new_ticket') {
     $priorities = get_all_priorities();
     $teams = get_all_teams();
     $agents = load_agents();
+    $allowed_extension_strings = get_allowed_extension_strings();
+    $allowed_accept = $allowed_extension_strings['accept'];
+    $allowed_hint = $allowed_extension_strings['hint'];
     include 'templates/ticket_form.php';
     exit;
 }
@@ -323,6 +326,9 @@ if ($action === 'view_ticket') {
     $statuses = get_all_statuses();
     $priorities = get_all_priorities();
     $agents = load_agents();
+    $allowed_extension_strings = get_allowed_extension_strings();
+    $allowed_accept = $allowed_extension_strings['accept'];
+    $allowed_hint = $allowed_extension_strings['hint'];
     include 'templates/ticket_view.php';
     exit;
 }

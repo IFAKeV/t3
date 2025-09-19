@@ -13,6 +13,37 @@ function allowed_file($filename) {
     return in_array($ext, $ALLOWED_EXTENSIONS);
 }
 
+function get_allowed_extension_strings() {
+    global $ALLOWED_EXTENSIONS;
+
+    if (!is_array($ALLOWED_EXTENSIONS)) {
+        return ['accept' => '', 'hint' => ''];
+    }
+
+    $extensions = [];
+    foreach ($ALLOWED_EXTENSIONS as $ext) {
+        if (!is_string($ext)) {
+            continue;
+        }
+        $clean = strtolower(trim($ext));
+        if ($clean === '') {
+            continue;
+        }
+        if (!in_array($clean, $extensions, true)) {
+            $extensions[] = $clean;
+        }
+    }
+
+    if (empty($extensions)) {
+        return ['accept' => '', 'hint' => ''];
+    }
+
+    $accept = '.' . implode(',.', $extensions);
+    $hint = implode(', ', $extensions);
+
+    return ['accept' => $accept, 'hint' => $hint];
+}
+
 function get_local_timestamp() {
     $dt = new DateTime('now', new DateTimeZone('Europe/Berlin'));
     return $dt->format('Y-m-d H:i:s');
