@@ -367,7 +367,7 @@ function send_mail_message($recipients, $subject, $body, $options = []) {
         $mailer->Subject = $subject;
         $normalizedBody = PHPMailer::normalizeBreaks((string)$body, PHPMailer::CRLF);
         $mailer->Body = $normalizedBody;
-        $mailer->AltBody = $normalizedBody;
+        $mailer->AltBody = '';
 
         $logContext = [
             'subject' => $subject,
