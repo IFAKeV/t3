@@ -24,6 +24,9 @@ Unzugewiesene Tickets können automatisch gemeldet werden. Dazu folgenden Cronjo
 */15 * * * * php /pfad/zum/notify_unassigned.php
 ```
 
+## Mail-Logging
+Alle Versandversuche der Mailfunktion werden in `php/logs/mail.log` protokolliert. Die Einträge enthalten Empfänger, Betreff, Transportweg und mögliche Fehlermeldungen. Über `MAIL_LOG_FILE` in `config.php` kann der Pfad angepasst oder das Logging deaktiviert werden (leerer Wert).
+
 ## Kontakt
 IFAK e.V. - IT-Abteilung
 

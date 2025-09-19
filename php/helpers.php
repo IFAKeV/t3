@@ -95,6 +95,111 @@ function linkify_urls($text) {
     return preg_replace($pattern, '<a href="$1" target="_blank" rel="noopener">$1</a>', $escaped);
 }
 
+function mail_log_enabled() {
+    global $MAIL_LOG_FILE;
+    return isset($MAIL_LOG_FILE) && is_string($MAIL_LOG_FILE) && trim($MAIL_LOG_FILE) !== '';
+}
+
+function write_mail_log($level, $message, array $context = []) {
+    if (!mail_log_enabled()) {
+        return;
+    }
+
+    global $MAIL_LOG_FILE;
+
+    $entry = [
+        'timestamp' => date('c'),
+        'level' => strtoupper((string)$level),
+        'message' => $message,
+    ];
+
+    if (!empty($context)) {
+        $entry['context'] = $context;
+    }
+
+    $encoded = json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($encoded === false) {
+        $encoded = date('c') . ' ' . strtoupper((string)$level) . ' ' . $message;
+    }
+
+    $logDir = dirname($MAIL_LOG_FILE);
+    if (!is_dir($logDir)) {
+        if (!mkdir($logDir, 0775, true) && !is_dir($logDir)) {
+            error_log('Mail-Log-Verzeichnis konnte nicht erstellt werden: ' . $logDir);
+            return;
+        }
+    }
+
+    $result = file_put_contents($MAIL_LOG_FILE, $encoded . PHP_EOL, FILE_APPEND | LOCK_EX);
+    if ($result === false) {
+        error_log('Mail-Log konnte nicht geschrieben werden: ' . $MAIL_LOG_FILE);
+    }
+}
+
+function describe_mail_recipient($recipient) {
+    if (is_array($recipient)) {
+        $email = $recipient['email'] ?? ($recipient[0] ?? null);
+        $name = $recipient['name'] ?? ($recipient[1] ?? null);
+        $email = is_string($email) ? trim($email) : '';
+        $name = is_string($name) ? trim($name) : '';
+
+        if ($email !== '' && $name !== '') {
+            return $name . ' <' . $email . '>';
+        }
+
+        if ($email !== '') {
+            return $email;
+        }
+
+        if ($name !== '') {
+            return $name;
+        }
+    }
+
+    if (is_string($recipient)) {
+        $trimmed = trim($recipient);
+        if ($trimmed !== '') {
+            return $trimmed;
+        }
+    } elseif ($recipient === null) {
+        return 'NULL';
+    } elseif (is_scalar($recipient)) {
+        return (string)$recipient;
+    }
+
+    $encoded = json_encode($recipient, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($encoded !== false) {
+        return $encoded;
+    }
+
+    return gettype($recipient);
+}
+
+function get_mail_transport_context(PHPMailer $mailer) {
+    $context = [
+        'mailer' => $mailer->Mailer,
+    ];
+
+    if (!empty($mailer->From)) {
+        $context['from'] = describe_mail_recipient([
+            'email' => $mailer->From,
+            'name' => $mailer->FromName,
+        ]);
+    }
+
+    if ($mailer->Mailer === 'smtp') {
+        $context['host'] = $mailer->Host;
+        $context['port'] = $mailer->Port;
+        $context['encryption'] = $mailer->SMTPSecure ?: 'none';
+        $context['smtp_auth'] = (bool)$mailer->SMTPAuth;
+        $context['username_configured'] = $mailer->Username !== '';
+    } elseif (in_array($mailer->Mailer, ['sendmail', 'qmail'], true)) {
+        $context['path'] = $mailer->Sendmail;
+    }
+
+    return $context;
+}
+
 function create_mailer_instance() {
     global $HELPDESK_FROM, $MAIL_CONFIG;
 
@@ -201,6 +306,9 @@ function normalize_recipient($recipient) {
 
 function send_mail_message($recipients, $subject, $body, $options = []) {
     if (empty($recipients)) {
+        write_mail_log('warning', 'Mailversand übersprungen – keine Empfänger angegeben', [
+            'subject' => $subject,
+        ]);
         return false;
     }
 
@@ -208,26 +316,37 @@ function send_mail_message($recipients, $subject, $body, $options = []) {
         $recipients = [$recipients];
     }
 
+    $validRecipients = [];
+    $skippedRecipients = [];
+    $replyToNormalized = null;
+    $bodyLength = is_string($body) ? strlen($body) : null;
     $mailer = null;
+
     try {
         $mailer = create_mailer_instance();
         foreach ($recipients as $entry) {
             $normalized = normalize_recipient($entry);
             if (!$normalized || empty($normalized['email'])) {
+                $skippedRecipients[] = $entry;
                 continue;
             }
             $mailer->addAddress($normalized['email'], $normalized['name']);
+            $validRecipients[] = $normalized;
         }
 
-        if (count($mailer->getToAddresses()) === 0) {
+        if (count($validRecipients) === 0) {
+            write_mail_log('warning', 'Mailversand übersprungen – keine gültigen Empfänger', [
+                'subject' => $subject,
+                'skipped_recipients' => array_map('describe_mail_recipient', $skippedRecipients),
+            ]);
             return false;
         }
 
         if (!empty($options['reply_to'])) {
-            $replyTo = normalize_recipient($options['reply_to']);
-            if ($replyTo && !empty($replyTo['email'])) {
+            $replyToNormalized = normalize_recipient($options['reply_to']);
+            if ($replyToNormalized && !empty($replyToNormalized['email'])) {
                 $mailer->clearReplyTos();
-                $mailer->addReplyTo($replyTo['email'], $replyTo['name']);
+                $mailer->addReplyTo($replyToNormalized['email'], $replyToNormalized['name']);
             }
         }
 
@@ -235,10 +354,89 @@ function send_mail_message($recipients, $subject, $body, $options = []) {
         $mailer->Body = $body;
         $mailer->AltBody = $body;
 
-        return $mailer->send();
+        $logContext = [
+            'subject' => $subject,
+            'recipients' => array_map('describe_mail_recipient', $validRecipients),
+            'transport' => get_mail_transport_context($mailer),
+        ];
+
+        if ($bodyLength !== null) {
+            $logContext['body_length'] = $bodyLength;
+        }
+
+        if (!empty($skippedRecipients)) {
+            $logContext['skipped_recipients'] = array_map('describe_mail_recipient', $skippedRecipients);
+        }
+
+        if ($replyToNormalized) {
+            $logContext['reply_to'] = describe_mail_recipient($replyToNormalized);
+        } elseif (!empty($options['reply_to'])) {
+            $logContext['reply_to'] = describe_mail_recipient($options['reply_to']);
+        }
+
+        $result = $mailer->send();
+
+        if ($result) {
+            write_mail_log('info', 'Mail erfolgreich versendet', $logContext);
+        } else {
+            $logContext['error'] = $mailer->ErrorInfo ?: 'Unbekannter Fehler';
+            write_mail_log('error', 'Mailversand fehlgeschlagen', $logContext);
+        }
+
+        return $result;
     } catch (PHPMailerException $e) {
+        $errorContext = [
+            'subject' => $subject,
+            'recipients' => array_map('describe_mail_recipient', $validRecipients ?: $recipients),
+            'error' => $e->getMessage(),
+        ];
+
+        if ($bodyLength !== null) {
+            $errorContext['body_length'] = $bodyLength;
+        }
+
+        if (!empty($skippedRecipients)) {
+            $errorContext['skipped_recipients'] = array_map('describe_mail_recipient', $skippedRecipients);
+        }
+
+        if ($mailer instanceof PHPMailer) {
+            $errorContext['transport'] = get_mail_transport_context($mailer);
+        }
+
+        if ($replyToNormalized) {
+            $errorContext['reply_to'] = describe_mail_recipient($replyToNormalized);
+        } elseif (!empty($options['reply_to'])) {
+            $errorContext['reply_to'] = describe_mail_recipient($options['reply_to']);
+        }
+
+        write_mail_log('error', 'Mailversand fehlgeschlagen (PHPMailerException)', $errorContext);
         error_log('Mailversand fehlgeschlagen: ' . $e->getMessage());
     } catch (Throwable $e) {
+        $errorContext = [
+            'subject' => $subject,
+            'recipients' => array_map('describe_mail_recipient', $validRecipients ?: $recipients),
+            'error' => $e->getMessage(),
+        ];
+
+        if ($bodyLength !== null) {
+            $errorContext['body_length'] = $bodyLength;
+        }
+
+        if (!empty($skippedRecipients)) {
+            $errorContext['skipped_recipients'] = array_map('describe_mail_recipient', $skippedRecipients);
+        }
+
+        if ($mailer instanceof PHPMailer) {
+            $errorContext['transport'] = get_mail_transport_context($mailer);
+        }
+
+        if ($replyToNormalized) {
+            $errorContext['reply_to'] = describe_mail_recipient($replyToNormalized);
+        } elseif (!empty($options['reply_to'])) {
+            $errorContext['reply_to'] = describe_mail_recipient($options['reply_to']);
+        }
+
+        write_mail_log('error', 'Unerwarteter Fehler beim Mailversand', $errorContext);
         error_log('Unerwarteter Fehler beim Mailversand: ' . $e->getMessage());
     }
 
