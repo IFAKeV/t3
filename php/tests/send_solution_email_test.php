@@ -88,4 +88,27 @@ if (strpos($content, 'To: ' . $QUALITY_CONTROL_EMAIL) === false) {
     exit(1);
 }
 
+if (!preg_match('/Content-Type: text\/plain; charset=UTF-8\s+Content-Transfer-Encoding: base64\s+([A-Za-z0-9\/+=\s]+)/', $content, $matches)) {
+    fwrite(STDERR, 'Fehler: Plaintext-Teil der Mail nicht gefunden.' . PHP_EOL);
+    exit(1);
+}
+
+$base64Body = preg_replace('/\s+/', '', $matches[1]);
+$decodedBody = base64_decode($base64Body, true);
+if ($decodedBody === false) {
+    fwrite(STDERR, 'Fehler: Mailbody konnte nicht dekodiert werden.' . PHP_EOL);
+    exit(1);
+}
+
+if (strpos($decodedBody, "\r\n") === false) {
+    fwrite(STDERR, 'Fehler: Mailbody enthält keine CRLF-Zeilenumbrüche.' . PHP_EOL);
+    exit(1);
+}
+
+$withoutCrlf = str_replace("\r\n", '', $decodedBody);
+if (strpos($withoutCrlf, "\n") !== false) {
+    fwrite(STDERR, 'Fehler: Mailbody enthält Zeilenumbrüche ohne CRLF.' . PHP_EOL);
+    exit(1);
+}
+
 echo "OK\n";
