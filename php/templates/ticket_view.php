@@ -231,11 +231,11 @@
                     </div>
                     <div class="form-group">
                         <label for="update_text">Kommentar:</label>
-                        <textarea id="update_text" name="update_text" rows="4"></textarea>
+                        <textarea id="update_text" name="update_text" rows="4"><?php echo htmlspecialchars($form_update_text ?? ''); ?></textarea>
                     </div>
                     <div class="form-group checkbox-group">
-                        <input type="checkbox" id="is_solution" name="is_solution">
-                        <label for="is_solution">Als Lösung markieren. Lösung ist Lösung! Das Ticket kann danach nicht mehr bearbeitet werden.</label>                    
+                        <input type="checkbox" id="is_solution" name="is_solution" <?php if (!empty($form_is_solution)) echo 'checked'; ?>>
+                        <label for="is_solution">Als Lösung markieren. Lösung ist Lösung! Das Ticket kann danach nicht mehr bearbeitet werden.</label>
                     </div>
                     <div class="form-group">
                         <label for="attachment">Anhang hinzufügen:</label>
@@ -260,6 +260,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const isSolution = document.getElementById('is_solution');
     const statusSelect = document.getElementById('status_id');
+    const updateForm = document.querySelector('.update-form form');
+    const updateText = document.getElementById('update_text');
     if (!isSolution || !statusSelect) {
         return;
     }
@@ -326,6 +328,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    if (updateForm && updateText) {
+        updateForm.addEventListener('submit', function(event) {
+            if (isSolution.checked && updateText.value.trim() === '') {
+                event.preventDefault();
+                alert('Bitte gib einen Kommentar ein, bevor du eine Lösung speicherst.');
+                updateText.focus();
+            }
+        });
+    }
 });
 </script>
 <?php include 'templates/footer.php'; ?>
