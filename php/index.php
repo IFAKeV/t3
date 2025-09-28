@@ -194,8 +194,68 @@ if ($action === 'update_ticket') {
             $status_id = $_POST['status_id'] ?? '';
             $priority_id = $_POST['priority_id'] ?? '';
             $assign_agent = $_POST['assign_agent'] ?? '';
-            $update_text = trim($_POST['update_text'] ?? '');
+            $update_text_raw = $_POST['update_text'] ?? '';
+            $update_text = trim($update_text_raw);
             $is_solution = isset($_POST['is_solution']) ? 1 : 0;
+
+            if ($is_solution && $update_text === '') {
+                $flash = 'Bitte gib einen Kommentar ein, bevor du eine Lösung speicherst.';
+                $attachments = get_ticket_attachments($ticket_id);
+                $updates = get_ticket_updates($ticket_id);
+                $last_update_at = $updates ? $updates[0]['FormattedUpdatedAt'] : $ticket['CreatedAt'];
+                $assignees = get_ticket_assignees($ticket_id);
+                $related_person = [];
+                $related_facility = [];
+                $related_location = [];
+                $seen_ids = [];
+
+                if ($ticket['ContactEmployeeID']) {
+                    $related_person = get_related_tickets_by_person($ticket['ContactEmployeeID'], $ticket_id);
+                    foreach ($related_person as $rp) {
+                        $seen_ids[$rp['TicketID']] = true;
+                    }
+                }
+
+                if ($ticket['FacilityID']) {
+                    $temp = get_related_tickets_by_facility($ticket['FacilityID'], $ticket_id);
+                    foreach ($temp as $row) {
+                        if (!isset($seen_ids[$row['TicketID']])) {
+                            $related_facility[] = $row;
+                            $seen_ids[$row['TicketID']] = true;
+                        }
+                    }
+                }
+
+                if ($ticket['LocationID']) {
+                    $temp = get_related_tickets_by_location($ticket['LocationID'], $ticket_id, $ticket['FacilityID'] ?? null);
+                    foreach ($temp as $row) {
+                        if (!isset($seen_ids[$row['TicketID']])) {
+                            $related_location[] = $row;
+                            $seen_ids[$row['TicketID']] = true;
+                        }
+                    }
+                }
+
+                $facility_info = null;
+                $location_info = null;
+                if ($ticket['FacilityID']) {
+                    $facility_info = get_facility_info($ticket['FacilityID']);
+                }
+                if ($ticket['LocationID']) {
+                    $location_info = get_location_info($ticket['LocationID']);
+                }
+                $statuses = get_all_statuses();
+                $priorities = get_all_priorities();
+                $agents = load_agents();
+                $allowed_extension_strings = get_allowed_extension_strings();
+                $allowed_accept = $allowed_extension_strings['accept'];
+                $allowed_hint = $allowed_extension_strings['hint'];
+                $form_update_text = $update_text_raw;
+                $form_is_solution = true;
+
+                include 'templates/ticket_view.php';
+                exit;
+            }
 
             if ($ticket['StatusName'] == 'Neu' && !$status_id && ($update_text !== '' || $priority_id !== '' || $assign_agent !== '' || !empty($_FILES['attachment']['name']))) {
                 $in_progress = query_db("SELECT StatusID FROM TicketStatus WHERE StatusName = 'In Arbeit'", [], true);
@@ -329,6 +389,8 @@ if ($action === 'view_ticket') {
     $allowed_extension_strings = get_allowed_extension_strings();
     $allowed_accept = $allowed_extension_strings['accept'];
     $allowed_hint = $allowed_extension_strings['hint'];
+    $form_update_text = $form_update_text ?? '';
+    $form_is_solution = $form_is_solution ?? false;
     include 'templates/ticket_view.php';
     exit;
 }
