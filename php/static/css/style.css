@@ -797,6 +797,211 @@ footer {
 }
 
 
+/* ==============================================
+   RESPONSIVE DESIGN
+   ============================================== */
+
+@media (max-width: 1024px) {
+    header {
+        flex-wrap: wrap;
+        padding: 0.75rem 1.25rem;
+        gap: 1rem;
+    }
+
+    .logo img {
+        max-width: 160px;
+    }
+
+    nav {
+        width: 100%;
+    }
+
+    nav ul {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    nav li {
+        flex: 1 1 auto;
+    }
+
+    nav a {
+        display: block;
+        text-align: center;
+        width: 100%;
+    }
+
+    .agent-overview {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.25rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.3rem;
+    }
+
+    .dashboard-filters {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .dashboard-filters .filter-group {
+        flex: 1 1 45%;
+    }
+
+    .dashboard-filters .search-group {
+        flex-basis: 100%;
+    }
+
+    .ticket-content {
+        flex-direction: column;
+    }
+
+    .ticket-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        width: 100%;
+    }
+
+    .ticket-details {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 0.95rem;
+    }
+
+    main {
+        padding: 1rem;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    nav ul {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    nav li {
+        flex: 1 1 100%;
+    }
+
+    nav a {
+        padding: 0.6rem 0.75rem;
+    }
+
+    .user-info {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.15rem;
+    }
+
+    .dashboard-filters {
+        flex-direction: column;
+    }
+
+    .dashboard-filters .filter-group {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .search-group .search-bar {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-group .search-bar button {
+        width: 100%;
+    }
+
+    .form-row {
+        flex-direction: column;
+    }
+
+    .ticket-header h1 {
+        font-size: 1.25rem;
+        padding-right: 0;
+    }
+
+    .ticket-nav {
+        position: static;
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 0.75rem;
+    }
+
+    .ticket-meta {
+        gap: 0.5rem;
+    }
+
+    .ticket-content {
+        min-height: auto;
+    }
+
+    th, td {
+        font-size: 0.85rem;
+    }
+
+    .agent-overview {
+        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo img {
+        max-width: 140px;
+    }
+
+    nav a {
+        font-size: 0.95rem;
+    }
+
+    .dashboard-header {
+        gap: 1rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.05rem;
+    }
+
+    .search-group label {
+        font-size: 0.85rem;
+    }
+
+    th, td {
+        padding: 0.45rem 0.3rem;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+        font-size: 1rem;
+        padding: 0.65rem;
+    }
+}
+
+
 
 /* Lightbox */
 .lightbox {
