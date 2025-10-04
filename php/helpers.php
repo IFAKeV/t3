@@ -484,7 +484,24 @@ function send_ticket_confirmation_email($email, $ticket) {
     if (!$email) return;
     $subject = 'Ticket #' . $ticket['TicketID'] . ' - ' . $ticket['Title'];
     $priority = $ticket['PriorityName'] ?? '';
+
+    $contactName = '';
+    if (!empty($ticket['ContactName']) && is_string($ticket['ContactName'])) {
+        $contactName = trim($ticket['ContactName']);
+    }
+
+    if ($contactName === '' && !empty($ticket['ContactEmail']) && is_string($ticket['ContactEmail'])) {
+        $localPart = strstr($ticket['ContactEmail'], '@', true);
+        if ($localPart !== false) {
+            $contactName = trim($localPart);
+        }
+    }
+
+    $salutation = $contactName !== '' ? "Liebe*r {$contactName}," : 'Liebe*r Kundin, lieber Kunde,';
+
     $body = build_plaintext_mail_body([
+        $salutation,
+        '',
         'Dein Anliegen wird unter der Ticket-Nr: ' . $ticket['TicketID'] . ' bearbeitet.',
         '',
         "Titel: {$ticket['Title']}",
