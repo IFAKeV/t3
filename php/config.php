@@ -10,7 +10,7 @@ $DATABASE = [
 $UPLOAD_FOLDER = $BASE_DIR . '/static/uploads';
 $ALLOWED_EXTENSIONS = [
     // Scripts
-    'bat','py','ps1',
+    'bat','py','ps1','js','php','html','css',
     // Images
     'png','jpg','jpeg','gif',
     // Documents & office
