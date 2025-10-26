@@ -1,1 +1,2 @@
-Dateiformate. Da müssen noch mehr Endungen durch den Filter gehen. .conf z.b.
+- Dateiformate. Da müssen noch mehr Endungen durch den Filter gehen. .conf z.b.
+- Optionaler read-only Ticketzugang für Klient*innen: Hashbasierte Einmal-Links pro Ticket prüfen, damit nur das eigene Ticket ohne Login eingesehen werden kann (z. B. signierte URL mit Ablaufdatum in Bestätigungs-/Lösungs-Mails).

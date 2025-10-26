@@ -509,6 +509,8 @@ function send_ticket_confirmation_email($email, $ticket) {
         '',
         'Beschreibung:',
         $ticket['Description'] ?? '',
+        '',
+        'Für Informationen zum Ticket kannst du die 0234/68706588 anrufen oder eine Mail an helpdesk@ifak-sozial.de schicken.'
     ]);
     send_mail_message($email, $subject, $body);
 }
@@ -607,7 +609,7 @@ function send_solution_email($ticket, $updates) {
             }
         }
         $solution_lines[] = '';
-        $solution_lines[] = "Zum Ticket: $link";
+        $solution_lines[] = 'Für Informationen zum Ticket kannst du die 0234/68706588 anrufen oder eine Mail an helpdesk@ifak-sozial.de schicken.';
         $solution_body = build_plaintext_mail_body($solution_lines);
         send_mail_message($submitter, $subject, $solution_body);
     }

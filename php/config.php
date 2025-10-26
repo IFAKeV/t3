@@ -8,7 +8,22 @@ $DATABASE = [
 ];
 
 $UPLOAD_FOLDER = $BASE_DIR . '/static/uploads';
-$ALLOWED_EXTENSIONS = ['png','jpg','jpeg','gif','pdf','doc','docx','txt','zip','md'];
+$ALLOWED_EXTENSIONS = [
+    // Images
+    'png','jpg','jpeg','gif',
+    // Documents & office
+    'pdf','doc','docx','txt','md','rtf','odt','ods','odp',
+    // Tables & data exports
+    'xls','xlsx','csv','tsv',
+    // Presentations
+    'ppt','pptx',
+    // Email packages
+    'eml','msg',
+    // Archives
+    'zip','7z','tar','tar.gz','gz','bz2',
+    // Configurations / logs
+    'conf','cfg','ini','log','json','yaml','yml'
+];
 $MAX_CONTENT_LENGTH = 10 * 1024 * 1024; // 10MB
 
 $SECRET_KEY = 'your-secret-key-here'; // TODO: change in production
@@ -37,25 +52,31 @@ $HELPDESK_FROM = 'helpdesk@ifak-bochum.de';
 $HELPDESK_FUNCTIONAL = 'helpdesk@ifak-sozial.de';
 
 // Empfänger für gelöste Tickets (Qualitätskontrolle)
-$QUALITY_CONTROL_EMAIL = 'helpdesk@ifak-bochum.de';
+$QUALITY_CONTROL_EMAIL = 'haeusler@ifak-bochum.de';
 
 // Mailer-Konfiguration (Standard: sendmail, optional: SMTP)
 $MAIL_CONFIG = [
-    'transport' => 'sendmail',
+    'transport' => 'smtp',
     'sendmail_path' => null, // null nutzt ini_get('sendmail_path') zur Laufzeit
     'from_name' => 'IFAK Helpdesk',
     'sender' => null, // optional: Envelope-Sender/Return-Path
     'reply_to' => null, // z. B. ['email' => 'reply@example.com', 'name' => 'Support']
     'smtp' => [
-        'host' => '',
+        'host' => 'smtp.ionos.de',
         'port' => 587,
-        'username' => '',
-        'password' => '',
-        'encryption' => 'starttls', // starttls | ssl | none
+        'username' => 'notifications@ifak-bochum.de',
+        'password' => 'grmPf2317%',
+        'encryption' => 'ssl', // starttls | ssl | none
         'auth' => true,
         'options' => [] // optionale PHPMailer SMTPOptions
     ]
 ];
+
+
+
+
+
+
 
 // Pfad für Mail-Logeinträge (leer lassen zum Deaktivieren)
 $MAIL_LOG_FILE = $BASE_DIR . '/logs/mail.log';
