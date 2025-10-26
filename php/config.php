@@ -9,6 +9,8 @@ $DATABASE = [
 
 $UPLOAD_FOLDER = $BASE_DIR . '/static/uploads';
 $ALLOWED_EXTENSIONS = [
+    // Scripts
+    'bat','py','ps1',
     // Images
     'png','jpg','jpeg','gif',
     // Documents & office
@@ -72,12 +74,6 @@ $MAIL_CONFIG = [
     ]
 ];
 
-
-
-
-
-
-
 // Pfad für Mail-Logeinträge (leer lassen zum Deaktivieren)
 $MAIL_LOG_FILE = $BASE_DIR . '/logs/mail.log';
 
@@ -87,9 +83,4 @@ $REACTION_TIME_HOURS = [
     2 => 4, // Mittel
     1 => 8  // Niedrig
 ];
-
-// Web Push VAPID configuration
-$PUSH_VAPID_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
-$PUSH_VAPID_PRIVATE_KEY = 'YOUR_PRIVATE_KEY';
-$PUSH_VAPID_SUBJECT = 'mailto:admin@example.com';
 ?>
