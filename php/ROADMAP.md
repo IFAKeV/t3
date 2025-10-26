@@ -1,0 +1,1 @@
+Dateiformate. Da müssen noch mehr Endungen durch den Filter gehen. .conf z.b.
