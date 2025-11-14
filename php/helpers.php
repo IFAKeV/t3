@@ -244,12 +244,59 @@ function create_mailer_instance() {
         } else {
             $mailer->isSMTP();
             $mailer->Host = $host;
-            $mailer->Port = (int)($smtp['port'] ?? 587);
+            $port = (int)($smtp['port'] ?? 587);
+            if ($port <= 0) {
+                $port = 587;
+            }
+            $mailer->Port = $port;
+
             $encryption = strtolower((string)($smtp['encryption'] ?? ''));
-            if ($encryption === 'ssl') {
-                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            $appliedEncryption = null;
+
+            $logEncryptionFallback = function ($reason, $applied) use ($host, $port, $encryption) {
+                static $logged = [];
+                $key = $host . ':' . $port . '|' . $encryption . '>' . $applied;
+                if (isset($logged[$key])) {
+                    return;
+                }
+                $logged[$key] = true;
+                write_mail_log('warning', $reason, [
+                    'host' => $host,
+                    'port' => $port,
+                    'configured_encryption' => $encryption,
+                    'applied_encryption' => $applied,
+                ]);
+            };
+
+            if ($encryption === 'ssl' || $encryption === 'smtps') {
+                if ($port === 465) {
+                    $mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                    $appliedEncryption = 'smtps';
+                } else {
+                    $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                    $mailer->SMTPAutoTLS = true;
+                    $appliedEncryption = 'starttls';
+                    $logEncryptionFallback('SMTP-Konfiguration erwartet SSL, Port unterstützt jedoch nur STARTTLS – weiche auf STARTTLS aus', $appliedEncryption);
+                }
             } elseif ($encryption === 'tls' || $encryption === 'starttls') {
                 $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mailer->SMTPAutoTLS = true;
+                $appliedEncryption = 'starttls';
+            } elseif ($encryption === 'none') {
+                $mailer->SMTPSecure = false;
+                $mailer->SMTPAutoTLS = false;
+                $appliedEncryption = 'none';
+            } elseif ($encryption !== '') {
+                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mailer->SMTPAutoTLS = true;
+                $appliedEncryption = 'starttls';
+                $logEncryptionFallback('Unbekannte SMTP-Verschlüsselung – weiche auf STARTTLS aus', $appliedEncryption);
+            }
+
+            if ($appliedEncryption === null && $port === 465) {
+                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                $mailer->SMTPAutoTLS = true;
+                $appliedEncryption = 'smtps';
             }
             $username = $smtp['username'] ?? '';
             $password = $smtp['password'] ?? '';
